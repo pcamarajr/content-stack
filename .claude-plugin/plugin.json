@@ -1,0 +1,24 @@
+{
+  "name": "content-ops",
+  "version": "0.1.0",
+  "description": "Content creation and management plugin for static site blogs. Handles writing, translation, research, linking, style review, and knowledge indexing.",
+  "author": {
+    "name": "pcamarajr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pcamarajr/content-ops",
+    "directory": ".claude/plugins/content-ops"
+  },
+  "license": "MIT",
+  "keywords": [
+    "content",
+    "blog",
+    "writing",
+    "translation",
+    "linking",
+    "style-guide",
+    "static-site",
+    "knowledge"
+  ]
+}

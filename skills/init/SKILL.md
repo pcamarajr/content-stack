@@ -1,0 +1,76 @@
+---
+name: init
+description: content-ops setup wizard. Run /init to see status, or /init [round] to run a setup step. Rounds: project, content-types, style, strategy, infra.
+argument-hint: "[project|content-types|style|strategy|infra]"
+user-invocable: true
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+---
+
+Interactive setup wizard for content-ops. Configures the plugin for your project through a guided conversation.
+
+**Arguments:** $ARGUMENTS
+
+---
+
+## Step 0: Route
+
+Parse $ARGUMENTS:
+
+- **Empty** → Run the Status Dashboard (below)
+- **`project`** → Read `skills/init/rounds/project.md` (relative to plugin root) and follow its instructions completely
+- **`content-types`** → Read `skills/init/rounds/content-types.md` (relative to plugin root) and follow its instructions completely
+- **`style`** → Read `skills/init/rounds/style.md` (relative to plugin root) and follow its instructions completely
+- **`strategy`** → Read `skills/init/rounds/strategy.md` (relative to plugin root) and follow its instructions completely
+- **`infra`** → Read `skills/init/rounds/infra.md` (relative to plugin root) and follow its instructions completely
+- **Unknown argument** → Tell the user the valid options: `project`, `content-types`, `style`, `strategy`, `infra`
+
+After completing any round, always end with a short "What's next?" line pointing to the next incomplete round.
+
+---
+
+## Status Dashboard
+
+Only runs when $ARGUMENTS is empty.
+
+### 1. Detect project basics
+
+Try to read `package.json` → extract `name`.
+Try to read `.content-ops/config.md` → parse YAML frontmatter.
+
+### 2. Determine round completion
+
+| Round | Complete when |
+| ---- | ----- |
+| project | `author`, `default_language`, and `languages` are all set |
+| content-types | `content_types` has at least one entry with a `path` |
+| style | `reference_content` has at least one entry AND at least one `guidelines` path in `content_types` resolves to an existing file |
+| strategy | `content_strategy` is set AND that file exists on disk |
+| infra | the `backlog_file` path exists AND the `translation_tracker_file` path exists |
+
+If `.content-ops/config.md` does not exist: all rounds are incomplete.
+
+Use 🔄 (started) when the config file exists but only some required fields for that round are set.
+
+### 3. Output
+
+```text
+## content-ops — Setup Status
+
+Site:   [name from package.json, or "—"]
+Config: .content-ops/config.md ([found | not found])
+
+✅ /init project        — [one-line summary, e.g. "en + it, author set"]
+🔄 /init content-types  — [what's done and what's missing]
+⬜ /init style          — not started
+⬜ /init strategy       — not started
+⬜ /init infra          — not started
+
+→ Next: /init [first incomplete round]
+
+What each step does:
+  project        — Set author, languages, and project description
+  content-types  — Define content types (articles, glossary, etc.)
+  style          — Build your voice, tone, and style guide
+  strategy       — Define content pillars and editorial plan
+  infra          — Set up trackers, localization guides, and file-based content index (via /reindex)
+```

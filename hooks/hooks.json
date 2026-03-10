@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.content-ops/config.md\" ]; then echo '=== content-ops config ==='; cat \"$CLAUDE_PROJECT_DIR/.content-ops/config.md\"; else echo '[content-ops] Config not found. Run: cp .claude/plugins/content-ops/config.example.md .content-ops/config.md'; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/post-write-content.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/post-commit-build.sh\"",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/post-commit-index.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if any content files were created or modified during this session (look for tool calls that wrote to src/content/, .content-ops/backlog.md, or .content-ops/translation-tracker.md). If content files were changed, verify that 'pnpm build' was executed successfully at some point AFTER the last content change. If no content was changed, or if build was run after changes, output: {\"decision\": \"continue\"}. If content was modified but pnpm build was NOT run afterward, output: {\"decision\": \"block\", \"reason\": \"Content was modified but pnpm build was not run to verify. Please run pnpm build before ending the session.\"}"
+          }
+        ]
+      }
+    ]
+  }
+}
