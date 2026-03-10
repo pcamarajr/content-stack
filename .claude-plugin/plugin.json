@@ -5,11 +5,7 @@
   "author": {
     "name": "pcamarajr"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pcamarajr/content-ops",
-    "directory": ".claude/plugins/content-ops"
-  },
+  "repository": "https://github.com/pcamarajr/content-ops",
   "license": "MIT",
   "keywords": [
     "content",
