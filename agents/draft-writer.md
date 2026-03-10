@@ -1,6 +1,17 @@
 ---
 name: draft-writer
-description: Writes article or glossary entry files. Receives a topic, research findings, output path, and config values from the write-content orchestrator. Use this agent when you need to draft content files — do not use it for research, linking, or review.
+description: |-
+  Writes article or glossary entry files. Receives a topic, research findings, output path,
+  and config values from the write-content orchestrator. Use this agent when you need to
+  draft content files — do not use it for research, linking, or review.
+
+  <example>
+  Draft a new article on "liquid staking" to src/content/articles/en/liquid-staking.md using the provided research findings.
+  </example>
+
+  <example>
+  Write glossary entries for: validator, slashing, epoch — output to src/content/glossary/en/
+  </example>
 tools: Read, Write, Glob, Grep
 model: sonnet
 color: green

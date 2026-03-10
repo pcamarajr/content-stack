@@ -1,6 +1,17 @@
 ---
 name: content-researcher
-description: Verifies factual claims and researches topics for content creation. Uses a file-based research cache to avoid re-verifying known facts. Use this agent when writing, reviewing, or fact-checking content.
+description: |-
+  Verifies factual claims and researches topics for content creation. Uses a file-based
+  research cache to avoid re-verifying known facts. Use this agent when writing, reviewing,
+  or fact-checking content.
+
+  <example>
+  Research and verify facts for an article on "proof of stake": confirm consensus mechanism details, find authoritative sources, check current validator counts.
+  </example>
+
+  <example>
+  Fact-check the claim: "Ethereum processes 15 transactions per second on mainnet"
+  </example>
 tools: Read, Glob, Grep, WebSearch, WebFetch, Write
 model: sonnet
 color: blue

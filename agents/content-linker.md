@@ -1,6 +1,13 @@
 ---
 name: content-linker
-description: Handles bidirectional linking between articles and glossary entries. Uses content-index.json for discovery, one bounded LLM ranking pass, then edits only the selected files. Token use is capped via linking_max_candidates and linking_max_links.
+description: |-
+  Handles bidirectional linking between articles and glossary entries. Uses content-index.json
+  for discovery, one bounded LLM ranking pass, then edits only the selected files. Token use
+  is capped via linking_max_candidates and linking_max_links.
+
+  <example>
+  Add bidirectional links between src/content/articles/en/liquid-staking.md and related glossary entries and articles using content-index.json.
+  </example>
 tools: Read, Glob, Grep, Edit
 model: sonnet
 color: magenta

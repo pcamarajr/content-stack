@@ -1,6 +1,13 @@
 ---
 name: glossary-creator
-description: Scans a newly written article for technical terms that lack glossary entries and creates minimal stubs for them. Use after the draft-writer agent, before the content-linker agent. Do not use for writing full glossary entries — use draft-writer for that.
+description: |-
+  Scans a newly written article for technical terms that lack glossary entries and creates
+  minimal stubs for them. Use after the draft-writer agent, before the content-linker agent.
+  Do not use for writing full glossary entries — use draft-writer for that.
+
+  <example>
+  Scan src/content/articles/en/liquid-staking.md for technical terms missing from src/content/glossary/en/ and create stubs for any gaps.
+  </example>
 tools: Read, Write, Glob, Grep
 model: haiku
 color: cyan
