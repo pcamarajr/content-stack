@@ -3,6 +3,7 @@ name: style-enforcer
 description: Reviews content for tone, style, sentence length, scope discipline, and adherence to the content style guide. Reads guidelines and reference content from plugin config.
 tools: Read, Glob, Grep
 model: sonnet
+color: yellow
 skills:
   - content-style
 memory: project

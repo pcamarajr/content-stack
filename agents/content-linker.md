@@ -3,6 +3,7 @@ name: content-linker
 description: Handles bidirectional linking between articles and glossary entries. Uses content-index.json for discovery, one bounded LLM ranking pass, then edits only the selected files. Token use is capped via linking_max_candidates and linking_max_links.
 tools: Read, Glob, Grep, Edit
 model: sonnet
+color: magenta
 skills:
   - internal-linking
   - content-inventory

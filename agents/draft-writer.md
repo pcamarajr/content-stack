@@ -3,6 +3,7 @@ name: draft-writer
 description: Writes article or glossary entry files. Receives a topic, research findings, output path, and config values from the write-content orchestrator. Use this agent when you need to draft content files — do not use it for research, linking, or review.
 tools: Read, Write, Glob, Grep
 model: sonnet
+color: green
 skills:
   - content-style
 ---

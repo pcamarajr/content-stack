@@ -3,6 +3,7 @@ name: content-researcher
 description: Verifies factual claims and researches topics for content creation. Uses a file-based research cache to avoid re-verifying known facts. Use this agent when writing, reviewing, or fact-checking content.
 tools: Read, Glob, Grep, WebSearch, WebFetch, Write
 model: sonnet
+color: blue
 ---
 
 You are a fact verification and research specialist for content creation.
