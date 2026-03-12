@@ -1,205 +1,174 @@
 # content-ops
 
-A Claude Code plugin for content creation and management on static site blogs. Handles writing, translation, research, linking, style review, knowledge indexing, and tracker updates.
+> **Work in progress.** The plugin works — but it's still being polished. Some defaults are borrowed from the project it was built on and aren't fully agnostic yet. Expect rough edges and active iteration. Follow progress on [LinkedIn](https://linkedin.com/in/pcamarajr).
+
+A Claude Code plugin that gives you a team of AI writers running from your strategy — so you stay focused on what to build, not on writing every word.
+
+You define your content pillars, goals, and style. content-ops handles research, writing, translation, internal linking, fact-checking, and indexing. You review, approve, and ship.
+
+Works with any markdown-based static site (Astro, Next.js with Contentlayer, Hugo, and others) — if your content has frontmatter and a body, it should work.
+
+---
+
+## What it does
+
+Instead of writing each article from scratch, you run a single command and get a research-backed, style-reviewed, internally-linked draft — ready for your review.
+
+The typical workflow:
+
+- Add ideas to a **backlog** as they come to you
+- When ready, ask content-ops to pick from the backlog — or kick off an interactive session for something specific
+- Claude researches, drafts, checks facts, enforces your style, links to related content, and updates your trackers
+- You review the PR, iterate if needed, and ship
+
+It's the same loop you'd run with a copywriter — but always available, always on-brief.
+
+---
+
+## Quick start
+
+### 1. Install
+
+Copy the plugin into your project:
+
+```bash
+cp -r content-ops/ your-project/.claude/plugins/content-ops
+```
+
+Or install via the Claude Code plugin marketplace:
+
+```
+/plugin marketplace add pcamarajr/content-stack
+/plugin install content-ops@content-stack
+```
+
+### 2. Init
+
+Run the setup wizard inside Claude Code:
+
+```
+/init
+```
+
+This walks you through six setup rounds: your author info and languages, content types and paths, style guide and reference articles, content strategy and pillars, infrastructure (backlog, trackers), and optionally image generation.
+
+You can run rounds individually:
+
+```
+/init project
+/init content-types
+/init style
+/init strategy
+/init infra
+/init images
+```
+
+### 3. Index your content
+
+```
+/reindex
+```
+
+Scans your existing content and builds `.content-ops/content-index.json` — the knowledge layer the agents use for linking and discovery.
+
+### 4. Write something
+
+```
+/write-content article "Getting started with Docker"
+/write-content backlog 3
+/write-content
+```
+
+That's it. Claude takes it from there.
+
+---
+
+## How it works
+
+content-ops is a **phase-based orchestrator**. When you run `/write-content`, it coordinates a pipeline of specialized agents — each focused on one job.
+
+```mermaid
+flowchart TD
+    User([You]) -->|/write-content| WC[write-content skill]
+
+    WC --> P1[Phase 1\nParse arguments]
+    P1 --> P2[Phase 2\nLoad config + guidelines]
+    P2 --> P3[Phase 3\nPlan topic]
+    P3 --> P4[Phase 4\nResearch]
+    P4 --> P5[Phase 5\nDraft]
+    P5 --> P55[Phase 5.5\nGenerate images\noptional]
+    P55 --> P6[Phase 6\nStyle review]
+    P6 --> P7[Phase 7\nGlossary check]
+    P7 --> P8[Phase 8\nBidirectional linking]
+    P8 --> P9[Phase 9\nReindex + commit]
+
+    P4 <-->|cache hit/miss| RC[(Research cache\n.content-ops/research-cache/)]
+    P5 --> DW[draft-writer agent]
+    P4 --> CR[content-researcher agent]
+    P6 --> SE[style-enforcer agent]
+    P7 --> GC[glossary-creator agent]
+    P8 --> CL[content-linker agent]
+    CL <-->|reads| CI[(Content index\n.content-ops/content-index.json)]
+
+    P9 --> Commit([git commit])
+```
+
+All knowledge lives in files — no embeddings, no vector DBs, no external APIs required for the core pipeline.
+
+→ [Full technical walkthrough](./docs/how-it-works.md)
+
+---
+
+## Skills at a glance
+
+| Skill | What you type | What happens |
+|---|---|---|
+| `/init` | `/init` or `/init [round]` | Setup wizard — creates config, guides, and trackers |
+| `/write-content` | `/write-content article "Topic"` | Full pipeline: research → draft → style → link → commit |
+| `/translate` | `/translate es` | Localize content to a target language |
+| `/fact-check` | `/fact-check path/to/article.md` | Verify every claim against trusted sources |
+| `/review-content` | `/review-content path/to/article.md` | Style, tone, structure, and linking audit |
+| `/suggest-content` | `/suggest-content 5` | Suggest next articles from gaps in your strategy |
+| `/reindex` | `/reindex` | Rebuild the content index from current files |
+
+→ [Full skills reference](./docs/skills.md)
+
+---
 
 ## Requirements
 
 - [Claude Code](https://claude.ai/code) CLI
 - Node.js 22+
-- pnpm (or npm/yarn)
+- A markdown-based static site with frontmatter content
 
-No API keys or external services required for the knowledge layer — it uses file-based content index and research cache.
+No API keys needed for the core workflow. Image generation is optional and uses Google Gemini or OpenAI when enabled.
 
-**Image generation** is optional. When enabled via `/init images`, it uses the Google Gemini API (Nano Banana) or OpenAI GPT Image to generate article images. Requires a `GEMINI_API_KEY` or `OPENAI_API_KEY` environment variable.
+---
 
-## Installation
+## Documentation
 
-1. Copy the `content-ops/` directory into your project's `.claude/plugins/` folder:
+| | |
+|---|---|
+| [How it works](./docs/how-it-works.md) | Architecture, agent pipeline, phase breakdown |
+| [Configuration](./docs/configuration.md) | Full config schema and `.content-ops/` layout |
+| [Skills](./docs/skills.md) | Every skill with examples and options |
+| [Agents](./docs/agents.md) | What each agent does and when it runs |
+| [Knowledge layer](./docs/knowledge-layer.md) | Content index, research cache, and how linking works |
 
-```text
-your-project/
-└── .claude/
-    └── plugins/
-        └── content-ops/    ← this plugin
-```
+---
 
-2. Copy the example config to `.content-ops/config.md` and customize:
+## Status
 
-```bash
-cp .claude/plugins/content-ops/config.example.md .content-ops/config.md
-```
+This plugin is **actively being developed**. Current state:
 
-3. Edit `.content-ops/config.md` with your project-specific values (content paths, languages, author, etc.).
+- **Works:** init wizard, write-content pipeline, translation, fact-check, review, suggest, reindex, internal linking, research cache
+- **In progress:** removing project-specific assumptions to make it fully framework-agnostic
+- **Not yet:** automation / CI mode, public examples, full test coverage
 
-4. Run `/init` (or `/init project`) to create or verify the config, then complete the remaining rounds as needed. Alternatively, run `/reindex` to generate the initial content index (`.content-ops/content-index.json`).
+Feedback and issues welcome on [GitHub](https://github.com/pcamarajr/content-stack/issues).
 
-**Hooks:** Hooks are bundled in the plugin and load automatically when the plugin is enabled. No manual merge into `.claude/settings.json` needed. The plugin provides:
-
-- `hooks/hooks.json` — SessionStart (config display), PostToolUse (Edit|Write, Bash), Stop (content verification prompt)
-- `hooks-handlers/` — `post-write-content.sh`, `post-commit-index.sh`, `post-commit-build.sh` (scripts referenced via `${CLAUDE_PLUGIN_ROOT}`)
-
-**Note:** `post-commit-build.sh` runs `pnpm build` after every git commit. If you don't use pnpm, you can remove or replace this hook in `hooks/hooks.json`.
-
-## Configuration
-
-All project-specific values live in `.content-ops/config.md` (YAML frontmatter format). The config file is **tracked in git** for cloud-friendly runs. Skills read this file at runtime. If the config file doesn't exist, skills will stop and tell you how to create it — run `/init` or copy the example.
-
-See `config.example.md` for the full schema and all available fields.
-
-### Key Configuration Fields
-
-| Field | Description |
-| ---- | ----- |
-| `author` | Attribution line for all content |
-| `languages` | Supported language codes (e.g., `["en", "es"]`) |
-| `content_types` | Per-type config: path, guidelines file, word range, frontmatter fields |
-| `backlog_file` | Path to content backlog tracker (default `.content-ops/backlog.md`) |
-| `translation_tracker_file` | Path to translation status tracker (default `.content-ops/translation-tracker.md`) |
-| `content_strategy` | Path to content strategy file (default `.content-ops/strategy.md`) |
-| `content_pillars_path` | Directory containing content pillar files (default `.content-ops/pillars`) |
-| `localization_guides_path` | Directory for per-language localization guides (default `.content-ops/localization`) |
-| `reference_content` | Files to read for tone calibration |
-| `content_index_path` | Path to content index JSON (default `.content-ops/content-index.json`) |
-| `research_cache_path` | Path to research cache directory (default `.content-ops/research-cache`) |
-| `linking_max_candidates` | Max candidates before LLM ranking (optional, default 50) |
-| `linking_max_links` | Max links per article (optional, default 10) |
-| `image_generation` | Image generation config block (optional — run `/init images` to configure) |
-
-### .content-ops/ Layout
-
-All configurable files live under `.content-ops/` by default. The entire directory is tracked in git.
-
-| File/Dir | Purpose |
-| ---- | ----- |
-| `config.md` | Plugin configuration |
-| `backlog.md` | Content backlog tracker |
-| `translation-tracker.md` | Translation status tracker |
-| `strategy.md` | Content strategy / editorial plan |
-| `pillars/` | Content pillar files |
-| `localization/` | Per-language localization guides |
-| `content-index.json` | Generated by `/reindex` |
-| `research-cache/` | Cached research per topic |
-
-### Content Strategy & Pillars
-
-The plugin uses a two-level content planning system:
-
-- **`content_strategy`** — A single file defining your high-level editorial plan: what topics to cover, gaps to fill, themes, and goals.
-- **`content_pillars_path`** — A directory of files, each defining a content pillar with topics, progression, and detailed objectives. Optional — if not set, `/suggest-content` works from the strategy file + existing content only.
-
-The `/suggest-content` skill reads both to identify coverage gaps and prioritize what to write next. The `/write-content` skill reads them for topic context when drafting articles.
-
-## Init — Setup Wizard
-
-The `/init` skill is the recommended way to initialize content-ops in your project.
-
-**Invocation:**
-
-- `/init` — Shows the setup status dashboard
-- `/init [round]` — Runs a specific setup step
-
-**Rounds (in order):** `project` → `content-types` → `style` → `strategy` → `infra` → `images` _(optional)_
-
-Each round reads from `skills/init/rounds/<round>.md` (relative to plugin root).
-
-**What init does:** Creates or updates `.content-ops/config.md` and, in the infra round, can create bootstrap files under `.content-ops/` (backlog, translation tracker, localization guides). After running rounds, run `/reindex` to generate the content index.
-
-**Status dashboard:** When you run `/init` with no arguments, it shows completion status per round:
-
-- project: author + languages set
-- content-types: at least one type with path
-- style: reference_content + guidelines
-- strategy: content_strategy file exists
-- infra: backlog and translation tracker exist
-- images: image_generation section in config + guidelines file exists
-
-Config is read from `.content-ops/config.md`.
-
-**Installation flow:** After copying the plugin, run `/init` (or `/init project`) to create `.content-ops/config.md` and then complete the remaining rounds as needed. You can instead copy the example config to `.content-ops/config.md` and edit by hand, then use `/init` to check status or run specific rounds.
-
-## Skills
-
-### User-Invocable
-
-| Skill | Usage | Description |
-| ---- | ----- | ----- |
-| `/init` | `/init` or `/init [round]` | Setup wizard — creates config and bootstrap files |
-| `/write-content` | `/write-content article "Topic"` | Create articles or glossary entries. Handles research, writing, style review, linking, trackers, and indexing. |
-| `/translate` | `/translate es` | Localize content to a target language with glossary, linking, and tracker updates. |
-| `/fact-check` | `/fact-check src/content/articles/en/my-article.md` | Verify every claim in a content file against trusted sources. |
-| `/review-content` | `/review-content src/content/articles/en/my-article.md` | Review content for tone, style, structure, and linking completeness. |
-| `/suggest-content` | `/suggest-content 5 technical` | Suggest next articles based on content strategy, pillars, and coverage gaps. |
-| `/reindex` | `/reindex` | Rebuild the content index by scanning frontmatter and writing `.content-ops/content-index.json`. |
-
-### Internal (Auto-Loaded)
-
-These skills are loaded automatically by other skills and agents. They are not invoked directly.
-
-| Skill | Purpose |
-| ---- | ----- |
-| `content-inventory` | Current snapshot of all articles and glossary entries per language |
-| `content-style` | Voice, tone, structure, and linking rules for content creation |
-| `content-image-style` | Image generation rules: prompt construction, API patterns, file naming, alt text conventions |
-| `internal-linking` | Bidirectional linking conventions and rules |
-| `update-trackers` | Logic for updating content backlog and translation tracker |
-
-## Agents
-
-| Agent | Description |
-| ---- | ----- |
-| `content-researcher` | Fact verification with file-based research cache (avoids re-verifying known facts) |
-| `content-linker` | Bidirectional linking via content-index.json (reads index, edits only matched files) |
-| `style-enforcer` | Style review against configurable guidelines and reference content |
-| `image-generator` | AI image generation — builds prompts from article content and style guide, calls API, saves files |
-
-## File-Based Knowledge Layer
-
-Zero-dependency, file-based approach — no MCP server, no embeddings, no API keys.
-
-### Content Index (`.content-ops/content-index.json`)
-
-Generated by `/reindex`. Contains per-language metadata for all articles and glossary entries: slug, path, type, lang, title, excerpt, optional tags, optional translationKey. The `content-linker` agent reads this file, filters candidates, ranks in one LLM pass (capped by `linking_max_candidates` and `linking_max_links`), then edits only the selected files.
-
-### Research Cache (`.content-ops/research-cache/`)
-
-One JSON file per researched topic (e.g., `proof-of-work.json`). The `content-researcher` agent reads cache files before web search and writes new findings after research. TTL controlled by `research_cache_ttl_days` in config.
-
-Both the index and cache are committed to git for cross-session portability.
-
-## Directory Structure
-
-```text
-content-ops/
-├── .claude-plugin/
-│   └── plugin.json              ← Plugin manifest
-├── hooks/
-│   └── hooks.json               ← Hook config (auto-loaded when plugin enabled)
-├── hooks-handlers/
-│   ├── post-write-content.sh     ← Tracker reminder after Edit|Write
-│   ├── post-commit-index.sh     ← Reindex reminder after git commit
-│   └── post-commit-build.sh      ← pnpm build after git commit
-├── README.md                    ← This file
-├── config.example.md            ← Example configuration
-├── agents/
-│   ├── content-researcher.md
-│   ├── content-linker.md
-│   ├── style-enforcer.md
-│   └── image-generator.md
-└── skills/
-    ├── init/                    ← Setup wizard
-    ├── content-image-style/     ← Image generation rules (auto-loaded)
-    ├── content-inventory/
-    ├── content-style/
-    ├── fact-check/
-    ├── internal-linking/
-    ├── reindex/
-    ├── review-content/
-    ├── suggest-content/
-    ├── translate/
-    ├── update-trackers/
-    └── write-content/
-```
+---
 
 ## License
 
-MIT
+MIT — by [Pedro Camara Jr](https://linkedin.com/in/pcamarajr)
