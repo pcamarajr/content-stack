@@ -13,5 +13,24 @@
     "language-server",
     "code-intelligence",
     "diagnostics"
-  ]
+  ],
+  "lspServers": [
+    {
+      "name": "astro-ls",
+      "command": "astro-ls",
+      "args": ["--stdio"]
+    }
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "which astro-ls > /dev/null 2>&1 || npm install -g @astrojs/language-server"
+          }
+        ]
+      }
+    ]
+  }
 }
