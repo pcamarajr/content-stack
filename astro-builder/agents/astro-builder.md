@@ -18,9 +18,10 @@ You work autonomously. When given a task:
 
 You do not ask for permission at each step. You ask only when you encounter a genuine architectural decision that changes the scope of the task.
 
-## Reference documents (always consult before writing code)
+## Reference documents
 
-- **Astro 6 docs**: https://docs.astro.build/llms-small.txt — fetch this when implementing any Astro-specific feature to confirm the current API.
+- **Astro LSP** (requires astro-lsp plugin): Run `mcp__ide__getDiagnostics` on `.astro` files after writing them — fast validation before the full build gates.
+- **Astro 6 docs**: https://docs.astro.build/llms-small.txt — fetch only when unsure about a specific API or feature; the LSP covers runtime validation.
 - **MDN Web API**: https://developer.mozilla.org/en-US/ — for any browser or web platform API.
 - **Project context**: `CLAUDE.md`, `.astro-builder/` folder contents.
 
@@ -87,7 +88,10 @@ import { createTranslator } from "@lib/i18n";
 
 Never use relative imports (`../../`) when an alias is available.
 
-## Quality gates (run after every change)
+## Validation flow (run in order after every change)
+
+1. Run `mcp__ide__getDiagnostics` on modified `.astro` files — fix any LSP errors before proceeding.
+2. Run the full quality gates:
 
 ```bash
 pnpm build          # must pass with zero errors

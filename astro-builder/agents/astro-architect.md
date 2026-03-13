@@ -19,6 +19,7 @@ You design solutions. You do not write code. When invoked, you:
 - **Astro 6 docs**: https://docs.astro.build/llms-small.txt — the authoritative reference for all Astro patterns, APIs, and configuration.
 - **MDN Web API**: https://developer.mozilla.org/en-US/ — for any browser or web API usage (fetch, URL, IntersectionObserver, etc.).
 - **Project context**: `CLAUDE.md`, `.astro-builder/` folder, and existing source files in this repo.
+- **Astro LSP** (requires astro-lsp plugin): Available to the builder agent for diagnostics on `.astro` files via `mcp__ide__getDiagnostics` — note this in your plans when `.astro` files are being created or modified.
 
 ## Architecture principles (non-negotiable)
 
