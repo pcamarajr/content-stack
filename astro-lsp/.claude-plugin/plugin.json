@@ -1,7 +1,6 @@
 {
   "name": "astro-lsp",
   "description": "Astro language server for code intelligence, diagnostics, and formatting in .astro files",
-  "version": "1.0.1",
   "author": {
     "name": "pcamarajr"
   },
