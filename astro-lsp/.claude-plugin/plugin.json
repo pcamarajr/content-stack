@@ -1,7 +1,7 @@
 {
   "name": "astro-lsp",
   "description": "Astro language server for code intelligence, diagnostics, and formatting in .astro files",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "pcamarajr"
   },
@@ -14,13 +14,15 @@
     "code-intelligence",
     "diagnostics"
   ],
-  "lspServers": [
-    {
-      "name": "astro-ls",
+  "lspServers": {
+    "astro": {
       "command": "astro-ls",
-      "args": ["--stdio"]
+      "args": ["--stdio"],
+      "extensionToLanguage": {
+        ".astro": "astro"
+      }
     }
-  ],
+  },
   "hooks": {
     "SessionStart": [
       {
