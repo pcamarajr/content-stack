@@ -9,6 +9,16 @@
       "source": "./content-ops"
     },
     {
+      "name": "astro-builder",
+      "description": "Build Astro 6 static content sites with Claude. Enforces best practices for i18n, content collections, the page-views pattern, and design systems. Starts with /astro-builder:init to configure your project.",
+      "version": "1.0.0",
+      "author": {
+        "name": "pcamarajr"
+      },
+      "source": "./astro-builder",
+      "category": "development"
+    },
+    {
       "name": "astro-lsp",
       "description": "Astro language server for code intelligence, diagnostics, and formatting in .astro files",
       "version": "1.0.0",
