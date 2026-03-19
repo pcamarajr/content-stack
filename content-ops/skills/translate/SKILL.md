@@ -110,11 +110,7 @@ For each referenced glossary term not in the target language yet:
 
 Delegate to the `content-linker` agent for the target language content.
 
-### 4e. Build Check
-
-Run `pnpm build`. Fix any reference issues.
-
-### 4f. Update Trackers
+### 4e. Update Trackers
 
 Follow `update-trackers` skill: change status from `pending` to `done` for translated items.
 

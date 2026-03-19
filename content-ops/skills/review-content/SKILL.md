@@ -83,5 +83,4 @@ After presenting the report, ask the user if they want you to fix any issues. If
 
 1. Apply fixes in severity order (must fix → should fix → consider)
 2. For linking fixes, delegate to the `content-linker` agent
-3. Run `pnpm build` to verify
-4. Commit: `content: review fixes for "<title>"`
+3. Commit: `content: review fixes for "<title>"`
