@@ -1,15 +1,17 @@
 ---
 name: version-plugin
-description: Use when creating a new plugin or updating an existing one. Guides the semver decision, updates marketplace.json, syncs the root README, and scaffolds the plugin README if new.
+description: This skill should be used when the user asks to "version a plugin", "register a new plugin", "add a plugin to the marketplace", "update plugin version", "bump the version", "release a new version of a plugin", or runs "/version-plugin". Guides the semver decision, updates marketplace.json, scaffolds plugin.json if missing, syncs the root README, and scaffolds the plugin README if new.
+user-invocable: true
+allowed-tools: Read, Glob, Grep, Edit, Write, AskUserQuestion
 ---
 
-You are running the `version-plugin` skill. Your job is to correctly version a plugin in this marketplace, update all registries, and ensure documentation is in sync.
+You are running the `version-plugin` skill. Correctly version a plugin in this marketplace, update all registries, and ensure documentation is in sync.
 
 ---
 
 ## Step 1 — Determine the operation
 
-Ask the user (or infer from context):
+Ask (or infer from context):
 
 > Is this a **new plugin** being added to the marketplace, or an **update** to an existing plugin?
 
@@ -54,7 +56,25 @@ Add a new entry to the `plugins` array:
 }
 ```
 
-### 1.5 Update root `README.md`
+### 1.5 Scaffold `.claude-plugin/plugin.json` if missing
+
+Check for `<plugin-name>/.claude-plugin/plugin.json`. If absent, create the directory and file:
+
+```json
+{
+  "name": "<name>",
+  "description": "<description>",
+  "author": {
+    "name": "<author>"
+  },
+  "repository": "https://github.com/pcamarajr/content-stack",
+  "license": "MIT"
+}
+```
+
+Do not add a `version` field — version lives exclusively in `marketplace.json`.
+
+### 1.6 Update root `README.md`
 
 Add a new plugin section following the existing pattern:
 
@@ -73,9 +93,9 @@ To install this plugin:
 ```
 ````
 
-Place it in alphabetical order among existing plugin sections.
+Scan the existing plugin sections and insert the new one in alphabetical order by plugin name.
 
-### 1.6 Scaffold plugin `README.md` if missing or minimal
+### 1.7 Scaffold plugin `README.md` if missing or minimal
 
 If the plugin has no README or a placeholder, generate a minimal README:
 
@@ -109,11 +129,20 @@ Part of the [content-stack](https://github.com/pcamarajr/content-stack) marketpl
 MIT
 ````
 
-### 1.7 Confirm and summarize
+### 1.8 Commit the changes
+
+Stage and commit all modified files:
+
+```
+chore: register <plugin-name>@1.0.0 in marketplace
+```
+
+### 1.9 Confirm and summarize
 
 Show the user what was changed:
 
 - Entry added to `marketplace.json`
+- `plugin.json` created (if applicable)
 - Section added to root `README.md`
 - Plugin `README.md` created or updated (if applicable)
 
@@ -155,7 +184,15 @@ If skills or agents were added/removed, update the skills/agents table in the pl
 
 If the plugin's description, skills list, or agents list changed, update the corresponding section in the root `README.md`.
 
-### 2.7 Suggest a git tag
+### 2.7 Commit the changes
+
+Stage and commit all modified files:
+
+```
+chore: bump <plugin-name> to <new-version>
+```
+
+### 2.8 Suggest a git tag
 
 For `minor` and `major` bumps, suggest creating a git tag:
 
@@ -165,7 +202,7 @@ git tag <plugin-name>@<new-version>
 
 Ask if the user wants to create it now.
 
-### 2.8 Confirm and summarize
+### 2.9 Confirm and summarize
 
 Show the user exactly what was changed.
 
