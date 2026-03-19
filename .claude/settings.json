@@ -4,5 +4,9 @@
     "plugin-dev@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "code-review@claude-plugins-official": true
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash cost-tracker/scripts/status-line.sh"
   }
 }
