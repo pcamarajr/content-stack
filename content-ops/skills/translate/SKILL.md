@@ -12,11 +12,11 @@ Translate content to a target language using localization (not direct translatio
 
 **Arguments:** $ARGUMENTS
 
-## Phase 0: Config (Pre-loaded)
+## Phase 0: Load Config
 
-Config is pre-loaded at session start by the SessionStart hook. Use these config values:
+Read `.content-ops/config.md`. Extract these values — they are used throughout all phases and passed explicitly to subagents that need them:
 
-- `languages`, `default_language`, `content_types`, `localization_guides_path`, `translation_tracker_file`, `author`
+- `languages`, `default_language`, `content_types`, `localization_guides_path`, `translation_tracker_file`, `author`, `content_index_path`, `linking_max_candidates`, `linking_max_links`
 
 ## Argument Syntax
 
@@ -108,7 +108,23 @@ For each referenced glossary term not in the target language yet:
 
 ### 4d. Bidirectional Linking via content-linker Agent
 
-Delegate to the `content-linker` agent for the target language content.
+Spawn the `content-linker` agent via the Task tool:
+
+```text
+Use the content-linker agent.
+
+New article: [translated article path]
+New glossary entries created in this run: [list, if any]
+Default language: [target language code]
+Config:
+  content_index_path: [content_index_path from config, default ".content-ops/content-index.json"]
+  linking_max_candidates: [linking_max_candidates from config, default 50]
+  linking_max_links: [linking_max_links from config, default 10]
+  url_patterns: [url_patterns from config, if set]
+
+Ensure all bidirectional links are complete for the target language content.
+Return a linking report.
+```
 
 ### 4e. Update Trackers
 

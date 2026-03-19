@@ -9,9 +9,9 @@ disable-model-invocation: false
 
 This skill provides the image generation rules for content creation. It is auto-loaded during image generation tasks.
 
-## Config Loading
+## Config Values
 
-Config is pre-loaded at session start by the SessionStart hook. Use these config values:
+The following `image_generation` values are expected in your task prompt from the orchestrator:
 
 - `image_generation.enabled`, `image_generation.provider`, `image_generation.model`, `image_generation.guidelines`
 - `image_generation.output_path`, `image_generation.hero_dimensions`, `image_generation.inline_dimensions`

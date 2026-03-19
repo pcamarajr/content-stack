@@ -24,9 +24,9 @@ Parse `$ARGUMENTS` as: `[count] [theme]`
 - `/suggest-content 5 economics` → 5 suggestions filtered by a configured theme
 - `/suggest-content 10 technical` → 10 suggestions filtered by a configured theme
 
-## Phase 0: Config (Pre-loaded)
+## Phase 0: Load Config
 
-Config is pre-loaded at session start by the SessionStart hook. Use these config values:
+Read `.content-ops/config.md`. Extract these values — they are used throughout all phases:
 
 - `content_strategy`, `content_pillars_path`, `backlog_file`, `themes`
 - If `themes` is not set, infer themes from existing tags.

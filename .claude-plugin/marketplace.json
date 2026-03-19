@@ -7,7 +7,7 @@
     {
       "name": "content-ops",
       "description": "Content creation and management plugin for static site blogs. Handles writing, translation, research, linking, style review, and knowledge indexing.",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": {
         "name": "pcamarajr"
       },

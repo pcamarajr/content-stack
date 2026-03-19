@@ -9,9 +9,9 @@ disable-model-invocation: false
 
 This skill auto-injects the current state of project content. Use this to know what articles and glossary entries already exist before creating or linking content.
 
-## Config Loading
+## Config Values
 
-Config is pre-loaded at session start by the SessionStart hook. Use these config values:
+Read these values from `.content-ops/config.md`:
 
 - `content_types` (each type's `path`), `languages`, `default_language`
 

@@ -37,7 +37,7 @@ Read the file you were given. Extract:
 
 ### Step 2: Read the Content Index and Filter Candidates
 
-Read the content index from `content_index_path` in config (default `.content-ops/content-index.json`). If it does not exist, run the reindex skill first.
+Read the content index from the `content_index_path` provided in your task prompt (default `.content-ops/content-index.json`). If it does not exist, run the reindex skill first.
 
 The index has structure: `content.<type>.<lang>` — e.g. `content.article.en`, `content.glossary.en`. Each entry has: `slug`, `path`, `type`, `lang`, `title`, `excerpt`, optional `tags`, optional `translationKey`.
 
@@ -47,14 +47,14 @@ The index has structure: `content.<type>.<lang>` — e.g. `content.article.en`, 
 - Same `type` (when linking an article, use only `content.article.<lang>`; when linking a glossary entry, use only `content.glossary.<lang>`)
 - Exclude the new content's own slug
 - Optionally narrow by overlapping `tags` or keywords in `title`/`excerpt` to reduce the list
-- **Cap at `linking_max_candidates`** from config (default 50). If there are more candidates, keep the most promising (e.g. by tag overlap, then by excerpt keyword overlap) and drop the rest.
+- **Cap at `linking_max_candidates`** from your task prompt (default 50). If there are more candidates, keep the most promising (e.g. by tag overlap, then by excerpt keyword overlap) and drop the rest.
 
 ### Step 3: Single LLM Ranking Pass
 
 Using **only** the new content (body or bounded excerpt) and the **short candidate list** (slug, title, excerpt per candidate), rank and select the top links. Do NOT read any candidate files yet.
 
 - Build a mental ranking: which candidates are most relevant for linking to/from this content?
-- Select the top **N** (capped at `linking_max_links` from config, default 10)
+- Select the top **N** (capped at `linking_max_links` from your task prompt, default 10)
 - For each selected link, note: slug, suggested anchor text, and placement context (e.g. "in paragraph about X")
 
 This is the **only** ranking step. Token use is bounded by the candidate cap and link cap.
@@ -113,8 +113,8 @@ For each piece of content referenced by the new content:
 - **Only change specific lines** where a link should be inserted, or lightly rewrite for natural link integration (respecting style guide rules)
 - **Never reformat or restructure** existing content
 - Use the correct language prefix for all reference IDs: `en/<slug>`, `it/<slug>`, etc.
-- Glossary inline links: `[display text](/<lang>/glossary/<term-slug>)` — use the URL pattern from config `url_patterns` if configured
-- Article inline links: `[display text](/<lang>/articles/<article-slug>)` — use the URL pattern from config `url_patterns` if configured
+- Glossary inline links: `[display text](/<lang>/glossary/<term-slug>)` — use `url_patterns` from your task prompt if provided
+- Article inline links: `[display text](/<lang>/articles/<article-slug>)` — use `url_patterns` from your task prompt if provided
 
 ## Output Format
 

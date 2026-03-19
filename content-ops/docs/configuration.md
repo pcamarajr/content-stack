@@ -158,6 +158,36 @@ Everything content-ops manages lives here. The full directory is tracked in git 
     └── lightning-channels.json
 ```
 
+---
+
+## Config Loading Patterns
+
+Config is always read from `.content-ops/config.md` at runtime — never injected automatically into agent context. There is one standard pattern for how config values flow through the system:
+
+### Orchestrator Pass-Through
+
+Orchestrator skills (`write-content`, `translate`, `suggest-content`) read config directly in their first phase, then pass the relevant values explicitly to each subagent via prompt. Subagents (and the auto-loaded skills they use) are **config-agnostic** — they receive all needed values from the orchestrator and never read config themselves.
+
+Example flow for `write-content`:
+
+```
+write-content (skill, Phase 2)
+  └─ reads .content-ops/config.md
+  └─ passes source_hierarchy, research_cache_path, research_cache_ttl_days → content-researcher
+  └─ passes author, default_language                                        → draft-writer
+  └─ passes all image_generation fields                                     → image-generator
+  └─ passes content type, word_range, guidelines, reference_content         → style-enforcer
+  └─ passes content_index_path, linking_max_candidates, linking_max_links   → content-linker
+```
+
+Non-orchestrator skills (`reindex`, `content-inventory`, `update-trackers`, `content-style`, `content-image-style`) read config directly when invoked standalone, or receive values from the orchestrator when loaded as part of a pipeline.
+
+### Why not inject config at session start?
+
+The `PostToolUse` hooks run shell commands in response to file or commit events. They do not inject config into agent context, and agent subprocesses do not inherit terminal output. Each agent starts fresh — config values must be explicitly passed in the task prompt to be available.
+
+---
+
 ### Strategy vs. Pillars
 
 The plugin uses a two-level planning system:

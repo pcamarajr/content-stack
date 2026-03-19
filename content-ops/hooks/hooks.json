@@ -1,16 +1,5 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.content-ops/config.md\" ]; then echo '=== content-ops config ==='; cat \"$CLAUDE_PROJECT_DIR/.content-ops/config.md\"; else echo '[content-ops] Config not found. Run: cp .claude/plugins/content-ops/config.example.md .content-ops/config.md'; fi"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",

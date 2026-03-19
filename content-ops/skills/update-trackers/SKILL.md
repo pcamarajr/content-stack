@@ -9,9 +9,9 @@ disable-model-invocation: false
 
 This skill defines how to update the content backlog and translation tracker. Referenced by content creation and translation skills.
 
-## Config
+## Config Values
 
-The plugin config is pre-loaded at session start by the SessionStart hook. Use the following values from config:
+Read the following values from `.content-ops/config.md`:
 
 - `backlog_file` — path to content backlog (e.g., `.content-ops/backlog.md`)
 - `translation_tracker_file` — path to translation tracker (e.g., `.content-ops/translation-tracker.md`)

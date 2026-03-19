@@ -11,9 +11,7 @@ This skill provides style rules for content creation and review. All rules come 
 
 ## Config Loading
 
-Config is pre-loaded at session start by the SessionStart hook.
-
-**Before applying any style rules**, verify the following are present. **Stop immediately if any are missing**:
+**Before applying any style rules**, verify the following are present in `.content-ops/config.md`. **Stop immediately if any are missing**:
 
 | Required | Config key | If missing |
 |---|---|---|
