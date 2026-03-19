@@ -24,11 +24,7 @@ Read `.content-ops/config.md`.
 
 **If the file does not exist**, stop immediately:
 
-> Config not found. Run:
-> ```
-> cp .claude/plugins/content-ops/config.example.md .content-ops/config.md
-> ```
-> Then run `/init` to configure your project before requesting a review.
+> Config not found. Run `/init` to configure your project before requesting a review.
 
 Determine the content type from the file path being reviewed:
 - Path contains `articles/` → type is `article`
