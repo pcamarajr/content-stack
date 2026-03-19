@@ -26,6 +26,18 @@ To install this plugin:
 /plugin install content-ops@content-stack
 ```
 
+### [cost-tracker](./cost-tracker/README.md)
+
+Track Claude Code token usage and estimated API cost per session. Shows a live running cost in the status bar and a session summary on stop. Logs are scoped to your project and stored in `.cost-log/`.
+
+**Skills:** report
+
+To install this plugin:
+
+```bash
+/plugin install cost-tracker@content-stack
+```
+
 ### [astro-lsp](./astro-lsp/README.md)
 
 Astro language server for Claude Code. Provides code intelligence, diagnostics, and formatting for `.astro` files. Automatically installs the language server binary at session start — works out of the box in remote and cloud environments.
