@@ -26,11 +26,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/post-commit-build.sh\"",
-            "timeout": 120
-          },
-          {
-            "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/post-commit-index.sh\""
           }
         ]

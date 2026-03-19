@@ -77,5 +77,4 @@ After presenting the report, ask the user if they want you to fix incorrect clai
 
 1. Fix only factually incorrect statements
 2. Do not change tone, structure, or style
-3. Run `pnpm build` to verify
-4. Commit: `content: fact-check corrections in "<title>"`
+3. Commit: `content: fact-check corrections in "<title>"`

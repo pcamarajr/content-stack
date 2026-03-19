@@ -80,9 +80,6 @@ The plugin auto-loads three hooks — no manual configuration needed:
 | `SessionStart` | Opening Claude Code | Displays your content-ops config summary |
 | `PostToolUse` (Edit/Write) | After file writes | Reminds you to update backlog/translation tracker |
 | `PostToolUse` (Bash/git commit) | After a commit | Suggests running reindex if content changed |
-| `Stop` | Before session ends | Prompts to verify build ran if content was changed |
-
-> **Note:** The `post-commit-build.sh` hook currently runs `pnpm build`. This is a known leftover from the original project. If you don't use pnpm, remove or replace this hook in `hooks/hooks.json`. Full framework-agnostic hooks are in progress.
 
 ---
 

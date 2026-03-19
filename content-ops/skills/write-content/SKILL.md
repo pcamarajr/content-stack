@@ -324,10 +324,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 For multiple glossary terms: `content: add N glossary entries`
 
-The post-commit hooks will automatically:
-
-- Run `pnpm build` to verify zero build errors (and prompt to fix if it fails)
-- Update trackers when content files are written
+The post-commit hooks will automatically update trackers when content files are written.
 
 The content index is regenerated in this phase (before commit) so it stays in sync with the committed content.
 
