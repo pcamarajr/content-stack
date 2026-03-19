@@ -19,7 +19,7 @@ Rebuild the content index by scanning all content files, extracting frontmatter,
 
 ## Procedure
 
-1. **Read config** from `.content-ops/config.md` (pre-loaded at session start):
+1. **Read config** from `.content-ops/config.md`:
    - `content_types` — each type's `path` (e.g., `article.path`, `glossary.path`)
    - `languages` — list of language codes to scan
    - `content_index_path` — optional, default `.content-ops/content-index.json`

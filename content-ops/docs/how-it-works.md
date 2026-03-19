@@ -73,11 +73,10 @@ The cache is committed to git — so it's portable across machines and sessions,
 
 ## Hooks
 
-The plugin auto-loads three hooks — no manual configuration needed:
+The plugin auto-loads two hooks — no manual configuration needed:
 
 | Hook | Trigger | What it does |
 |---|---|---|
-| `SessionStart` | Opening Claude Code | Displays your content-ops config summary |
 | `PostToolUse` (Edit/Write) | After file writes | Reminds you to update backlog/translation tracker |
 | `PostToolUse` (Bash/git commit) | After a commit | Suggests running reindex if content changed |
 

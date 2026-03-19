@@ -45,9 +45,9 @@ Determine **content type**, **source**, and **mode** from `$ARGUMENTS`:
 
 ## Phase 2: Load Context
 
-Config is pre-loaded at session start by the SessionStart hook. Use these config values throughout all phases:
+Read `.content-ops/config.md` in this phase. Extract and hold these values — they are used throughout all phases and passed explicitly to each subagent that needs them:
 
-- `author`, `content_types`, `content_strategy`, `content_pillars_path`, `backlog_file`, `translation_tracker_file`, `reference_content`, `languages`, `default_language`, `source_hierarchy`, `research_cache_ttl_days`, `image_generation`
+- `author`, `content_types`, `content_strategy`, `content_pillars_path`, `backlog_file`, `translation_tracker_file`, `reference_content`, `languages`, `default_language`, `source_hierarchy`, `research_cache_path`, `research_cache_ttl_days`, `content_index_path`, `linking_max_candidates`, `linking_max_links`, `image_generation`
 
 **Also read (always):**
 
@@ -103,7 +103,10 @@ Use the content-researcher agent.
 
 Topic: [topic]
 Task: Research key facts — dates, numbers, technical details, historical context.
-Config: source_hierarchy=[from config, or "not configured"], research_cache_ttl_days=[from config, default 30]
+Config:
+  source_hierarchy=[from config, or "not configured"]
+  research_cache_ttl_days=[from config, default 30]
+  research_cache_path=[from config, default ".content-ops/research-cache"]
 
 Check the research cache first. Only do web searches for uncached or stale topics.
 Return a structured research report.
@@ -116,7 +119,10 @@ Use the content-researcher agent.
 
 Terms: [comma-separated terms]
 Task: Verify precise definitions, accurate examples, and correct technical details for each term.
-Config: source_hierarchy=[from config, or "not configured"], research_cache_ttl_days=[from config, default 30]
+Config:
+  source_hierarchy=[from config, or "not configured"]
+  research_cache_ttl_days=[from config, default 30]
+  research_cache_path=[from config, default ".content-ops/research-cache"]
 
 Check the research cache first. Return a structured research report per term.
 ```
@@ -191,9 +197,20 @@ Use the image-generator agent.
 
 Article path: [file path from Phase 5]
 Article slug: [slug from Phase 5]
+Content type: [article or glossary]
+Image generation config:
+  enabled: [image_generation.enabled from config]
+  provider: [image_generation.provider from config]
+  model: [image_generation.model from config, if set]
+  guidelines: [image_generation.guidelines from config]
+  output_path: [image_generation.output_path from config]
+  hero_dimensions: [image_generation.hero_dimensions from config]
+  inline_dimensions: [image_generation.inline_dimensions from config]
+  placement: [image_generation.placement from config]
+  min_word_count: [image_generation.min_word_count from config]
+  skip_types: [image_generation.skip_types from config]
+  max_inline_images: [image_generation.max_inline_images from config, if set]
 ```
-
-The agent reads all other settings (provider, model, guidelines, output path, dimensions, placement mode, min word count, skip types) directly from `image_generation` in `.content-ops/config.md`.
 
 After the agent returns:
 
@@ -213,7 +230,11 @@ Spawn the `style-enforcer` agent via the Task tool with a focused prompt:
 
 ```text
 Use the style-enforcer agent to review the content at [file path from Phase 5].
-Reference content for tone calibration: [reference_content list from config]
+Content type: [article or glossary]
+Config:
+  word_range: [content_types.<type>.word_range from config]
+  guidelines: [content_types.<type>.guidelines path from config]
+  reference_content: [reference_content list from config]
 Check sentence length, paragraph density, scope discipline, tone, plain English, structure, and linking.
 Return a structured style review report with must-fix issues.
 ```
@@ -257,6 +278,11 @@ Use the content-linker agent.
 New article: [file path from Phase 5]
 New glossary entries created in this run: [list from Phase 7, if any]
 Default language: [from config]
+Config:
+  content_index_path: [content_index_path from config, default ".content-ops/content-index.json"]
+  linking_max_candidates: [linking_max_candidates from config, default 50]
+  linking_max_links: [linking_max_links from config, default 10]
+  url_patterns: [url_patterns from config, if set]
 
 Ensure all bidirectional links are complete:
 - Update glossary relatedArticles for terms referenced by the article
@@ -273,6 +299,11 @@ Use the content-linker agent.
 
 New glossary entries: [list of file paths from Phase 5]
 Default language: [from config]
+Config:
+  content_index_path: [content_index_path from config, default ".content-ops/content-index.json"]
+  linking_max_candidates: [linking_max_candidates from config, default 50]
+  linking_max_links: [linking_max_links from config, default 10]
+  url_patterns: [url_patterns from config, if set]
 
 Ensure all bidirectional links are complete:
 - Update related glossary entries' relatedTerms
