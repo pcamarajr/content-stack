@@ -9,6 +9,11 @@ set -euo pipefail
 INPUT=$(cat)
 fp=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // .tool_input.filePath // empty')
 
+if [ -z "$fp" ]; then
+  echo "[content-ops] Warning: could not extract file path from hook input; tracker update skipped." >&2
+  exit 0
+fi
+
 DEFAULT_LANG=$(grep -m1 'default_language:' \
   "$CLAUDE_PROJECT_DIR/.content-ops/config.md" 2>/dev/null \
   | sed -E 's/.*default_language:[[:space:]]*["'\'']?([^"'\''[:space:]#]+)["'\'']?.*/\1/' \

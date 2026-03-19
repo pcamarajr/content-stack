@@ -35,16 +35,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Check if any content files were created or modified during this session (look for tool calls that wrote to src/content/, .content-ops/backlog.md, or .content-ops/translation-tracker.md). If content files were changed, verify that 'pnpm build' was executed successfully at some point AFTER the last content change. If no content was changed, or if build was run after changes, output: {\"decision\": \"continue\"}. If content was modified but pnpm build was NOT run afterward, output: {\"decision\": \"block\", \"reason\": \"Content was modified but pnpm build was not run to verify. Please run pnpm build before ending the session.\"}"
-          }
-        ]
-      }
     ]
   }
 }
