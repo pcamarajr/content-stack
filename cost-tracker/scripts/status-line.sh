@@ -2,7 +2,11 @@
 # status-line.sh — Live cost display for Claude Code status bar
 # Shows running session cost from the live transcript, falls back to 30-day total
 
-LIVE_FILE="/tmp/claude-cost-live.json"
+if [[ -n "${COST_SESSION_ID:-}" ]]; then
+  LIVE_FILE="/tmp/claude-cost-live-${COST_SESSION_ID}.json"
+else
+  LIVE_FILE=$(ls -t /tmp/claude-cost-live-*.json 2>/dev/null | head -1 || echo "")
+fi
 LOG_FILE="${CLAUDE_PROJECT_DIR:-$(pwd)}/.cost-log/sessions.jsonl"
 
 # --- Try live session tracking ---
