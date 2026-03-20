@@ -35,7 +35,7 @@ if [[ -f "$LIVE_FILE" ]]; then
         ' 2>/dev/null || echo "0")
 
       COST_FMT=$(printf "%.4f" "$COST" 2>/dev/null || echo "$COST")
-      echo "~\$$COST_FMT session"
+      printf "\033[0;32mcost:(\033[0;37m~\$%s session\033[0;32m)\033[0m\n" "$COST_FMT"
       exit 0
     fi
   fi
@@ -56,5 +56,5 @@ if [[ -f "$LOG_FILE" ]]; then
   fi
 
   TOTAL_FMT=$(printf "%.2f" "$TOTAL" 2>/dev/null || echo "0.00")
-  echo "~\$$TOTAL_FMT 30d"
+  printf "\033[0;32mcost:(\033[0;37m~\$%s 30d\033[0;32m)\033[0m\n" "$TOTAL_FMT"
 fi

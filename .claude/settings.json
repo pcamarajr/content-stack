@@ -7,6 +7,6 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash cost-tracker/scripts/status-line.sh"
+    "command": "bash -c 'a=$(bash ~/.claude/statusline-command.sh 2>/dev/null); b=$(bash cost-tracker/scripts/status-line.sh 2>/dev/null); printf \"%s\\n%s\" \"$a\" \"$b\"'"
   }
 }
