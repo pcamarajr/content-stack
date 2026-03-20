@@ -4,9 +4,5 @@
     "plugin-dev@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "code-review@claude-plugins-official": true
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash -c 'a=$(bash ~/.claude/statusline-command.sh 2>/dev/null); b=$(bash cost-tracker/scripts/status-line.sh 2>/dev/null); printf \"%s\\n%s\" \"$a\" \"$b\"'"
   }
 }
