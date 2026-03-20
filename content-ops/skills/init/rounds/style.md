@@ -12,7 +12,7 @@ Read `.content-ops/config.md`. Extract:
 - `reference_content` — existing reference files
 - The project description comment (line starting with `#` above the `author` field)
 
-Check if a style guide already exists: look at `guidelines` paths in `content_types`, and also check `docs/content-style-guide.md` directly.
+Check if a style guide already exists: look at `guidelines` paths in `content_types`, and also check `.content-ops/content-style-guide.md` directly.
 
 **If a style guide already exists:**
 
@@ -153,7 +153,7 @@ Drop a URL, a file path, or just describe it.
 
 ## Phase 4: Generate style guide
 
-Using the answers from Phase 3 and the signals from Phase 2, create `docs/content-style-guide.md`.
+Using the answers from Phase 3 and the signals from Phase 2, create `.content-ops/content-style-guide.md`.
 
 The guide must be **concrete and specific** — generic style guides are useless. Every rule needs an example.
 
@@ -207,7 +207,7 @@ Use the paragraph exercise from Question 3:
 
 Update `.content-ops/config.md`:
 
-- For each content type in `content_types` that does not already have a type-specific `guidelines` file, set `guidelines: "docs/content-style-guide.md"`
+- For each content type in `content_types` that does not already have a type-specific `guidelines` file, set `guidelines: ".content-ops/content-style-guide.md"`
 - Set `reference_content` to 2–3 of the most representative existing files found during Phase 2 scanning
 
 Preserve all other fields.
@@ -217,7 +217,7 @@ Preserve all other fields.
 ## Phase 6: Confirm and guide
 
 ```text
-✅ Style guide created at docs/content-style-guide.md
+✅ Style guide created at .content-ops/content-style-guide.md
 
 Voice summary:
   • [characteristic 1 from the guide]

@@ -186,7 +186,7 @@ If **Custom path**: the user types their path via the Other/free-text input.
 
 ## Phase 3: Create image style guide
 
-Using the answers from Phase 2, create the image style guide at the path that will be set in config (default `docs/image-style-guide.md`).
+Using the answers from Phase 2, create the image style guide at the path that will be set in config (default `.content-ops/image-style-guide.md`).
 
 The guide must be **actionable** — it is read verbatim by the `image-generator` agent to build image prompts and make placement decisions.
 

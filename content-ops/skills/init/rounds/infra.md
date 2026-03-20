@@ -170,7 +170,7 @@ You're ready:
   /fact-check [file]                    — verify claims in an article
 
 Config: .content-ops/config.md
-Docs:    docs/content-style-guide.md
+Docs:    .content-ops/content-style-guide.md
          .content-ops/strategy.md
          .content-ops/pillars/
 ```

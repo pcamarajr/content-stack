@@ -18,7 +18,7 @@ The following `image_generation` values are expected in your task prompt from th
 - `image_generation.placement`, `image_generation.min_word_count`, `image_generation.skip_types`
 - `image_generation.max_inline_images` (optional — caps inline images per article)
 
-For the full image style guide, read the file at `image_generation.guidelines` (e.g., `docs/image-style-guide.md`). Below is the condensed reference for quick access.
+For the full image style guide, read the file at `image_generation.guidelines` (e.g., `.content-ops/image-style-guide.md`). Below is the condensed reference for quick access.
 
 ## Pre-Flight Checks
 
