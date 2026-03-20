@@ -27,7 +27,7 @@
     {
       "name": "cost-tracker",
       "description": "Track Claude Code token usage and estimated API cost per session. Logs are scoped to the project and stored in .cost-log/.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "pcamarajr"
       },

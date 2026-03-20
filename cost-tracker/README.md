@@ -4,15 +4,15 @@ Track Claude Code token usage and estimated API cost per session. Logs are scope
 
 ## What it does
 
-- Fires a Stop hook after every Claude Code session
-- Parses the session transcript to sum token counts (input, output, cache write, cache read)
-- Looks up API pricing for the model used and calculates an estimated cost in USD
-- Appends a record to `.cost-log/sessions.jsonl` in your project root
-- Prints a one-line summary when the session ends:
+- Fires a `SessionStart` hook to capture the session transcript path for live tracking
+- Shows a live running cost in the Claude Code status bar as the session progresses
+- Fires a `Stop` hook after every session ends — appends a record to `.cost-log/sessions.jsonl` and shows a notification:
 
 ```
-[cost-tracker] Session cost: ~$0.0432 | Project total (30d): ~$1.24
+[cost-tracker] Session: ~$0.0432 | 30d total: ~$1.24
 ```
+
+- When no session is active, the status bar shows the 30-day accumulated project total
 
 ## Installation
 

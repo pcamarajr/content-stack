@@ -122,4 +122,7 @@ fi
 SESSION_COST_FMT=$(printf "%.4f" "$COST" 2>/dev/null || echo "$COST")
 TOTAL_30D_FMT=$(printf "%.4f" "$TOTAL_30D" 2>/dev/null || echo "$TOTAL_30D")
 
-echo "[cost-tracker] Session cost: ~\$${SESSION_COST_FMT} | Project total (30d): ~\$${TOTAL_30D_FMT}"
+# Clear live file so status line falls back to 30d total between sessions
+rm -f /tmp/claude-cost-live.json
+
+printf '{"systemMessage": "[cost-tracker] Session: ~$%s | 30d total: ~$%s"}\n' "$SESSION_COST_FMT" "$TOTAL_30D_FMT"
