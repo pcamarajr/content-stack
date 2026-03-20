@@ -96,7 +96,7 @@ If D: ask for min and max as free text.
 
 ```text
 Which style guide covers [type name] content?
-  A — Shared project style guide (docs/content-style-guide.md)
+  A — Shared project style guide (.content-ops/content-style-guide.md)
   B — Its own separate guidelines file (I'll specify the path)
   C — No guidelines file yet — set up in /init style
 ```

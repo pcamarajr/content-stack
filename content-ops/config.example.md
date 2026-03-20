@@ -15,7 +15,7 @@ content_base_path: "src/content"
 content_types:
   article:
     path: "src/content/articles"
-    guidelines: "docs/content-style-guide.md"
+    guidelines: ".content-ops/content-style-guide.md"
     word_range: [800, 1500]
     frontmatter:
       - title
@@ -30,7 +30,7 @@ content_types:
 
   glossary:
     path: "src/content/glossary"
-    guidelines: "docs/content-style-guide.md"
+    guidelines: ".content-ops/content-style-guide.md"
     word_range: [50, 150]
     frontmatter:
       - term
@@ -74,7 +74,7 @@ research_cache_ttl_days: 30
 #   enabled: true
 #   provider: "google-gemini"        # google-gemini | openai-gpt-image | manual
 #   model: ""                        # optional — omit for provider default (imagen-3.0-generate-002 / gpt-image-1)
-#   guidelines: "docs/image-style-guide.md"
+#   guidelines: ".content-ops/image-style-guide.md"
 #   output_path: "public/images"
 #   hero_dimensions: [1200, 630]
 #   inline_dimensions: [800, 450]
