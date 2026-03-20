@@ -39,7 +39,7 @@ if [[ -f "$LIVE_FILE" ]]; then
         } | . + {
           cost:      ((.i * $ir + .o * $or_ + .cw * $cwr + .cr * $crr) / 1000000),
           total_tok: (.i + .o + .cr),
-          cache_pct: (if (.i + .cr) > 0 then (.cr / (.i + .cr) * 100 | round) else 0 end)
+          cache_pct: (if (.i + .cw + .cr) > 0 then (.cr / (.i + .cw + .cr) * 100 | round) else 0 end)
         }
         ' 2>/dev/null)
 
