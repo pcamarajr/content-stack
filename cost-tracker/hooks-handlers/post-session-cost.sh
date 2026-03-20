@@ -78,7 +78,7 @@ LOG_FILE="${LOG_DIR}/sessions.jsonl"
 
 mkdir -p "$LOG_DIR"
 
-RECORD=$(jq -n \
+RECORD=$(jq -cn \
   --arg  session_id         "$SESSION_ID" \
   --arg  timestamp          "$TIMESTAMP" \
   --arg  model              "$MODEL" \
