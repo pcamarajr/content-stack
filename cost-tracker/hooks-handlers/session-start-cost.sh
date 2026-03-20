@@ -17,7 +17,7 @@ jq -n \
   --arg session_id "$SESSION_ID" \
   --arg transcript_path "$TRANSCRIPT_PATH" \
   '{"session_id": $session_id, "transcript_path": $transcript_path}' \
-  > /tmp/claude-cost-live.json 2>/dev/null || true
+  > "/tmp/claude-cost-live-${SESSION_ID}.json" 2>/dev/null || true
 
 # --- Patch local settings to append cost line below existing statusLine ---
 
@@ -31,9 +31,9 @@ LOCAL_SETTINGS="${CWD}/.claude/settings.local.json"
 USER_CMD=$(jq -r '.statusLine.command // empty' "${HOME}/.claude/settings.json" 2>/dev/null || true)
 
 if [[ -n "$USER_CMD" ]]; then
-  COMBINED="bash -c 'a=\$(${USER_CMD} 2>/dev/null); b=\$(bash \"${COST_SCRIPT}\" 2>/dev/null); printf \"%s\\n%s\" \"\$a\" \"\$b\"'"
+  COMBINED="bash -c 'a=\$(${USER_CMD} 2>/dev/null); b=\$(COST_SESSION_ID=\"${SESSION_ID}\" bash \"${COST_SCRIPT}\" 2>/dev/null); printf \"%s\\n%s\" \"\$a\" \"\$b\"'"
 else
-  COMBINED="bash \"${COST_SCRIPT}\""
+  COMBINED="COST_SESSION_ID=\"${SESSION_ID}\" bash \"${COST_SCRIPT}\""
 fi
 
 # Merge statusLine into local settings, preserving other keys
