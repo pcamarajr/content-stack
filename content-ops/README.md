@@ -50,7 +50,7 @@ Run the setup wizard inside Claude Code:
 /init
 ```
 
-This walks you through six setup rounds: your author info and languages, content types and paths, style guide and reference articles, content strategy and pillars, infrastructure (backlog, trackers), and optionally image generation.
+This walks you through seven setup rounds: your author info and languages, content types and paths, style guide and reference articles, content strategy and pillars, infrastructure (backlog, trackers), image generation, and link building strategy.
 
 You can run rounds individually:
 
@@ -61,6 +61,7 @@ You can run rounds individually:
 /init strategy
 /init infra
 /init images
+/init link-building
 ```
 
 ### 3. Index your content

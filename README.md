@@ -18,7 +18,7 @@ Content creation and management plugin for static site blogs. Handles writing, t
 
 **Agents:** content-linker, content-researcher, draft-writer, glossary-creator, image-generator, style-enforcer
 
-**Skills:** write-content, translate, review-content, internal-linking, fact-check, suggest-content, content-style, content-image-style, content-inventory, reindex, update-trackers, init
+**Skills:** write-content, translate, review-content, internal-linking, fact-check, suggest-content, content-style, content-image-style, content-inventory, reindex, update-trackers, init, link-building
 
 To install this plugin:
 
