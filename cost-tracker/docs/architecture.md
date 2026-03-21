@@ -1,6 +1,6 @@
 # cost-tracker — Architecture Reference
 
-> Current as of v0.2.0 (2026-03-20). Documents the existing implementation.
+> Current as of v0.3.0 (2026-03-21). Documents the existing implementation.
 
 ---
 
@@ -20,10 +20,11 @@ Three concerns drive the design:
 
 ```
 cost-tracker/
-├── hooks/hooks.json                        ← hook registrations (SessionStart, Stop)
+├── hooks/hooks.json                        ← hook registrations (SessionStart, Stop, SubagentStop)
 ├── hooks-handlers/
 │   ├── session-start-cost.sh               ← SessionStart handler
-│   └── post-session-cost.sh                ← Stop handler
+│   ├── post-session-cost.sh                ← Stop handler
+│   └── subagent-stop-cost.sh              ← SubagentStop handler
 ├── scripts/
 │   ├── status-line.sh                      ← status bar renderer (polled by Claude Code)
 │   └── report.sh                           ← on-demand analytics
@@ -67,6 +68,12 @@ sequenceDiagram
         SL->>SL: Display cost = live + hist
         SL-->>CC: ANSI-colored cost string
     end
+
+    Note over CC: Agent tool spawns a subagent
+    CC->>SSH2: SubagentStop hook (JSON payload via stdin)
+    Note over SSH2: subagent-stop-cost.sh
+    SSH2->>SSH2: Parse agent_transcript_path, sum tokens, compute cost
+    SSH2->>LOG: Append agent_run record (JSONL)
 
     Note over CC: User ends session (Stop)
     CC->>PSH: Stop hook (JSON payload via stdin)
@@ -187,7 +194,9 @@ The `pricing` field in the JSONL record distinguishes confirmed from estimated r
 
 ## Log Record Schema
 
-Each completed session appends one JSON object to `.cost-log/sessions.jsonl`:
+`.cost-log/sessions.jsonl` is newline-delimited JSON (JSONL); each record is independent and the log is append-only. `cost_usd` is rounded to 5 decimal places (`* 100000 | round / 100000`). `report.sh` skips malformed lines rather than failing.
+
+**Session record** (written by `post-session-cost.sh` via the `Stop` hook):
 
 ```json
 {
@@ -198,12 +207,30 @@ Each completed session appends one JSON object to `.cost-log/sessions.jsonl`:
   "output_tokens":      800,
   "cache_write_tokens": 3000,
   "cache_read_tokens":  45000,
-  "cost_usd":           0.04320,   // rounded to 5 decimal places
+  "cost_usd":           0.04320,
   "pricing":            "standard"
 }
 ```
 
-The file is newline-delimited JSON (JSONL). Each record is independent; the log is append-only. `cost_usd` is rounded to 5 decimal places by the script (`* 100000 | round / 100000`). `report.sh` skips malformed lines rather than failing.
+Session records have no `record_type` field; `report.sh` treats any record without `record_type` (or with `record_type != "agent_run"`) as a session record.
+
+**Agent run record** (written by `subagent-stop-cost.sh` via the `SubagentStop` hook):
+
+```json
+{
+  "record_type":        "agent_run",
+  "session_id":         "abc123",
+  "agent_id":           "xyz789",
+  "timestamp":          "2026-03-18T14:23:10Z",
+  "model":              "claude-sonnet-4-6",
+  "input_tokens":       5000,
+  "output_tokens":      300,
+  "cache_write_tokens": 1000,
+  "cache_read_tokens":  15000,
+  "cost_usd":           0.01200,
+  "pricing":            "standard"
+}
+```
 
 ---
 
@@ -233,7 +260,7 @@ The SessionStart handler wraps both into a single `bash -c '...'` expression so 
 
 | Area | Issue |
 |---|---|
-| Pricing duplication | The pricing table and token-summing logic are copied verbatim between `post-session-cost.sh` and `status-line.sh`. A change to rates requires editing two files. |
+| Pricing duplication | The pricing table and token-summing logic are copied verbatim between `post-session-cost.sh`, `subagent-stop-cost.sh`, and `status-line.sh`. A change to rates requires editing three files. |
 | `settings.local.json` mutation | SessionStart overwrites `statusLine` in the local settings file on every start. If another tool also writes to that key, they will clobber each other. |
 | No session isolation | `/tmp/claude-cost-live.json` is a single file. If two Claude Code sessions are open simultaneously, the second SessionStart overwrites the first session's live state. |
 | Transcript parsing fragility | The transcript is read with `grep -o '{.*}'` (greedy match) rather than a proper JSONL parser. Lines with nested JSON objects could match incorrectly. |

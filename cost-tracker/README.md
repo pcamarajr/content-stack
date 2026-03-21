@@ -12,6 +12,7 @@ Track Claude Code token usage and estimated API cost per session. Logs are scope
 [cost-tracker] Session: ~$0.0432 | 30d total: ~$1.24
 ```
 
+- Fires a `SubagentStop` hook after every subagent run ends — appends an `agent_run` record to the same log file so multi-agent workflows are fully accounted for
 - When no session is active, the status bar shows the 30-day accumulated project total
 
 ## Installation
@@ -30,7 +31,7 @@ claude plugin install cost-tracker
     └── sessions.jsonl    ← one JSON record per session
 ```
 
-Each record looks like:
+Each completed session appends one record:
 
 ```json
 {
@@ -46,7 +47,25 @@ Each record looks like:
 }
 ```
 
-`pricing` is `"standard"` when the model was recognized, `"estimated"` when it fell back to Sonnet rates.
+Each subagent run appends one `agent_run` record:
+
+```json
+{
+  "record_type": "agent_run",
+  "session_id": "abc123",
+  "agent_id": "xyz789",
+  "timestamp": "2026-03-18T14:23:10Z",
+  "model": "claude-sonnet-4-6",
+  "input_tokens": 5000,
+  "output_tokens": 300,
+  "cache_write_tokens": 1000,
+  "cache_read_tokens": 15000,
+  "cost_usd": 0.01200,
+  "pricing": "standard"
+}
+```
+
+Session records have no `record_type` field (or it is implicitly `"session"`). `pricing` is `"standard"` when the model was recognized, `"estimated"` when it fell back to Sonnet rates.
 
 Add `.cost-log/` to your `.gitignore` if you don't want to commit session logs.
 

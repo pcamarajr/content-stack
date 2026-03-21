@@ -19,6 +19,16 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/subagent-stop-cost.sh\""
+          }
+        ]
+      }
     ]
   }
 }
