@@ -15,11 +15,19 @@ fi
 # --- Parse all records, skip malformed lines ---
 SKIP_COUNT=0
 VALID_RECORDS=""
+SESSION_RECORDS=""
+AGENT_RECORDS=""
 
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
   if echo "$line" | jq -e 'has("session_id") and has("cost_usd") and has("timestamp")' > /dev/null 2>&1; then
     VALID_RECORDS="${VALID_RECORDS}${line}"$'\n'
+    RECORD_TYPE=$(echo "$line" | jq -r '.record_type // "session"')
+    if [[ "$RECORD_TYPE" == "agent_run" ]]; then
+      AGENT_RECORDS="${AGENT_RECORDS}${line}"$'\n'
+    else
+      SESSION_RECORDS="${SESSION_RECORDS}${line}"$'\n'
+    fi
   else
     SKIP_COUNT=$((SKIP_COUNT + 1))
   fi
@@ -48,6 +56,22 @@ ALL_TIME=$(echo "$VALID_RECORDS" | jq -s '{
 }')
 ALL_COST=$(echo "$ALL_TIME"  | jq -r '.total_cost')
 ALL_COUNT=$(echo "$ALL_TIME" | jq -r '.session_count')
+
+ALL_SESSION_COUNT=0
+ALL_AGENT_COUNT=0
+ALL_SESSION_COST=0
+ALL_AGENT_COST=0
+
+if [[ -n "$SESSION_RECORDS" ]]; then
+  ALL_SESSION_STATS=$(echo "$SESSION_RECORDS" | jq -s '{count: length, cost: ([.[].cost_usd] | add // 0)}')
+  ALL_SESSION_COUNT=$(echo "$ALL_SESSION_STATS" | jq -r '.count')
+  ALL_SESSION_COST=$(echo "$ALL_SESSION_STATS"  | jq -r '.cost')
+fi
+if [[ -n "$AGENT_RECORDS" ]]; then
+  ALL_AGENT_STATS=$(echo "$AGENT_RECORDS" | jq -s '{count: length, cost: ([.[].cost_usd] | add // 0)}')
+  ALL_AGENT_COUNT=$(echo "$ALL_AGENT_STATS" | jq -r '.count')
+  ALL_AGENT_COST=$(echo "$ALL_AGENT_STATS"  | jq -r '.cost')
+fi
 
 # --- 30-day totals ---
 if [[ -n "$THIRTY_DAYS_AGO" ]]; then
@@ -117,8 +141,10 @@ echo " cost-tracker — Session Cost Report"
 echo "============================================"
 echo ""
 echo "All-time"
-echo "  Sessions: ${ALL_COUNT}"
-echo "  Total cost: \$$(printf "%.4f" "$ALL_COST")"
+echo "  Records: ${ALL_COUNT}  (${ALL_SESSION_COUNT} session(s), ${ALL_AGENT_COUNT} agent run(s))"
+echo "  Sessions cost:   \$$(printf "%.4f" "$ALL_SESSION_COST")"
+echo "  Agent runs cost: \$$(printf "%.4f" "$ALL_AGENT_COST")"
+echo "  Total cost:      \$$(printf "%.4f" "$ALL_COST")"
 echo ""
 echo "Last 30 days"
 echo "  Sessions: ${COUNT_30D}"
