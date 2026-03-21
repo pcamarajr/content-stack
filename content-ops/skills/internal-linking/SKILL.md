@@ -5,86 +5,33 @@ user-invocable: false
 disable-model-invocation: false
 ---
 
-# Internal Linking Rules
+# Internal Linking
 
-This skill defines how content cross-referencing works. It is preloaded into the `content-linker` agent and referenced by content creation skills.
+This skill defines how content cross-referencing works. All rules — link syntax, URL patterns, frontmatter field names, bidirectional policy, first-mention policy, anchor text, scope, and exclusions — come from the project's configured link building guide. Nothing is hardcoded here.
 
-## Link Syntax
+## Config Loading
 
-### Inline Links (in article/glossary body)
+**Before applying any linking rules**, verify the following are present. **Stop immediately if any are missing**:
 
-```markdown
-<!-- Glossary term (first mention only) -->
-[some term](/en/glossary/some-term)
+| Required | Config key | If missing |
+|---|---|---|
+| Config file | `.content-ops/config.md` exists | "Run `/init` first." |
+| Link building section | `link_building` | "Run `/init link-building` to configure your link building strategy." |
+| Guide path | `link_building.guide` | "Run `/init link-building` — guide path not set." |
+| Guide file exists | _(read the file at that path)_ | "Run `/init link-building` — link building guide not found at `[path]`." |
 
-<!-- Related article -->
-[related article](/en/articles/related-article)
-```
+## Applying Linking Rules
 
-### Frontmatter References (use lang prefix)
+Read the guide file from `link_building.guide`. This file is the authoritative source for all linking rules for this project, including:
 
-**Articles** have these frontmatter fields:
+- Strategic goal (SEO-first, relevance-first, or hybrid)
+- Scope (internal, external, or both)
+- URL patterns for each content type and language
+- Frontmatter field names for cross-references
+- First-mention and link density policies
+- Bidirectional linking policy
+- Anchor text policy
+- External source quality bar and nofollow rules (if external scope is enabled)
+- Exclusions
 
-```yaml
-relatedGlossary: ["en/some-term", "en/another-term"]
-relatedArticles: ["en/related-article", "en/another-article"]
-```
-
-**Glossary entries** have these frontmatter fields:
-
-```yaml
-relatedTerms: ["en/related-term", "en/another-term"]
-relatedArticles: ["en/related-article", "en/another-article"]
-```
-
-Note: `relatedGlossary` is article-only. `relatedTerms` is glossary-only. `relatedArticles` exists on both.
-
-## Bidirectional Linking Rules
-
-Bidirectional linking is **strongly recommended** for discoverability, but not mandatory in every case. Use judgment — there are situations where a back-link may not make sense (e.g., a broad foundational article doesn't need to link to every niche article that references it).
-
-When content A references content B, content B should also reference content A:
-
-| New Content | References | Action on Referenced Content |
-| ---- | ----- | ----- |
-| Article | Glossary term (inline link) | Add article to glossary's `relatedArticles` |
-| Article | Another article (inline or frontmatter) | Add to each other's `relatedArticles` |
-| Glossary | Another glossary term | Add to each other's `relatedTerms` |
-| Glossary | Article | Add to each other's `relatedArticles`/`relatedGlossary` |
-
-### Inline Back-Links in Body Text
-
-If the new content's topic is mentioned in an existing article's body text WITHOUT a link:
-
-- Add an inline link on the first mention
-- ONLY if it reads naturally — don't force it
-- Light rewrites are acceptable to integrate links naturally, as long as the style guide rules (sentence length, tone, scope) are respected. The goal is readability, not minimal diff.
-
-## Editing Rules When Linking
-
-1. **Only change specific frontmatter arrays** — append the new ID to the array
-2. **Only change specific lines** — add link markup around existing text, or lightly rewrite for natural link integration (respecting style guide rules)
-3. **Never reformat** existing content (indentation, line breaks, frontmatter order)
-4. **Never restructure** paragraphs or sections
-5. **Check before adding** — don't duplicate IDs already in arrays
-
-## Linking Checklist for New Content
-
-After creating any new article or glossary entry:
-
-- [ ] All glossary terms in the body are linked (first mention only)
-- [ ] All related articles are linked in the body where natural
-- [ ] `relatedGlossary` includes glossary terms linked in body, and may also include terms relevant to the topic even if not explicitly linked in the body (these represent "related reading" for the reader)
-- [ ] `relatedArticles` includes all related articles — both those linked in body and those relevant to the topic even without an inline link
-- [ ] Referenced glossary entries have this content in their `relatedArticles` (strongly recommended, use judgment)
-- [ ] Referenced articles have this content in their `relatedArticles` (strongly recommended, use judgment)
-- [ ] No orphaned references (pointing to non-existent content)
-- [ ] No duplicate links (same term linked twice in same article)
-
-## For Translated Content
-
-Translated articles use the target language prefix:
-
-- `<lang>/<slug>` — e.g., `es/getting-started`
-- Links: `[term](/<lang>/glossary/<term-slug>)` — use the URL pattern from config `url_patterns` if configured for the target language
-- `relatedGlossary: ["<lang>/<term>"]`
+Apply only the rules defined in that file. Do not apply rules not present in the guide.
