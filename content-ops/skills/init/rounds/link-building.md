@@ -28,7 +28,21 @@ options:
 ```
 
 - If **Keep as-is**: stop and guide to the next incomplete round.
-- If **Update sections**: use a follow-up `AskUserQuestion` to ask which sections to update (multiSelect). Then run only the relevant parts of the interview in Phase 2 for those sections.
+- If **Update sections**: Use a follow-up `AskUserQuestion` with multiSelect to ask which sections to update:
+
+  ```
+  question: "Which sections would you like to update?"
+  multiSelect: true
+  options:
+    - label: "Strategic goal"
+    - label: "Scope"
+    - label: "Internal linking rules"
+    - label: "External linking rules"
+    - label: "Anchor text policy"
+    - label: "Exclusions and edge cases"
+  ```
+
+  Run only the relevant interview questions in Phase 2 for the selected sections.
 - If **Replace entirely**: continue to Phase 2.
 
 **If not yet configured:** continue to Phase 2.
@@ -73,10 +87,13 @@ Conduct a free-form interview using `AskUserQuestion`. You own the interview —
 | External — exclusions | Any domains or content types to never link to? Competitor policy? |
 | Anchor text | Exact-match keyword anchors, natural language, or mixed? (Relevant when SEO-first) |
 
+If the user's scope is internal only, skip all External domain rows entirely.
+
 **Interview rules:**
 - One question per message — always use `AskUserQuestion`
 - When a user answer conflicts with a known best practice, recommend the better approach once with a brief explanation, then accept their decision. Never push twice.
 - When you believe you have a complete picture of the user's strategy, move to Phase 3 — you do not need to cover every domain if some are not relevant.
+- Expect 5–8 questions for a typical project; fewer if scope is limited (e.g. internal only) or the user's answers resolve multiple domains at once.
 
 ### Starting the interview
 
@@ -108,6 +125,17 @@ Generate `.content-ops/link-building-guide.md` as a prose document. This file is
 - Anchor text policy
 - Exclusions and edge cases
 
+Structure the guide with these section headings (in this order):
+
+## Strategic Goal
+## Scope
+## Internal Linking Rules
+## External Linking Rules
+## Anchor Text Policy
+## Exclusions and Edge Cases
+
+Each section must contain specific, actionable directives — not general principles. For example, under "Internal Linking Rules", state the exact URL patterns, exact frontmatter field names, exact first-mention policy, and exact density caps agreed in the interview.
+
 Write the guide in a style that an AI agent can reason against — concrete rules, not vague principles.
 
 ### Update config
@@ -134,5 +162,5 @@ Strategy summary:
 
 Config updated: link_building.guide set.
 
-→ Next: /init [next incomplete round]
+→ Next: /init [next incomplete round, or "All rounds complete — your content-ops setup is ready." if no rounds remain]
 ```
