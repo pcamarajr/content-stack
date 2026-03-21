@@ -123,8 +123,8 @@ After completing linking, return a summary:
 - Ranked and selected top [M] links (cap: linking_max_links)
 
 ### Links Added
-- [file]: added "en/new-article" to relatedArticles
-- [file]: added inline link to /en/articles/new-article in paragraph about [topic]
+- [file]: added "[lang]/new-article" to [frontmatter-array]
+- [file]: added inline link to /[lang]/[content-type]/new-article in paragraph about [topic]
 
 ### Already Linked
 - [list of references that were already correct]
