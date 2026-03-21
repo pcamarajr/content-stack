@@ -1,6 +1,6 @@
 ---
 name: init
-description: content-ops setup wizard. Run /init to see status, or /init [round] to run a setup step. Rounds: project, content-types, style, strategy, infra, images.
+description: content-ops setup wizard. Run /init to see status, or /init [round] to run a setup step. Rounds: project, content-types, style, strategy, infra, images, link-building.
 argument-hint: "[project|content-types|style|strategy|infra|images|link-building]"
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
