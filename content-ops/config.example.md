@@ -82,6 +82,10 @@ research_cache_ttl_days: 30
 #   max_inline_images: 3             # optional — max inline images per article (omit for no cap)
 #   min_word_count: 300              # skip image generation for articles below this word count
 #   skip_types: ["glossary"]         # content types that never get images
+
+# Link building (run /init link-building to configure)
+# link_building:
+#   guide: ".content-ops/link-building-guide.md"
 ---
 
 # content-ops Configuration
@@ -121,6 +125,7 @@ Copy this file to `.content-ops/config.md` and customize the YAML frontmatter fo
 | `image_generation.max_inline_images` | number | Max inline images per article (optional — omit for no cap) |
 | `image_generation.min_word_count` | number | Skip images for articles shorter than this (default 300) |
 | `image_generation.skip_types` | string[] | Content types that never get images (default `["glossary"]`) |
+| `link_building.guide` | string | Path to the link building strategy guide (created by `/init link-building`) |
 
 ## .content-ops/ Layout
 
