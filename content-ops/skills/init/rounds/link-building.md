@@ -140,12 +140,20 @@ Write the guide in a style that an AI agent can reason against — concrete rule
 
 ### Update config
 
-Add or update the `link_building` section in `.content-ops/config.md`:
+Replace the commented-out `link_building` section in `.content-ops/config.md` with the configured value.
+
+**If the file contains the commented-out section marker block** (lines starting with `# ── LINK BUILDING`):
+
+Replace the entire block — from the `# ── LINK BUILDING` opener to its closing `# ───` line — with:
 
 ```yaml
+# ── LINK BUILDING ─────────────────────────────────────────────────────────────
 link_building:
   guide: ".content-ops/link-building-guide.md"
+# ─────────────────────────────────────────────────────────────────────────────
 ```
+
+**If no section marker exists** (older config format): append the block above before the closing `---`.
 
 Preserve all other fields.
 

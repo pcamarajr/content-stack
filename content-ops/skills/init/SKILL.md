@@ -48,10 +48,12 @@ Try to read `.content-ops/config.md` → parse YAML frontmatter.
 | style | `reference_content` has at least one entry AND at least one `guidelines` path in `content_types` resolves to an existing file |
 | strategy | `content_strategy` is set AND that file exists on disk |
 | infra | the `backlog_file` path exists AND the `translation_tracker_file` path exists |
-| images | `image_generation` section exists in config AND `image_generation.guidelines` file exists on disk |
-| link-building | `link_building` section exists in config AND `link_building.guide` file exists on disk |
+| images | `image_generation` key is present and uncommented in config AND `image_generation.guidelines` file exists on disk |
+| link-building | `link_building` key is present and uncommented in config AND `link_building.guide` file exists on disk |
 
 If `.content-ops/config.md` does not exist: all rounds are incomplete.
+
+**Commented-out sections = not started.** When checking `images` and `link-building`, read the raw file content (not just the parsed YAML). If every line of the section is prefixed with `#`, treat it as not started (⬜). Only mark it started (🔄) or complete (✅) once at least one line is uncommented.
 
 Use 🔄 (started) when the config file exists but only some required fields for that round are set.
 
