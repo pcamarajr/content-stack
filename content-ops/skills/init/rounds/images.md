@@ -274,10 +274,14 @@ no text overlays, no watermarks, professional quality, suitable for a blog artic
 
 ## Phase 4: Update config
 
-Update `.content-ops/config.md` — add or update the `image_generation` block in the YAML frontmatter:
+Update `.content-ops/config.md` — replace the commented-out `image_generation` section with the configured values.
+
+**If the file contains the commented-out section marker block** (lines starting with `# ── IMAGE GENERATION`):
+
+Replace the entire block — from the `# ── IMAGE GENERATION` opener to its closing `# ───` line — with:
 
 ```yaml
-# Image generation
+# ── IMAGE GENERATION ─────────────────────────────────────────────────────────
 image_generation:
   enabled: true
   provider: "[google-gemini | openai-gpt-image | manual]"
@@ -290,7 +294,10 @@ image_generation:
   max_inline_images: [N or omit for no cap]
   min_word_count: [N]
   skip_types: ["glossary"]
+# ─────────────────────────────────────────────────────────────────────────────
 ```
+
+**If no section marker exists** (older config format): append the block above before the closing `---`.
 
 Preserve all other existing config fields.
 

@@ -69,7 +69,8 @@ research_cache_ttl_days: 30
 # linking_max_candidates: 50
 # linking_max_links: 10
 
-# Image generation (optional — run /init images to configure)
+# ── IMAGE GENERATION ─────────────────────────────────────────────────────────
+# Not configured. Run /init images to set up this section.
 # image_generation:
 #   enabled: true
 #   provider: "google-gemini"        # google-gemini | openai-gpt-image | manual
@@ -82,10 +83,13 @@ research_cache_ttl_days: 30
 #   max_inline_images: 3             # optional — max inline images per article (omit for no cap)
 #   min_word_count: 300              # skip image generation for articles below this word count
 #   skip_types: ["glossary"]         # content types that never get images
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Link building (run /init link-building to configure)
+# ── LINK BUILDING ─────────────────────────────────────────────────────────────
+# Not configured. Run /init link-building to set up this section.
 # link_building:
 #   guide: ".content-ops/link-building-guide.md"
+# ─────────────────────────────────────────────────────────────────────────────
 ---
 
 # content-ops Configuration
