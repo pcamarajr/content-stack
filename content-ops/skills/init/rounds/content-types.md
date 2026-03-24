@@ -137,7 +137,7 @@ Repeat until they say A.
 
 ## Phase 4: Write config
 
-Update the `content_types` block in `.content-ops/config.md`.
+Add or update the `content_types` block in `.content-ops/config.md`.
 
 For each confirmed type, write:
 

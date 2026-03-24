@@ -8,7 +8,7 @@ Goal: Define content pillars and an editorial plan. Create `.content-ops/strateg
 
 Read `.content-ops/config.md`. Extract `content_strategy` and `content_pillars_path`.
 
-Check if the strategy file already exists (try the configured path, then `.content-ops/strategy.md`).
+Check if this round has already run: look for `content_strategy` in config — its presence is the authoritative signal. Also check for the strategy file on disk (try the configured path, then `.content-ops/strategy.md`) as secondary validation.
 
 **If a strategy already exists:**
 
@@ -171,7 +171,7 @@ Each file contains:
 
 ## Phase 5: Update config
 
-Update `.content-ops/config.md`:
+Append to `.content-ops/config.md` as new fields (not updating placeholders):
 
 - `content_strategy: ".content-ops/strategy.md"`
 - `content_pillars_path: ".content-ops/pillars"`

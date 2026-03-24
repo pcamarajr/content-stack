@@ -29,9 +29,9 @@ Before doing any web research, **always check the research cache first**:
 
 1. **Derive topic slug**: Convert the topic or claim summary to a slug: lowercase, spaces → hyphens (e.g., "proof of work" → `proof-of-work.json`).
 
-2. **Check cache existence**: Use Glob to find `<research_cache_path>/<topic-slug>.json`. Use the `research_cache_path` value from your task prompt (default: `.content-ops/research-cache`).
+2. **Check cache existence**: Use Glob to find `<research_cache_path>/<topic-slug>.json`. Use the `research_cache_path` value from your task prompt.
 
-3. **If cache file exists**: Read it. Check if `timestamp` is within `ttl_days` (use `research_cache_ttl_days` from your task prompt; default 30).
+3. **If cache file exists**: Read it. Check if `timestamp` is within `ttl_days` (use `research_cache_ttl_days` from your task prompt).
    - If **fresh** (within TTL): use cached findings directly. Report which findings came from cache.
    - If **stale** (older than TTL): treat as miss, proceed with web research, then overwrite the cache file with new findings.
 

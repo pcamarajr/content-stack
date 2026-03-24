@@ -117,7 +117,7 @@ New article: [translated article path]
 New glossary entries created in this run: [list, if any]
 Default language: [target language code]
 Config:
-  content_index_path: [content_index_path from config, default ".content-ops/content-index.json"]
+  content_index_path: [content_index_path from config]
   linking_max_candidates: [linking_max_candidates from config, default 50]
   linking_max_links: [linking_max_links from config, default 10]
   url_patterns: [url_patterns from config, if set]

@@ -11,8 +11,31 @@ Read `.content-ops/config.md`. Extract:
 - `languages`, `default_language`
 - `backlog_file`, `translation_tracker_file`
 - `localization_guides_path`
-- `content_index_path`, `research_cache_path` (for explaining where index and cache live; defaults in example)
+- `content_index_path`, `research_cache_path` (for explaining where index and cache live)
 - `content_types` (all paths, for pre-populating trackers)
+
+---
+
+## Phase 1b: Detection
+
+If `backlog_file`, `translation_tracker_file`, and `localization_guides_path` are all present in config, this round has already run. Show the existing values and ask:
+
+```text
+I found existing infrastructure config:
+
+  Backlog:            [backlog_file]
+  Translation tracker: [translation_tracker_file]
+  Localization guides: [localization_guides_path]
+
+Want to:
+  A — Keep as-is (skip this round)
+  B — Review and update
+```
+
+If **A**: stop and guide to the next round.
+If **B**: continue to Phase 2.
+
+If the fields are absent: continue to Phase 2.
 
 ---
 
@@ -145,7 +168,7 @@ No content-ops entries in .gitignore — the entire .content-ops/ directory is t
 
 ## Phase 4: Final config update
 
-Review `.content-ops/config.md`. Update any paths that changed during this round (e.g., if the user specified different tracker paths). Preserve all other fields.
+Append `backlog_file`, `translation_tracker_file`, and `localization_guides_path` as new fields to `.content-ops/config.md` (if not already present). If any paths changed during this round (e.g., the user specified a different tracker path), update them. Preserve all other fields.
 
 ---
 

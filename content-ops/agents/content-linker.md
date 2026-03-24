@@ -39,7 +39,7 @@ Read the file you were given. Extract:
 
 ### Step 2: Read the Content Index and Filter Candidates
 
-Read the content index from the `content_index_path` provided in your task prompt (default `.content-ops/content-index.json`). If it does not exist, run the reindex skill first.
+Read the content index from the `content_index_path` provided in your task prompt. If it does not exist, run the reindex skill first.
 
 The index has structure: `content.<type>.<lang>` — e.g. `content.article.en`, `content.glossary.en`. Each entry has: `slug`, `path`, `type`, `lang`, `title`, `excerpt`, optional `tags`, optional `translationKey`.
 

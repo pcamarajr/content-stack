@@ -22,7 +22,7 @@ Rebuild the content index by scanning all content files, extracting frontmatter,
 1. **Read config** from `.content-ops/config.md`:
    - `content_types` — each type's `path` (e.g., `article.path`, `glossary.path`)
    - `languages` — list of language codes to scan
-   - `content_index_path` — optional, default `.content-ops/content-index.json`
+   - `content_index_path`
 
 2. **Scan content directories** for each content type and language:
    - Use Glob to find all `.md` and `.mdx` files under `{type.path}/{lang}/`
@@ -40,7 +40,7 @@ Rebuild the content index by scanning all content files, extracting frontmatter,
    - `tags`: from frontmatter if present (default `[]`)
    - `translationKey`: from frontmatter if present (omit if absent)
 
-4. **Write the JSON file** to `content_index_path` from config (default `.content-ops/content-index.json`):
+4. **Write the JSON file** to `content_index_path` from config:
 
 ```json
 {

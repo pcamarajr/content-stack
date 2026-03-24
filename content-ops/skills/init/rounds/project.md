@@ -141,14 +141,28 @@ Construct or update `.content-ops/config.md` with the collected answers.
 - Parse the existing YAML frontmatter
 - Update only the fields set in this round: `author`, `default_language`, `languages`, `content_base_path`
 - Add the project description as a YAML comment above `author`: `# [description]`
+- If any of `content_index_path`, `research_cache_path`, `research_cache_ttl_days` are missing, append them with their default values
 - Preserve all other existing fields exactly as-is
 
 **If the file does not exist:**
 
-- Copy `.claude/plugins/content-ops/config.example.md` to `.content-ops/config.md`
-- Fill in the answers from this round
-- Add the project description as a comment: `# [description]`
-- Leave all other fields at their example/default values, with inline comments like `# Configure in /init content-types`
+Write a minimal config from scratch — do not copy `config.example.md`:
+
+```yaml
+---
+# [project description from Q4]
+author: "[answer]"
+default_language: "[answer]"
+languages: ["[answer]"]
+content_base_path: "[answer]"
+
+content_index_path: ".content-ops/content-index.json"
+research_cache_path: ".content-ops/research-cache"
+research_cache_ttl_days: 30
+---
+```
+
+This file contains exactly the fields owned by this round. Every subsequent `/init` round will append its own section.
 
 No .gitignore changes needed — .content-ops/config.md is tracked.
 

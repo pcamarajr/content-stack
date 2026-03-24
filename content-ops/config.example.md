@@ -1,17 +1,18 @@
 ---
-# content-ops plugin configuration
-# Copy this file to .content-ops/config.md and customize for your project.
-# All configurable files live under .content-ops/ by default.
+# content-ops plugin configuration — Reference only, not copied.
+# Each /init round appends its own section to .content-ops/config.md.
+# Run /init project to create a minimal starting config.
 
-# Attribution
+# Written by /init project
 author: "your-name & claude"
-
-# Content structure
 default_language: "en"
 languages: ["en"]
 content_base_path: "src/content"
+content_index_path: ".content-ops/content-index.json"
+research_cache_path: ".content-ops/research-cache"
+research_cache_ttl_days: 30
 
-# Content types
+# Written by /init content-types
 content_types:
   article:
     path: "src/content/articles"
@@ -41,62 +42,50 @@ content_types:
       - relatedArticles
       - translationKey
 
-# Tracker files (all under .content-ops/ by default)
+# Written by /init infra
 backlog_file: ".content-ops/backlog.md"
 translation_tracker_file: ".content-ops/translation-tracker.md"
-
-# Content strategy — the high-level editorial plan
-content_strategy: ".content-ops/strategy.md"
-
-# Content pillars — detailed roadmaps organized by theme/pillar
-content_pillars_path: ".content-ops/pillars"
-
-# Localization guides (one per language at {localization_guides_path}/{lang}.md)
 localization_guides_path: ".content-ops/localization"
 
-# Reference content (used to calibrate tone — read before writing)
+# Written by /init strategy
+content_strategy: ".content-ops/strategy.md"
+content_pillars_path: ".content-ops/pillars"
+# source_hierarchy: []  # optional — trusted sources in order of authority
+
+# Written by /init style
 reference_content:
   - "src/content/articles/en/example-article.md"
-
-# File-based knowledge layer
-content_index_path: ".content-ops/content-index.json"
-research_cache_path: ".content-ops/research-cache"
-
-# Research cache TTL (days before cached research expires)
-research_cache_ttl_days: 30
 
 # Content linking caps (optional — sensible defaults)
 # linking_max_candidates: 50
 # linking_max_links: 10
 
-# ── IMAGE GENERATION ─────────────────────────────────────────────────────────
-# Not configured. Run /init images to set up this section.
-# image_generation:
-#   enabled: true
-#   provider: "google-gemini"        # google-gemini | openai-gpt-image | manual
-#   model: ""                        # optional — omit for provider default (imagen-3.0-generate-002 / gpt-image-1)
-#   guidelines: ".content-ops/image-style-guide.md"
-#   output_path: "public/images"
-#   hero_dimensions: [1200, 630]
-#   inline_dimensions: [800, 450]
-#   placement: "ai-driven"           # ai-driven | hero-plus-sections | hero-only
-#   max_inline_images: 3             # optional — max inline images per article (omit for no cap)
-#   min_word_count: 300              # skip image generation for articles below this word count
-#   skip_types: ["glossary"]         # content types that never get images
-# ─────────────────────────────────────────────────────────────────────────────
+# Written by /init images
+image_generation:
+  enabled: true
+  provider: "google-gemini"        # google-gemini | openai-gpt-image | manual
+  model: ""                        # optional — omit for provider default
+  guidelines: ".content-ops/image-style-guide.md"
+  output_path: "public/images"
+  hero_dimensions: [1200, 630]
+  inline_dimensions: [800, 450]
+  placement: "ai-driven"           # ai-driven | hero-plus-sections | hero-only
+  max_inline_images: 3             # optional — omit for no cap
+  min_word_count: 300
+  skip_types: ["glossary"]
 
-# ── LINK BUILDING ─────────────────────────────────────────────────────────────
-# Not configured. Run /init link-building to set up this section.
-# link_building:
-#   guide: ".content-ops/link-building-guide.md"
-# ─────────────────────────────────────────────────────────────────────────────
+# Written by /init link-building
+link_building:
+  guide: ".content-ops/link-building-guide.md"
 ---
 
-# content-ops Configuration
+# content-ops Configuration Reference
 
-Copy this file to `.content-ops/config.md` and customize the YAML frontmatter for your project. Skills and agents read the config file to resolve project-specific values like content paths, languages, tracker locations, and reference content.
+This file documents every config field and which `/init` round writes it. Skills and agents read `.content-ops/config.md` (not this file) to resolve project-specific values like content paths, languages, tracker locations, and reference content.
 
-**Important:** If this file doesn't exist, skills will stop and tell you how to create it. Run `/init` or copy the example: `cp .claude/plugins/content-ops/config.example.md .content-ops/config.md`
+**To create your config:** Run `/init project` — it writes a minimal config from scratch. Each subsequent `/init` round appends its section.
+
+**Important:** If `.content-ops/config.md` doesn't exist, skills will stop and tell you to run `/init project`.
 
 ## Schema Reference
 
