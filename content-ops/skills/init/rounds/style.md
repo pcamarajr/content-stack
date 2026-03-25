@@ -12,7 +12,7 @@ Read `.content-ops/config.md`. Extract:
 - `reference_content` — existing reference files
 - The project description comment (line starting with `#` above the `author` field)
 
-Check if a style guide already exists: look at `guidelines` paths in `content_types`, and also check `.content-ops/content-style-guide.md` directly.
+Check if this round has already run: look for `reference_content` in config — its presence is the authoritative signal. Also check `guidelines` paths in `content_types` and `.content-ops/content-style-guide.md` on disk as secondary validation.
 
 **If a style guide already exists:**
 

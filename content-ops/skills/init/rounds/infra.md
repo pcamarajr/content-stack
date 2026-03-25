@@ -11,8 +11,38 @@ Read `.content-ops/config.md`. Extract:
 - `languages`, `default_language`
 - `backlog_file`, `translation_tracker_file`
 - `localization_guides_path`
-- `content_index_path`, `research_cache_path` (for explaining where index and cache live; defaults in example)
+- `content_index_path`, `research_cache_path` (for explaining where index and cache live)
 - `content_types` (all paths, for pre-populating trackers)
+
+---
+
+## Phase 1b: Detection
+
+If `backlog_file`, `translation_tracker_file`, and `localization_guides_path` are all present in config, this round has already run. Show the existing values and ask using `AskUserQuestion`:
+
+```text
+question: "I found existing infrastructure config:
+
+  Backlog:            [backlog_file]
+  Translation tracker: [translation_tracker_file]
+  Localization guides: [localization_guides_path]
+
+What would you like to do?"
+header: "Phase 1b: Existing infrastructure config"
+options:
+  - label: "Keep as-is"
+    description: "Skip this round — current settings are fine"
+  - label: "Review and update"
+    description: "Review values and continue to Phase 2"
+  - label: "Other — specify overrides"
+    description: "Type what to change (e.g. updated paths) in the Other free-text field"
+```
+
+If **Keep as-is**: stop and guide to the next round.
+If **Review and update**: continue to Phase 2.
+If **Other — specify overrides**: use the provided free text as override instructions for the config paths (e.g. `backlog_file`, `translation_tracker_file`, `localization_guides_path`), then continue to Phase 2 using those overrides.
+
+If the fields are absent: continue to Phase 2.
 
 ---
 
@@ -42,7 +72,23 @@ Infrastructure status:
 I'll handle the missing items. Let's go through each one.
 ```
 
-If everything is already in place: confirm it and guide to the final summary.
+If everything is already in place: confirm it with `AskUserQuestion`:
+
+```text
+question: "Infrastructure status looks complete. Continue to the final summary?"
+header: "Infra complete"
+options:
+  - label: "Yes — continue to Phase 5"
+    description: "Proceed to completion summary"
+  - label: "Re-check inventory"
+    description: "Re-run the Phase 2 checklist and re-evaluate"
+  - label: "Other — specify details"
+    description: "Type any last tweaks in the Other free-text field"
+```
+
+- If **Yes — continue to Phase 5**: guide to the final summary.
+- If **Re-check inventory**: repeat the Phase 2 checklist, then continue to Phase 5.
+- If **Other — specify details**: use the free text as last-tweak instructions, then continue to Phase 5.
 
 ---
 
@@ -53,14 +99,16 @@ Work through missing items in order. Ask before acting on anything that creates 
 ### Backlog file (if missing)
 
 ```text
-Create [backlog_file] — the content backlog tracker?
-
-  A — Yes, create it with example structure
-  B — My backlog is at a different path (I'll specify)
-  C — Skip — I don't use a backlog
+question: "Backlog file is missing. Create [backlog_file] — the content backlog tracker?"
+header: "Backlog file"
+options:
+  - label: "Create with example structure"
+    description: "Create [backlog_file] with headers and 2–3 example pending entries"
+  - label: "Other — specify existing backlog path"
+    description: "Provide the path to an existing backlog file; I'll scan it and generate [backlog_file] in the expected content-ops format"
 ```
 
-- If **A**: create the file with headers and 2–3 example pending entries. Use this structure:
+- If **Create with example structure**: create the file with headers and 2–3 example pending entries. Use this structure:
 
   ```markdown
   # Content Backlog
@@ -70,20 +118,21 @@ Create [backlog_file] — the content backlog tracker?
   | 1 | Example topic | article | example, intro | high | pending | — |
   ```
 
-- If **B**: ask for the path; update `backlog_file` in config.
-- If **C**: note it and continue.
+- If **Other — specify existing backlog path**: use the free text as a path to the existing backlog file; scan it, then generate `[backlog_file]` in the expected content-ops format (mandatory for consistency).
 
 ### Translation tracker (if missing)
 
 ```text
-Create [translation_tracker_file] — tracks which content has been translated?
-
-  A — Yes, create it and pre-populate with existing articles
-  B — Different path (I'll specify)
-  C — Skip — this is a single-language site
+question: "Translation tracker file is missing. Create [translation_tracker_file] — tracks which content has been translated?"
+header: "Translation tracker"
+options:
+  - label: "Create and pre-populate"
+    description: "Create [translation_tracker_file] and pre-fill default-language rows from `content_types`"
+  - label: "Other — specify existing tracker path"
+    description: "Provide the path to an existing translation tracker; I'll scan it and generate [translation_tracker_file] in the expected content-ops format"
 ```
 
-- If **A**: scan all content paths in `content_types` for the default language. For each file found, add a row with `done` for the default language and `pending` for every other language in `languages`. Use this structure:
+- If **Create and pre-populate**: scan all content paths in `content_types` for the default language. For each file found, add a row with `done` for the default language and `pending` for every other language in `languages`. Use this structure:
 
   ```markdown
   # Translation Tracker
@@ -93,49 +142,53 @@ Create [translation_tracker_file] — tracks which content has been translated?
   | articles/en/example.md | done | pending | — |
   ```
 
-- If **B**: update `translation_tracker_file` in config.
-- If **C**: skip.
+- If **Other — specify existing tracker path**: use the free text as a path to the existing translation tracker; scan it, then generate `[translation_tracker_file]` in the expected content-ops format (mandatory for consistency).
 
 ### Localization guides (one question per missing language)
 
 For each non-default language without a guide at `{localization_guides_path}/{lang}.md`:
 
 ```text
-Create a starter localization guide for [lang]?
+question: "Localization guide for [lang] is missing. Create a starter localization guide?
 
 This guide helps Claude translate content naturally — covering
-URL slug conventions, tone adjustments, and formatting rules.
-
-  A — Yes, create a starter guide
-  B — I already have one (specify the path)
-  C — Skip
+URL slug conventions, tone adjustments, and formatting rules."
+header: "Localization guide ([lang])"
+options:
+  - label: "Yes — create a starter guide"
+    description: "Generate `{localization_guides_path}/{lang}.md` with the required sections"
+  - label: "Other — specify existing guide path"
+    description: "Provide the path to an existing guide for [lang]; I'll scan it and generate `{localization_guides_path}/{lang}.md` in the required content-ops format"
 ```
 
-- If **A**: generate a starter guide at `{localization_guides_path}/{lang}.md` with sections:
+- If **Yes — create a starter guide**: generate a starter guide at `{localization_guides_path}/{lang}.md` with sections:
   - Language name and locale code
   - URL conventions (slug style for this language — leave blank with a comment to fill in)
   - Tone adaptation notes (leave blank)
   - Vocabulary notes (leave blank)
   - Formatting conventions (date format, number separators, quotation marks)
-- If **B**: note the path; no file creation needed.
-- If **C**: skip.
+- If **Other — specify existing guide path**: use the free text as a path to the existing guide; scan it and generate `{localization_guides_path}/{lang}.md` with the required sections (mandatory for consistency).
 
 ### Content index (optional)
 
 If the content index file does not yet exist at `content_index_path`:
 
 ```text
-The content index is file-based at [content_index_path]. It powers content linking
-and is created/updated by running /reindex. No API keys or server build required.
+question: "Content index is file-based at [content_index_path]. It powers content linking and is created/updated by running /reindex.
 
-Run /reindex now to build the content index?
+No API keys or server build required.
 
-  A — Yes, run /reindex
-  B — I'll run /reindex later
+Run /reindex now to build the content index?"
+header: "Content index"
+options:
+  - label: "Run /reindex now"
+    description: "Invoke the `reindex` skill immediately"
+  - label: "I'll run /reindex later"
+    description: "Show a reminder to run /reindex later"
 ```
 
-- If **A**: invoke the `reindex` skill.
-- If **B**: show: "When ready, run `/reindex`."
+- If **Run /reindex now**: invoke the `reindex` skill.
+- If **I'll run /reindex later**: show: "When ready, run `/reindex`."
 
 ### .gitignore entries
 
@@ -145,7 +198,7 @@ No content-ops entries in .gitignore — the entire .content-ops/ directory is t
 
 ## Phase 4: Final config update
 
-Review `.content-ops/config.md`. Update any paths that changed during this round (e.g., if the user specified different tracker paths). Preserve all other fields.
+Append `backlog_file`, `translation_tracker_file`, and `localization_guides_path` as new fields to `.content-ops/config.md` (if not already present). If any paths changed during this round (e.g., the user specified a different tracker path), update them. Preserve all other fields.
 
 ---
 

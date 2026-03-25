@@ -16,7 +16,7 @@ Read the guide file. Summarise it in 3–5 bullets (strategic goal, scope, top r
 
 Use `AskUserQuestion` to ask:
 
-```
+```text
 question: "I found an existing link building guide at [path from config]. [summary bullets]. What would you like to do?"
 options:
   - label: "Keep as-is"
@@ -30,7 +30,7 @@ options:
 - If **Keep as-is**: stop and guide to the next incomplete round.
 - If **Update sections**: Use a follow-up `AskUserQuestion` with multiSelect to ask which sections to update:
 
-  ```
+```text
   question: "Which sections would you like to update?"
   multiSelect: true
   options:
@@ -43,6 +43,7 @@ options:
   ```
 
   Run only the relevant interview questions in Phase 2 for the selected sections.
+  
 - If **Replace entirely**: continue to Phase 2.
 
 **If not yet configured:** continue to Phase 2.
@@ -54,6 +55,7 @@ options:
 ### Before asking anything
 
 Read `.content-ops/config.md` silently. Extract:
+
 - `content_types` — to understand what content types exist (articles, glossary, etc.)
 - `languages` and `default_language` — to ground URL pattern questions
 - Any existing `url_patterns` already in config
@@ -63,6 +65,7 @@ Do NOT ask the user about things already captured in other init rounds.
 ### Interview approach
 
 You are a link building expert with deep knowledge of:
+
 - Internal linking strategies (first-mention policy, bidirectional links, pillar/cluster architecture)
 - External linking strategies (source quality, nofollow, affiliate/sponsored policies)
 - SEO link equity and anchor text optimisation
@@ -73,7 +76,7 @@ Conduct a free-form interview using `AskUserQuestion`. You own the interview —
 **Domains to cover** (cover what is relevant based on answers — skip what is irrelevant):
 
 | Domain | Key questions |
-|---|---|
+| --- | --- |
 | Strategic goal | SEO-first, relevance-first, or hybrid? |
 | Scope | Internal only, external only, or both? |
 | Internal — URL patterns | What is the URL format for glossary links? For article links? (Use known content types and languages to suggest patterns) |
@@ -90,6 +93,7 @@ Conduct a free-form interview using `AskUserQuestion`. You own the interview —
 If the user's scope is internal only, skip all External domain rows entirely.
 
 **Interview rules:**
+
 - One question per message — always use `AskUserQuestion`
 - When a user answer conflicts with a known best practice, recommend the better approach once with a brief explanation, then accept their decision. Never push twice.
 - When you believe you have a complete picture of the user's strategy, move to Phase 3 — you do not need to cover every domain if some are not relevant.
@@ -99,7 +103,7 @@ If the user's scope is internal only, skip all External domain rows entirely.
 
 Always open with strategic goal — this single answer shapes which other questions matter:
 
-```
+```text
 question: "What is the primary goal of your link building strategy?"
 options:
   - label: "SEO-first"
@@ -127,12 +131,12 @@ Generate `.content-ops/link-building-guide.md` as a prose document. This file is
 
 Structure the guide with these section headings (in this order):
 
-## Strategic Goal
-## Scope
-## Internal Linking Rules
-## External Linking Rules
-## Anchor Text Policy
-## Exclusions and Edge Cases
+1. Strategic Goal
+2. Scope
+3. Internal Linking Rules
+4. External Linking Rules
+5. Anchor Text Policy
+6. Exclusions and Edge Cases
 
 Each section must contain specific, actionable directives — not general principles. For example, under "Internal Linking Rules", state the exact URL patterns, exact frontmatter field names, exact first-mention policy, and exact density caps agreed in the interview.
 
@@ -140,20 +144,12 @@ Write the guide in a style that an AI agent can reason against — concrete rule
 
 ### Update config
 
-Replace the commented-out `link_building` section in `.content-ops/config.md` with the configured value.
-
-**If the file contains the commented-out section marker block** (lines starting with `# ── LINK BUILDING`):
-
-Replace the entire block — from the `# ── LINK BUILDING` opener to its closing `# ───` line — with:
+Append or update the `link_building` block in `.content-ops/config.md`. If the key already exists, update it in place. If it does not exist, create it.
 
 ```yaml
-# ── LINK BUILDING ─────────────────────────────────────────────────────────────
 link_building:
   guide: ".content-ops/link-building-guide.md"
-# ─────────────────────────────────────────────────────────────────────────────
 ```
-
-**If no section marker exists** (older config format): append the block above before the closing `---`.
 
 Preserve all other fields.
 

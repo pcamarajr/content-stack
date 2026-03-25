@@ -105,8 +105,8 @@ Topic: [topic]
 Task: Research key facts — dates, numbers, technical details, historical context.
 Config:
   source_hierarchy=[from config, or "not configured"]
-  research_cache_ttl_days=[from config, default 30]
-  research_cache_path=[from config, default ".content-ops/research-cache"]
+  research_cache_ttl_days=[from config]
+  research_cache_path=[from config]
 
 Check the research cache first. Only do web searches for uncached or stale topics.
 Return a structured research report.
@@ -121,8 +121,8 @@ Terms: [comma-separated terms]
 Task: Verify precise definitions, accurate examples, and correct technical details for each term.
 Config:
   source_hierarchy=[from config, or "not configured"]
-  research_cache_ttl_days=[from config, default 30]
-  research_cache_path=[from config, default ".content-ops/research-cache"]
+  research_cache_ttl_days=[from config]
+  research_cache_path=[from config]
 
 Check the research cache first. Return a structured research report per term.
 ```
@@ -279,7 +279,7 @@ New article: [file path from Phase 5]
 New glossary entries created in this run: [list from Phase 7, if any]
 Default language: [from config]
 Config:
-  content_index_path: [content_index_path from config, default ".content-ops/content-index.json"]
+  content_index_path: [content_index_path from config]
   linking_max_candidates: [linking_max_candidates from config, default 50]
   linking_max_links: [linking_max_links from config, default 10]
   url_patterns: [url_patterns from config, if set]
@@ -300,7 +300,7 @@ Use the content-linker agent.
 New glossary entries: [list of file paths from Phase 5]
 Default language: [from config]
 Config:
-  content_index_path: [content_index_path from config, default ".content-ops/content-index.json"]
+  content_index_path: [content_index_path from config]
   linking_max_candidates: [linking_max_candidates from config, default 50]
   linking_max_links: [linking_max_links from config, default 10]
   url_patterns: [url_patterns from config, if set]
