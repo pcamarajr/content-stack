@@ -18,19 +18,29 @@ The `content-style` and `content-inventory` skills auto-load. Read the target fi
 
 ## Phase 1: Style Review via style-enforcer Agent
 
+Read `.content-ops/config.md` to detect the content type from the file path (match against `content_types.*.path`).
+
 Delegate the full style audit to the `style-enforcer` agent:
 
 ```text
 Use the style-enforcer agent to review the file at [path].
-Perform a complete review: sentence length, paragraph density, scope discipline, tone calibration, plain English check, structure audit, and linking verification.
-Read the reference content from config first to calibrate.
+Content type: [detected content type]
+Config:
+  word_range: [content_types.<type>.word_range]
+  guidelines: [content_types.<type>.guidelines list]
+  reference_content: [reference_content list]
+Perform a complete review.
 ```
 
 The agent returns a structured report with score, must-fix, should-fix, and consider categories.
 
 ## Phase 2: Glossary Coverage Audit
 
-Scan the article body for domain-specific technical terms. For each:
+**Skip this phase if the `glossary` config block is absent or `glossary.enabled` is false.**
+
+Read the `glossary` block from `.content-ops/config.md` to determine if glossary is enabled.
+
+If enabled, scan the article body for domain-specific technical terms. For each:
 
 1. **Has glossary entry + is linked?** — Good.
 2. **Has glossary entry + NOT linked?** — Flag: "Term X is used but not linked to its glossary entry."
@@ -47,6 +57,12 @@ Check that `relatedGlossary` in frontmatter includes terms linked in body. Note:
 5. **Bidirectional check** — For each reference, check if the referenced content links back. Flag missing back-links as **recommendations** (not mandatory — there are cases where a back-link may not make sense).
 
 ## Phase 4: Glossary-Specific Checks (glossary files only)
+
+**Skip this phase if the `glossary` config block is absent or `glossary.enabled` is false.**
+
+**Also skip if the file being reviewed is not the glossary content type** (check file path against `content_types.[glossary.content_type].path` from config).
+
+If applicable:
 
 - **Definition length** — 1-2 sentences. Flag if longer.
 - **Example** — One concrete sentence. Flag if missing or abstract.
