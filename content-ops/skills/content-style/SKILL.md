@@ -17,24 +17,25 @@ This skill provides style rules for content creation and review. All rules come 
 |---|---|---|
 | Config file | `.content-ops/config.md` exists | "Run `cp .claude/plugins/content-ops/config.example.md .content-ops/config.md` then `/init`." |
 | Word range | `content_types.<type>.word_range` | "Run `/init content-types` to configure content types." |
-| Guidelines path | `content_types.<type>.guidelines` | "Run `/init style` to generate your style guide." |
-| Guidelines file exists | _(read the file at that path)_ | "Run `/init style` — style guide file not found at `[path]`." |
+| Guidelines list | `content_types.<type>.guidelines` (must be a non-empty list) | "Run `/init style` to generate your style guides." |
+| General guide exists | `.content-ops/content-styles/general.md` exists on disk | "Run `/init style` — general style guide not found." |
+| Type-specific guide exists | The type-specific guide from the list exists on disk | "Run `/init style` — no structure guide found for `[type]`." |
 | Reference content | `reference_content` | "Run `/init style` to configure reference content." |
 
 ## Applying Style Rules
 
-Read the guidelines file from `content_types.<type>.guidelines`. This file is the authoritative source for all style rules for this project, including:
+Read the `content_types.<type>.guidelines` list from config. This is a list of file paths.
 
-- Voice and tone
-- Sentence and paragraph rules
-- Structure conventions (headings, sections, openings, closings)
-- Jargon policy
-- Anti-patterns to avoid
-- Examples of good and bad writing
+**Loading order:**
 
-Apply only the rules defined in that file. Do not apply rules not present in the guidelines.
+1. Ensure `.content-ops/content-styles/general.md` is in the list. If missing, add it — the general guide is always loaded regardless of what the config lists.
+2. Load `general.md` first. This file is the authoritative source for cross-cutting style rules: voice, tone, jargon policy, anti-patterns, and examples.
+3. Load the type-specific guide (the other file in the list, e.g., `content-styles/article.md`). This file is the authoritative source for structural rules: sentence length, paragraph density, opening/closing conventions.
+4. Present both to the calling agent as a unified rule set.
 
-Read the files in `reference_content` to calibrate tone before writing or reviewing. These are the gold standard for voice and sentence length for this project.
+Apply only the rules defined in the loaded files. Do not apply rules not present in the guidelines.
+
+Read the files in `reference_content` to calibrate tone before writing or reviewing.
 
 ## Frontmatter
 
