@@ -17,6 +17,7 @@ Translate content to a target language using localization (not direct translatio
 Read `.content-ops/config.md`. Extract these values — they are used throughout all phases and passed explicitly to subagents that need them:
 
 - `languages`, `default_language`, `content_types`, `localization_guides_path`, `translation_tracker_file`, `author`, `content_index_path`, `linking_max_candidates`, `linking_max_links`
+- `glossary` block (if present) — needed for conditional glossary translation
 
 ## Argument Syntax
 
@@ -26,12 +27,12 @@ Parse `$ARGUMENTS` as: `<language> [selection]`
 
 **Selection** (optional):
 
-- _(empty)_ → Translate all pending articles + glossary for that language
+- _(empty)_ → Translate all pending content for that language
 - `3` or `first 3` → First 3 pending articles
 - `last 2` → Last 2 pending articles
 - `#1,#3,#5` → Specific articles by their `#` number in the translation tracker
-- `glossary` → Only pending glossary entries
-- `glossary #1,#3` → Specific glossary entries by tracker number
+- `glossary` → Only pending glossary entries (**only available if `glossary.enabled` is true in config**)
+- `glossary #1,#3` → Specific glossary entries by tracker number (**only if glossary enabled**)
 
 **Examples:** `/translate es`, `/translate de 3`, `/translate fr #1,#5`, `/translate es glossary`
 
@@ -90,16 +91,23 @@ tags: [<same tags as English — tags stay in English>]
 readTime: "<N> min read"
 author: <from config `author` field>
 translationKey: "<same translationKey as English>"
-relatedGlossary: ["<lang>/<term>" for glossary terms linked in body]
 relatedArticles: ["<lang>/<slug>" for related articles in this language]
 ---
+```
+
+**If `glossary.enabled` is true**, also include in frontmatter:
+
+```yaml
+relatedGlossary: ["<lang>/<term>" for glossary terms linked in body]
 ```
 
 **Body:** same structure, adapted language, localized examples, links to localized content.
 
 ### 4c. Translate Glossary Entries
 
-For each referenced glossary term not in the target language yet:
+**Skip this step if `glossary.enabled` is false or absent.**
+
+If glossary is enabled, for each referenced glossary term not in the target language yet:
 
 1. Read English glossary entry
 2. Create `{content_types.glossary.path}/<lang>/<term-slug>.md` (path from config)
