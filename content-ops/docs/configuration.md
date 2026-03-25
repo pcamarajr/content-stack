@@ -190,7 +190,7 @@ Orchestrator skills (`write-content`, `translate`, `suggest-content`) read confi
 
 Example flow for `write-content`:
 
-```
+```text
 write-content (skill, Phase 2)
   └─ reads .content-ops/config.md
   └─ passes source_hierarchy, research_cache_path, research_cache_ttl_days → content-researcher
