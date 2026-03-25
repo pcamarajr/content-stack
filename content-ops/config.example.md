@@ -46,7 +46,7 @@ content_types:
       - relatedArticles
       - translationKey
 
-# Written by /init content-types
+# Written by /init content-types (glossary opt-in)
 glossary:
   enabled: true
   content_type: "glossary"          # which content_types key acts as the glossary
