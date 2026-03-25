@@ -36,6 +36,50 @@ glossary/
 
 ---
 
+## Phase 1.5: Glossary Opt-In
+
+After scanning, check if any detected directory looks like a glossary — named `glossary`, or its files contain `term`/`definition` frontmatter fields (check the first 3-5 files in the directory).
+
+**If a glossary-like directory is detected:**
+
+Use AskUserQuestion:
+
+```text
+I found what looks like a glossary at [path] ([N] entries).
+
+Do you want to maintain a glossary for this project?
+When enabled, articles you write will automatically generate glossary stubs
+for technical terms, and content will be cross-linked bidirectionally.
+
+  A — Yes, keep the glossary enabled
+  B — No, treat it as a regular content type (no auto-stubs or cross-linking)
+  C — No glossary at all — skip this directory
+```
+
+- If **A**: mark this type for glossary behavior. It still goes through the standard per-type interview (Q1–Q4).
+- If **B**: include it as a normal content type (Q1–Q4 interview), but do not write the `glossary` config block.
+- If **C**: skip this directory entirely — do not include it in `content_types`.
+
+**If no glossary-like directory is detected:**
+
+Use AskUserQuestion:
+
+```text
+Would you like to maintain a glossary for this project?
+A glossary auto-creates short entries for technical terms found in your
+articles and cross-links them bidirectionally.
+
+  A — Yes, set one up (I'll configure the path and fields next)
+  B — No, skip glossary
+```
+
+- If **A**: add a new glossary type to the per-type interview. Suggest path `src/content/[type-name]`, word range [50, 300], and default frontmatter: `term`, `definition`, `example`, `tags`, `relatedTerms`, `relatedArticles`, `translationKey`. Run Q2–Q4 for it.
+- If **B**: no glossary type or config block.
+
+Store the user's glossary decision — it determines whether Phase 4 writes the `glossary` config block.
+
+---
+
 ## Phase 2: Existing config check
 
 If `content_types` is already set in the config with at least one entry:
@@ -96,10 +140,12 @@ If D: ask for min and max as free text.
 
 ```text
 Which style guide covers [type name] content?
-  A — Shared project style guide (.content-ops/content-style-guide.md)
-  B — Its own separate guidelines file (I'll specify the path)
-  C — No guidelines file yet — set up in /init style
+  A — Set up during /init style (recommended — creates general + type-specific guides)
+  B — I already have a guidelines file (I'll specify the path)
 ```
+
+If **B**: ask for the path. Add it to the `guidelines` list alongside `.content-ops/content-styles/general.md`.
+If **A**: leave `guidelines` to be written later by `/init style`.
 
 ### Q4 — Frontmatter fields
 
@@ -145,12 +191,27 @@ For each confirmed type, write:
 content_types:
   [type]:
     path: "[path]"
-    guidelines: "[guidelines file path]"
+    guidelines:
+      - ".content-ops/content-styles/general.md"
+      - ".content-ops/content-styles/[type].md"
     word_range: [[min], [max]]
     frontmatter:
       - [field1]
       - [field2]
 ```
+
+If the user opted into glossary in Phase 1.5, also write the top-level `glossary` block:
+
+```yaml
+# Written by /init content-types (glossary opt-in)
+glossary:
+  enabled: true
+  content_type: "[glossary type key name]"
+  auto_stubs: true
+  bidirectional_linking: true
+```
+
+If the user chose B (regular content type) or C (skip) in Phase 1.5, do not write this block.
 
 Preserve all other fields in the file.
 
