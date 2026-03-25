@@ -274,7 +274,7 @@ no text overlays, no watermarks, professional quality, suitable for a blog artic
 
 ## Phase 4: Update config
 
-Append or update the `image_generation` block in `.content-ops/config.md`. If the key already exists, update it in place. If it does not exist, append before the closing `---`:
+Append or update the `image_generation` block in `.content-ops/config.md`. If the key already exists, update it in place. If it does not exist, create it.
 
 ```yaml
 image_generation:
