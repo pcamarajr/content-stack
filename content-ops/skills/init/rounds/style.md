@@ -1,6 +1,6 @@
 # Round: Voice & Style
 
-Goal: Create a content style guide and link it in the config.
+Goal: Create a general voice guide and per-type structure guides, then link them in the config.
 
 ---
 
@@ -12,20 +12,20 @@ Read `.content-ops/config.md`. Extract:
 - `reference_content` — existing reference files
 - The project description comment (line starting with `#` above the `author` field)
 
-Check if this round has already run: look for `reference_content` in config — its presence is the authoritative signal. Also check `guidelines` paths in `content_types` and `.content-ops/content-style-guide.md` on disk as secondary validation.
+Check if this round has already run: look for `.content-ops/content-styles/general.md` on disk and `reference_content` in config — together they are the authoritative signal. Also check `guidelines` paths in `content_types` as secondary validation.
 
 **If a style guide already exists:**
 
-Read it. Summarize it in 3–5 bullets:
+Read `.content-ops/content-styles/general.md`. Summarize it in 3–5 bullets:
 
 - Audience level
 - Tone characteristics
-- Key structural rules
+- Key voice rules
 
 Ask:
 
 ```text
-I found an existing style guide at [path]:
+I found an existing style guide at .content-ops/content-styles/general.md:
 
   • [bullet 1]
   • [bullet 2]
@@ -61,12 +61,15 @@ These signals inform the style guide's examples and validate what the user tells
 
 ---
 
-## Phase 3: Style interview
+## Phase 3 (Phase A): General Voice Interview
 
 Ask questions **one at a time** using AskUserQuestion. Wait for each answer before asking the next.
 
+This phase produces the general guide only — voice, tone, jargon, and what to avoid across all content types. Structure and format rules come later in Phase B.
+
 Target: **4–6 exchanges maximum.** Stop when you have enough to write the guide.
 Each answer shapes whether and how to ask the next question — skip anything that's already implied.
+Follow up when answers are vague or interesting.
 
 ### Question 1: Reader
 
@@ -151,9 +154,11 @@ Drop a URL, a file path, or just describe it.
 
 ---
 
-## Phase 4: Generate style guide
+## Phase 4 (Phase A output): Generate general.md
 
-Using the answers from Phase 3 and the signals from Phase 2, create `.content-ops/content-style-guide.md`.
+Using the answers from Phase 3 and the signals from Phase 2, create `.content-ops/content-styles/general.md`.
+
+This file covers **cross-cutting concerns only** — what applies to all content types regardless of structure or format. Do NOT include sentence/paragraph rules, structure conventions, or opening/closing conventions here; those go in per-type guides.
 
 The guide must be **concrete and specific** — generic style guides are useless. Every rule needs an example.
 
@@ -173,21 +178,9 @@ Good: "Explains every technical term the first time it appears", "Starts with wh
 
 Where this site sits on: formal ↔ casual, technical ↔ accessible, authoritative ↔ conversational.
 
-### Sentence and paragraph rules
-
-- Target sentence length (e.g., "aim for under 20 words; 25 is the ceiling")
-- Paragraph density (e.g., "no more than 4 sentences per paragraph")
-- One idea per paragraph
-
 ### Jargon policy
 
 How to handle domain-specific terms: define inline, link to glossary, avoid entirely, or assume known.
-
-### Structure conventions
-
-- How to open an article (what the first paragraph should accomplish)
-- Body conventions (subheadings, lists, code blocks if relevant)
-- How articles end (based on Question 4's answer)
 
 ### What to avoid
 
@@ -203,29 +196,76 @@ Use the paragraph exercise from Question 3:
 
 ---
 
-## Phase 5: Update config
+## Phase 5 (Phase B): Per-Type Structure Interviews
+
+Loop through each content type defined in `content_types` from config. For each type, run a short conversational interview using AskUserQuestion, one question at a time.
+
+The interview adapts based on answers — not a fixed script. Starting points vary by type length.
+
+**For long-form types** (word_range max > 500 — e.g., articles, guides, tutorials):
+
+Target 3-5 exchanges. Starting points:
+
+- Sentence length — target and ceiling
+- Paragraph density — max sentences per paragraph
+- Opening convention — how the first paragraph should work
+- Closing convention — how articles end
+
+Skip questions already implied by previous answers. Follow up when answers are vague or interesting.
+
+**For short-form types** (word_range max <= 500 — e.g., glossary entries):
+
+Target 1-2 exchanges. Starting points:
+
+- Sentence length and density only
+- No opening/closing conventions for short-form content
+
+Each type's answers produce `.content-ops/content-styles/[type].md` (using the content type key as the filename) with these sections:
+
+### Sentence and paragraph rules
+
+- Target sentence length and ceiling
+- Paragraph density limit
+- One idea per paragraph
+
+### Structure conventions (long-form only)
+
+- How to open (what the first paragraph should accomplish)
+- Body conventions (subheadings, lists, code blocks if relevant)
+- How to close
+
+---
+
+## Phase 6: Update Config
 
 Update `.content-ops/config.md`:
 
-- For each content type in `content_types` that does not already have a type-specific `guidelines` file, set `guidelines: ".content-ops/content-style-guide.md"`
-- Set `reference_content` to 2–3 of the most representative existing files found during Phase 2 scanning
+- For each content type, set `guidelines` as a list:
+  ```yaml
+  guidelines:
+    - ".content-ops/content-styles/general.md"
+    - ".content-ops/content-styles/[type].md"
+  ```
+- Set `reference_content` to 2–3 representative files from Phase 2 scanning
 
 Preserve all other fields.
 
 ---
 
-## Phase 6: Confirm and guide
+## Phase 7: Confirm and Guide
 
 ```text
-✅ Style guide created at .content-ops/content-style-guide.md
+Done! Style guides created in .content-ops/content-styles/
 
-Voice summary:
-  • [characteristic 1 from the guide]
-  • [characteristic 2]
-  • [characteristic 3]
+  General:
+    • [characteristic 1 from general.md]
+    • [characteristic 2]
 
-Config updated: guidelines paths and reference_content set.
+  Per-type:
+    • [type1] — [key structure rule]
+    • [type2] — [key structure rule]
 
-→ Next: /init strategy
-  Define your content pillars and editorial plan.
+Config updated: guidelines lists and reference_content set.
+
+-> Next: /init strategy
 ```
