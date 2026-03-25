@@ -6,19 +6,53 @@ Goal: Configure project basics in `.content-ops/config.md`.
 
 ## Phase 1: Scan
 
-Scan silently before asking anything. Read these files if they exist:
+Scan silently before asking anything.
+
+### Step 1a: Detect framework
+
+Check for the following config file signatures (in order):
+
+| File(s) | Framework |
+|---|---|
+| `astro.config.ts` or `astro.config.mjs` | Astro |
+| `next.config.js` or `next.config.ts` | Next.js |
+| `nuxt.config.ts` | Nuxt |
+| `hugo.toml` or (`config.toml` + `content/` directory) | Hugo |
+| None found | generic/unknown |
+
+Record the detected framework. Use it in Step 1b.
+
+### Step 1b: Read files
+
+Always read (if they exist):
 
 - `package.json` → extract `name`, `description`, `author`
-- `astro.config.ts` (or `astro.config.mjs`) → extract `site` URL, `i18n.locales`, `i18n.defaultLocale`
-- `src/content.config.ts` → extract collection names and base paths
 - `.content-ops/config.md` → parse existing config (if resuming)
 
-Also scan:
+Then apply framework-specific extraction:
 
-- `src/content/` → list immediate subdirectories (candidate content types)
-- For each subdirectory: check for language subfolders (`en/`, `it/`, etc.) and count `.md` files
+**Astro** (first-class):
+- `astro.config.ts` or `astro.config.mjs` → extract `site` URL, `i18n.locales`, `i18n.defaultLocale`
+- `src/content.config.ts` → extract collection names and base paths
+- Scan `src/content/` → list immediate subdirectories; for each: check for language subfolders (`en/`, `it/`, etc.) and count `.md` files
 
-Build a findings summary. Do not show it yet — it will be used to inform questions.
+**Next.js**:
+- `next.config.js` or `next.config.ts` → extract `i18n.locales`, `i18n.defaultLocale` if present
+- Scan `content/` or `posts/` → list immediate subdirectories; for each: check for language subfolders and count `.md`/`.mdx` files
+
+**Nuxt**:
+- `nuxt.config.ts` → extract `i18n.locales`, `i18n.defaultLocale` if present
+- Scan `content/` → list immediate subdirectories; for each: check for language subfolders and count `.md` files
+
+**Hugo**:
+- `hugo.toml` or `config.toml` → extract `defaultContentLanguage`, `[languages]` table if present
+- Scan `content/` → list immediate subdirectories; for each: check for language subfolders and count `.md` files
+
+**Generic/unknown**:
+- Skip framework-specific file reads
+- Scan common content directories (`content/`, `posts/`, `src/content/`) — use whichever exists
+
+Build a findings summary (detected framework + extracted data). Do not show it yet — it will be used to inform questions.
 
 ---
 
@@ -58,11 +92,11 @@ Ask each question separately using AskUserQuestion. Wait for the answer before a
 Present what was detected, then ask:
 
 ```text
-[If astro.config.ts has i18n config:]
-  Detected in astro.config.ts: [locales] (default: [defaultLocale])
+[If framework config has i18n config:]
+  Detected in [config file]: [locales] (default: [defaultLocale])
 
 [If content dirs have language subfolders:]
-  Language folders found in src/content/:
+  Language folders found in [content_base_path]:
     en/ — [N] files
     it/ — [N] files
 
@@ -119,16 +153,17 @@ Free-text. This is the most important input in this round — store it.
 
 ### Question 5: Content base path
 
-Only ask if `src/content/` was NOT found during the scan.
+Only ask if no content directory was found during the scan.
 
 ```text
 Where does your content live?
-  A — src/content/  (Astro standard)
-  B — content/      (root level)
-  C — Other (I'll specify)
+  A — src/content/  (Astro)
+  B — content/      (root level — Hugo, Nuxt, Next.js)
+  C — posts/        (common Next.js convention)
+  D — Other (I'll specify)
 ```
 
-Skip entirely if `src/content/` exists.
+Skip entirely if a content directory was already detected in Phase 1.
 
 ---
 
