@@ -13,17 +13,31 @@ description: |-
   Always deduplicates against the content index and existing backlog before appending.
 
   <example>
-  Orchestrator mode (called from write-content after committing "proof-of-work.md"):
-  finds "Hal Finney" mentioned twice — no article or glossary entry exists — appends
-  a high-priority article suggestion triggered by that file.
+  Context: write-content has just committed "proof-of-work.md" and is invoking
+  backlog-suggester to find follow-on content gaps.
+  user: "triggered_by: content/articles/proof-of-work.md, mode: orchestrator"
+  assistant: "I'll use backlog-suggester to scan the new article for unaddressed
+  concepts and append any net-new gaps to the backlog."
+  <commentary>
+  Orchestrator mode — write-content passes the committed file path; the agent
+  scans it for mentioned concepts (e.g. "Hal Finney" appears twice, no article
+  exists) and appends high-priority suggestions without user interaction.
+  </commentary>
   </example>
 
   <example>
-  User mode (called from /suggest-content with payload "articles related to bitcoin mining"):
-  scans pillars for mining-adjacent gaps, scores by prerequisite coverage and theme
-  balance, surfaces top candidates with rationale, writes approved ones to backlog.
+  Context: The user has run /suggest-content and wants gap analysis focused on
+  a specific theme.
+  user: "articles related to bitcoin mining"
+  assistant: "I'll use backlog-suggester to survey the corpus for mining-adjacent
+  pillar gaps and surface the top candidates with rationale."
+  <commentary>
+  User mode — the payload narrows scope to mining topics; the agent scores
+  candidates by prerequisite coverage and theme balance, runs a timeliness check,
+  then asks the user which suggestions to write to the backlog.
+  </commentary>
   </example>
-tools: Read, Glob, Grep, WebSearch, Write, TodoWrite
+tools: ["Read", "Glob", "Grep", "WebSearch", "Write", "TodoWrite"]
 model: sonnet
 color: green
 ---
