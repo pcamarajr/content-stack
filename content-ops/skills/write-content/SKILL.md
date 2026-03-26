@@ -319,6 +319,35 @@ The content index is regenerated in this phase (before commit) so it stays in sy
 
 ---
 
+## Phase 10: Suggest Backlog Additions
+
+**Skip this phase entirely if** the `backlog_suggester` key is absent or commented out in `.content-ops/config.md`.
+
+Spawn the `backlog-suggester` agent via the Task tool:
+
+```text
+Use the backlog-suggester agent.
+
+Mode: orchestrator
+Triggered by: [file path from Phase 5]
+Config:
+  backlog_file: [backlog_file from config]
+  content_index_path: [content_index_path from config]
+  content_strategy: [content_strategy from config]
+  content_pillars_path: [content_pillars_path from config, or "not configured"]
+  backlog_suggester: [full backlog_suggester block from config]
+```
+
+After the agent returns:
+
+- If `auto_add` is true and entries were appended: stage `backlog_file` and commit it
+  separately with message `content: update backlog after [slug]`
+- If `auto_add` is false: the agent has already handled user interaction and writing;
+  nothing more to do
+- If no new entries were found: nothing to commit
+
+---
+
 ## Batch Mode (Backlog)
 
 When mode is **autonomous** (source is backlog), phases 4-9 loop per item:
