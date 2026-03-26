@@ -104,17 +104,14 @@ options:
     description: "I'll describe what's in and out of scope in my own words"
 ```
 
-If **I want to refine it**: use a follow-up to collect their description:
+If **I want to refine it**: ask as a plain follow-up (no options — free-text reply):
 
 ```
-question: "Describe what's in scope for this site. Be specific about what should NOT be suggested — the agent will use this to filter candidates."
-header: "Refine scope"
-options:
-  - label: "Enter description"
-    description: "Type your scope definition in the Other field"
+Describe what's in scope for this site. Be specific about what should NOT be
+suggested — the agent will use this to filter candidates.
 ```
 
-The user types via the Other/free-text input. Store verbatim as `topic_boundaries`.
+Store the reply verbatim as `topic_boundaries`.
 
 ### Question 4: Content-type mapping
 
@@ -131,23 +128,20 @@ options:
 ```
 
 - If **Let the agent decide**: store `content_type_mapping: []`.
-- If **I'll define rules**: ask one follow-up:
+- If **I'll define rules**: ask as a plain follow-up (no options — free-text reply):
 
 ```
-question: "Describe your mapping rules. For example: 'acronyms and protocol names → glossary; people, events, and case studies → article'."
-header: "Mapping rules"
-options:
-  - label: "Enter rules"
-    description: "Type your rules in the Other field"
+Describe your mapping rules. For example: 'acronyms and protocol names → glossary;
+people, events, and case studies → article'.
 ```
 
-Parse the free text into a list of rule objects and store under `content_type_mapping`.
+Parse the reply into a list of rule objects and store under `content_type_mapping`.
 If parsing is ambiguous, store the raw string and add a comment.
 
 ### Question 5: Deduplication threshold
 
-Only ask this if the user seems technically engaged OR if `auto_add` is true (where
-false positives have higher cost). Skip for users who prefer simpler setups — the
+Only ask this if `auto_add` is true (where false positives have higher cost) OR if
+the user has asked a technical question during this session. Skip otherwise — the
 default (0.8) handles most cases well.
 
 If you decide to ask:
@@ -182,20 +176,6 @@ options:
 
 Store as `suggest_splits: false` or `suggest_splits: true`.
 
-If the user chooses yes, ask one follow-up:
-
-```
-question: "How should the agent decide an article needs splitting?"
-header: "Split signal"
-options:
-  - label: "Word count — articles over 2000 words covering 3+ distinct topics"
-    description: "Simple heuristic, easy to reason about"
-  - label: "Topic diversity — agent judges based on pillar coverage"
-    description: "More nuanced, based on how many pillar areas the article spans"
-```
-
-Store the chosen signal as a note in the config comment or as `suggest_splits_signal`.
-
 ---
 
 ## Phase 3: Write config
@@ -228,8 +208,7 @@ backlog_suggester:
   Dedup threshold:   [N]
   Split detection:   [On | Off]
 
-The agent runs automatically after each /write-content run.
-Call it manually any time with /suggest-content.
+Call it any time with /suggest-content.
 
 → Next: [next incomplete round, or "All rounds complete"]
 ```
