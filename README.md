@@ -16,7 +16,7 @@ Add this marketplace to your Claude Code project:
 
 Content creation and management plugin for static site blogs. Handles writing, translation, research, internal linking, style review, and knowledge indexing.
 
-**Agents:** content-linker, content-researcher, draft-writer, glossary-creator, image-generator, style-enforcer
+**Agents:** backlog-suggester, content-linker, content-researcher, draft-writer, glossary-creator, image-generator, style-enforcer
 
 **Skills:** write-content, translate, review-content, internal-linking, fact-check, suggest-content, content-style, content-image-style, content-inventory, reindex, update-trackers, init, link-building
 
