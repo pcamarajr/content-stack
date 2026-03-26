@@ -1,8 +1,24 @@
 # content-stack
 
-A curated collection of Claude Code plugins by [@pcamarajr](https://github.com/pcamarajr), covering content operations, SEO, and static site tooling.
+A plugin ecosystem for founders and marketers who want to run a serious content operation without hiring a full specialist team.
 
-## Installation
+`content-stack` helps you build and maintain content websites with AI-assisted workflows across strategy, production, and publishing.
+
+## Who This Is For
+
+- Founders and marketers with limited time and budget
+- Small teams that need repeatable content workflows
+- Teams building markdown-first sites (especially Astro)
+- Agencies that need to scale content operations with fewer manual steps
+
+## What You Can Do With It
+
+- Build a production-ready Astro content site
+- Create and maintain SEO-focused blog content
+- Standardize writing quality and style across content
+- Scale content operations with reusable skills and agents
+
+## Install Marketplace
 
 Add this marketplace to your Claude Code project:
 
@@ -10,57 +26,118 @@ Add this marketplace to your Claude Code project:
 /plugin marketplace add pcamarajr/content-stack
 ```
 
-## Available Plugins
+Then install the plugin you need:
 
-### [content-ops](./content-ops/README.md)
+```bash
+/plugin install content-ops@content-stack
+/plugin install astro-builder@content-stack
+/plugin install astro-lsp@content-stack
+/plugin install cost-tracker@content-stack
+```
 
-Content creation and management plugin for static site blogs. Handles writing, translation, research, internal linking, style review, and knowledge indexing.
+## Quick Start Paths
 
-**Agents:** backlog-suggester, content-linker, content-researcher, draft-writer, glossary-creator, image-generator, style-enforcer
+### Path A: Start from a template (fastest)
 
-**Skills:** write-content, translate, review-content, internal-linking, fact-check, suggest-content, content-style, content-image-style, content-inventory, reindex, update-trackers, init, link-building
+Use the Astro starter generated with the current `astro-builder` plugin:
 
-To install this plugin:
+- [`pcamarajr/astro-template`](https://github.com/pcamarajr/astro-template)
+
+Then adapt it to your project using:
+
+```bash
+/astro-builder:init
+```
+
+### Path B: Add content workflows to an existing site
+
+Install `content-ops` and initialize:
+
+```bash
+/plugin install content-ops@content-stack
+/init
+/reindex
+```
+
+Run your first draft workflow:
+
+```bash
+/write-content article "Your topic"
+```
+
+## Plugins
+
+### [`content-ops`](./content-ops/README.md)
+
+Content operations plugin for markdown-based sites. It handles research, drafting, review, translation, linking, and indexing through a phase-based workflow.
+
+- **Best for:** publishing better blog content with less manual work
+- **Key skills:** `init`, `write-content`, `review-content`, `fact-check`, `reindex`
+
+Install:
 
 ```bash
 /plugin install content-ops@content-stack
 ```
 
-### [cost-tracker](./cost-tracker/README.md)
+### [`astro-builder`](./astro-builder/README.md)
 
-Track Claude Code token usage and estimated API cost per session. Shows a live running cost in the status bar and a session summary on stop. Logs are scoped to your project and stored in `.cost-log/`.
+Astro 6 site builder plugin that scaffolds and evolves static content sites using the page-views pattern, i18n, content collections, and quality gates.
 
-**Skills:** report
+- **Best for:** creating or restructuring Astro content architectures
+- **Key skills:** `init`, `new-page`, `new-content-type`, `translate`, `audit`
 
-To install this plugin:
+Install:
 
 ```bash
-/plugin install cost-tracker@content-stack
+/plugin install astro-builder@content-stack
 ```
 
-### [astro-lsp](./astro-lsp/README.md)
+### [`astro-lsp`](./astro-lsp/README.md)
 
-Astro language server for Claude Code. Provides code intelligence, diagnostics, and formatting for `.astro` files. Automatically installs the language server binary at session start — works out of the box in remote and cloud environments.
+Astro language server integration for Claude Code with diagnostics, formatting, and code intelligence for `.astro` files.
 
-To install this plugin:
+Install:
 
 ```bash
 /plugin install astro-lsp@content-stack
 ```
 
-### [astro-builder](./astro-builder/README.md)
+### [`cost-tracker`](./cost-tracker/README.md)
 
-Astro 6 static content site builder. Enforces the page-views pattern, i18n via `Astro.currentLocale`, content collections with `glob()` loaders, Biome, and pnpm. Designed for markdown-based content sites: blogs, education platforms, documentation, and news sites.
+Session-level token and cost tracking for Claude Code, including subagent runs.
 
-**Agents:** astro-architect, astro-builder
-
-**Skills:** init, new-page, new-content-type, translate, audit
-
-To install this plugin:
+Install:
 
 ```bash
-/plugin install astro-builder@content-stack
+/plugin install cost-tracker@content-stack
 ```
+
+## Current Focus
+
+This ecosystem follows a dogfood-first model: features are built through real usage on active projects and then generalized.
+
+Current emphasis:
+
+- SEO-ready blog workflows
+- Better quality and consistency in published content
+- Faster iteration with reusable skills/agents
+
+## Public Validation Status
+
+The project is in active public validation. Core workflows are usable and being expanded with real-world usage.
+
+If you try it, share feedback and use cases:
+
+- Open an issue: <https://github.com/pcamarajr/content-stack/issues>
+- Send a DM: <https://linkedin.com/in/pcamarajr>
+
+## 90-Day Direction
+
+- Strengthen SEO skills and agents for blog workflows
+- Improve install-to-first-value experience
+- Publish reusable templates and examples
+- Expand from blog workflows into broader content operations use cases
 
 ## License
 

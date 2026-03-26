@@ -1,8 +1,12 @@
 # cost-tracker
 
-Track Claude Code token usage and estimated API cost per session. Logs are scoped to your project and stored in `.cost-log/`.
+Track Claude Code token usage and estimated API cost per session and subagent run.
 
-## What it does
+`cost-tracker` gives you visibility into usage trends so you can optimize workflows without guessing.
+
+> **Status:** not production-ready yet. It currently has known issues and edge cases, and will be improved through ongoing iterations.
+
+## What It Does
 
 - Fires a `SessionStart` hook to capture the session transcript path for live tracking
 - Shows a live running cost in the Claude Code status bar as the session progresses
@@ -17,13 +21,12 @@ Track Claude Code token usage and estimated API cost per session. Logs are scope
 
 ## Installation
 
-Add `cost-tracker` to your project's `.claude/settings.json` plugins list or install via the marketplace:
-
 ```bash
-claude plugin install cost-tracker
+/plugin marketplace add pcamarajr/content-stack
+/plugin install cost-tracker@content-stack
 ```
 
-## Log location
+## Log Location
 
 ```
 <your-project>/
@@ -69,7 +72,7 @@ Session records have no `record_type` field (or it is implicitly `"session"`). `
 
 Add `.cost-log/` to your `.gitignore` if you don't want to commit session logs.
 
-## On-demand report
+## On-Demand Report
 
 Run `/cost-tracker:report` in any Claude Code session to see:
 
@@ -79,6 +82,12 @@ Run `/cost-tracker:report` in any Claude Code session to see:
 - Daily spend for the last 7 days
 - Cache hit rate and estimated savings vs. no cache
 
+## When To Use
+
+- You want monthly visibility on AI spend per project
+- You run many subagents and need real cost attribution
+- You are tuning prompts/workflows for better cost-efficiency
+
 ## Limitations
 
 - **Web sessions not tracked.** `claude.ai` sessions do not expose a transcript to hooks.
@@ -86,7 +95,7 @@ Run `/cost-tracker:report` in any Claude Code session to see:
 - **Haiku 4 pricing is a placeholder.** The Haiku 4 rate in the pricing table is based on Haiku 3.5 rates — update `post-session-cost.sh` when Anthropic publishes official Haiku 4 pricing.
 - **No budget enforcement.** This plugin is observability-only and never blocks sessions.
 
-## Pricing table
+## Pricing Table
 
 | Model | Input | Output | Cache write | Cache read |
 |---|---|---|---|---|
