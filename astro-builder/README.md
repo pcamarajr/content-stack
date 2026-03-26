@@ -1,34 +1,40 @@
 # astro-builder
 
-A Claude Code plugin for building Astro 6 static content sites — opinionated, minimal, and correct.
+Build and evolve Astro 6 content sites with a repeatable architecture, not one-off prompts.
 
-Enforces the [Astro 6 documentation](https://docs.astro.build/llms-small.txt) and [MDN Web API](https://developer.mozilla.org/en-US/) as its sole references. Designed for markdown-based content sites: blogs, education platforms, documentation, news sites.
+`astro-builder` is part of [content-stack](https://github.com/pcamarajr/content-stack), built for founders, marketers, and lean teams that want a production-ready content site without custom engineering for every step.
 
-Part of the [content-stack](https://github.com/pcamarajr/content-stack) marketplace.
+Current scope is intentionally basic. The long-term direction is a strongly opinionated set of skills and agents that can support building almost any content-first product on top of Astro.
 
 ---
 
 ## Install
 
-```shell
+```bash
+/plugin marketplace add pcamarajr/content-stack
 /plugin install astro-builder@content-stack
 ```
 
 ---
 
-## Quick start
+## Quick Start
 
-Run `/astro-builder:init` in any Astro project (new or existing):
+Run setup in any Astro project (new or existing):
 
-```shell
+```bash
 /astro-builder:init
 ```
 
-The init skill will:
-1. Scan your repo for existing assets (package.json, astro.config.ts, CSS, i18n files)
-2. Interview you one question at a time (purpose, locales, content types, design system)
-3. Generate `CLAUDE.md` + `.astro-builder/` configuration folder
-4. Optionally scaffold missing project files and run the first build
+`/astro-builder:init` will:
+
+1. Scan your repo for existing structure and tooling
+2. Interview you one question at a time (goals, locales, content, design)
+3. Generate project guidance files (`CLAUDE.md` + `.astro-builder/*`)
+4. Optionally scaffold missing files and run quality checks
+
+If you want the fastest start, begin from the ready template:
+
+- <https://github.com/pcamarajr/astro-template>
 
 ---
 
@@ -44,7 +50,7 @@ The init skill will:
 
 ### Examples
 
-```shell
+```bash
 # Add an "about" page to all locales
 /astro-builder:new-page about
 
@@ -66,6 +72,15 @@ The init skill will:
 # Audit the full project
 /astro-builder:audit
 ```
+
+---
+
+## When To Use
+
+- You are starting a new Astro content site
+- You need to standardize i18n and content collections
+- You want predictable structure for pages and content types
+- You are refactoring an existing Astro repo into a cleaner architecture
 
 ---
 
@@ -95,7 +110,7 @@ Claude reads these files at the start of every session to maintain consistency a
 
 ---
 
-## What this plugin enforces
+## Architecture Rules Enforced
 
 ### Astro 6 patterns
 
@@ -123,12 +138,19 @@ biome check .   # Zero lint/format errors
 
 ---
 
-## Reference docs
+## References
 
 This plugin cites only two external references for any web or Astro API:
 
 - **Astro 6**: https://docs.astro.build/llms-small.txt
 - **MDN Web API**: https://developer.mozilla.org/en-US/
+
+---
+
+## Feedback
+
+- Issues: <https://github.com/pcamarajr/content-stack/issues>
+- DM: <https://linkedin.com/in/pcamarajr>
 
 ---
 

@@ -2,11 +2,13 @@
 
 > **Work in progress.** The plugin works — but it's still being polished. Some defaults are borrowed from the project it was built on and aren't fully agnostic yet. Expect rough edges and active iteration. Follow progress on [LinkedIn](https://linkedin.com/in/pcamarajr).
 
-A Claude Code plugin that gives you a team of AI writers running from your strategy — so you stay focused on what to build, not on writing every word.
+A Claude Code plugin that turns your content strategy into a repeatable writing system — so you can publish faster without sacrificing quality.
 
 You define your content pillars, goals, and style. content-ops handles research, writing, translation, internal linking, fact-checking, and indexing. You review, approve, and ship.
 
 Works with any markdown-based static site (Astro, Next.js with Contentlayer, Hugo, and others) — if your content has frontmatter and a body, it should work.
+
+Part of the [content-stack](https://github.com/pcamarajr/content-stack) marketplace.
 
 ---
 
@@ -29,13 +31,7 @@ It's the same loop you'd run with a copywriter — but always available, always 
 
 ### 1. Install
 
-Copy the plugin into your project:
-
-```bash
-cp -r content-ops/ your-project/.claude/plugins/content-ops
-```
-
-Or install via the Claude Code plugin marketplace:
+Install via the Claude Code plugin marketplace:
 
 ```
 /plugin marketplace add pcamarajr/content-stack
@@ -81,6 +77,10 @@ Scans your existing content and builds `.content-ops/content-index.json` — the
 ```
 
 That's it. Claude takes it from there.
+
+If you want a ready Astro base to test this quickly, start from:
+
+- <https://github.com/pcamarajr/astro-template>
 
 ---
 
