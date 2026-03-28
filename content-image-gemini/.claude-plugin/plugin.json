@@ -1,0 +1,10 @@
+{
+  "name": "content-image-gemini",
+  "description": "AI image generation for content using the Gemini CLI and Nano Banana extension. Headless-friendly: auto-installs dependencies on first use.",
+  "author": {
+    "name": "pcamarajr"
+  },
+  "repository": "https://github.com/pcamarajr/content-stack",
+  "license": "MIT",
+  "keywords": ["image", "gemini", "nanobanana", "content", "generation"]
+}

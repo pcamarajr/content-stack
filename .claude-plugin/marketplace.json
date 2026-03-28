@@ -15,6 +15,16 @@
       "category": "content"
     },
     {
+      "name": "content-image-gemini",
+      "description": "AI image generation for content using the Gemini CLI and Nano Banana extension. Headless-friendly: auto-installs dependencies on first use.",
+      "version": "1.0.0",
+      "author": {
+        "name": "pcamarajr"
+      },
+      "source": "./content-image-gemini",
+      "category": "content"
+    },
+    {
       "name": "astro-builder",
       "description": "Build Astro 6 static content sites with Claude. Enforces best practices for i18n, content collections, the page-views pattern, and design systems. Starts with /astro-builder:init to configure your project.",
       "version": "1.0.0",

@@ -30,6 +30,7 @@ Then install the plugin you need:
 
 ```bash
 /plugin install content-ops@content-stack
+/plugin install content-image-gemini@content-stack
 /plugin install astro-builder@content-stack
 /plugin install astro-lsp@content-stack
 /plugin install cost-tracker@content-stack
@@ -78,6 +79,19 @@ Install:
 
 ```bash
 /plugin install content-ops@content-stack
+```
+
+### [`content-image-gemini`](./content-image-gemini/README.md)
+
+AI image generation for content using the Gemini CLI and Nano Banana extension. Headless-friendly: auto-installs the CLI and extension on first use.
+
+- **Best for:** generating hero images, inline illustrations, and diagrams for blog articles
+- **Agents:** `image-generator`
+
+Install:
+
+```bash
+/plugin install content-image-gemini@content-stack
 ```
 
 ### [`astro-builder`](./astro-builder/README.md)
