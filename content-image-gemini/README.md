@@ -5,10 +5,10 @@ AI image generation using the [Gemini CLI](https://github.com/google-gemini/gemi
 ## Prerequisites
 
 - **Node.js** — required to install the Gemini CLI via `npm`
-- **`NANOBANANA_API_KEY`** — a Gemini API key from [Google AI Studio](https://aistudio.google.com)
+- **`GEMINI_API_KEY`** — a Gemini API key from [Google AI Studio](https://aistudio.google.com)
 
 ```bash
-export NANOBANANA_API_KEY="your-api-key-here"
+export GEMINI_API_KEY="your-api-key-here"
 ```
 
 ## Usage
