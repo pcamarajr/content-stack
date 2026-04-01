@@ -56,22 +56,28 @@ Use AskUserQuestion with the suggested pillars as options plus "I'll define my o
 
 ### Question 2: Per-content-type word count targets
 
-For each content type (from content-ops config, or ask if not available):
+**Determine which content types to configure:**
 
-Ask once using AskUserQuestion with options:
+- **If content-ops is configured** (`content_ops_config` is set and the file exists): read `content_types` from it. Use only the keys actually defined there. If the content-ops config has a `glossary` block with `enabled: true`, include the glossary content type; otherwise do not assume a glossary exists.
+- **If content-ops is not configured**: ask the user to list their content types before proceeding.
+
+  ```text
+  What content types does your site publish?
+  (e.g. articles, posts, guides — one per line or comma-separated)
+  ```
+
+  Use their answer as the list of types to configure.
+
+For each confirmed content type, ask once using AskUserQuestion:
 
 ```text
 For [content type]: what's your minimum target word count for SEO?
 ```
 
 Options:
-- Short (50–300 words) — suitable for glossary entries
+- Short (50–300 words)
 - Medium (600–1,000 words)
 - Long (1,200–2,000 words) — in-depth guides and pillar pages
-
-Use sensible defaults if content-ops is not configured:
-- `article` → 800 words
-- `glossary` → 50 words
 
 ---
 

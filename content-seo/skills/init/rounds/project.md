@@ -8,16 +8,41 @@ Goal: Configure site basics in `.content-seo/config.md`.
 
 Read silently before asking anything.
 
-### Step 1a: Read existing configs
+### Step 1a: Detect framework
+
+Check for the following config file signatures (in order):
+
+| File(s) | Framework |
+|---|---|
+| `astro.config.ts` or `astro.config.mjs` | Astro |
+| `next.config.js` or `next.config.ts` | Next.js |
+| `nuxt.config.ts` | Nuxt |
+| `hugo.toml` or (`config.toml` + `content/` directory) | Hugo |
+| None found | generic/unknown |
+
+Record the detected framework. Use it in Step 1b.
+
+### Step 1b: Read existing configs
 
 Always read (if they exist):
 
 - `.content-seo/config.md` → parse existing config (if resuming)
-- `.content-ops/config.md` → extract `default_language` and any site URL hints
+- `.content-ops/config.md` → extract `default_language`, `languages`, and any site URL hints
 - `package.json` → extract `name`, `description`
-- `astro.config.ts` or `astro.config.mjs` → extract `site` URL if present
 
-Build a findings summary from detected values. Do not show it yet.
+Then apply framework-specific extraction:
+
+**Astro:** Read `astro.config.ts` or `astro.config.mjs` → extract `site` URL, `i18n.locales`, `i18n.defaultLocale`.
+
+**Next.js:** Read `next.config.js` or `next.config.ts` → extract `i18n.locales`, `i18n.defaultLocale` if present.
+
+**Nuxt:** Read `nuxt.config.ts` → extract `i18n.locales`, `i18n.defaultLocale` if present.
+
+**Hugo:** Read `hugo.toml` or `config.toml` → extract `defaultContentLanguage`, `[languages]` table if present. Extract `baseURL` as site URL.
+
+**Generic/unknown:** Skip framework-specific file reads.
+
+Build a findings summary (detected framework + extracted data). Do not show it yet.
 
 ### Step 1b: Existing config check
 
@@ -50,7 +75,7 @@ Ask each question separately using AskUserQuestion. Wait for the answer before a
 
 ### Question 1: Site URL
 
-Pre-fill with the `site` value from Astro config if found.
+Pre-fill with the site URL detected from the framework config (e.g. `site` in Astro, `baseURL` in Hugo) if found.
 
 ```text
 What is the base URL of your published site?
@@ -62,7 +87,7 @@ Free-text.
 
 ### Question 2: Default locale
 
-Pre-fill from content-ops `default_language` or Astro i18n config if available.
+Pre-fill from content-ops `default_language` or the framework's i18n config if available.
 
 ```text
 What is your site's primary locale code?
