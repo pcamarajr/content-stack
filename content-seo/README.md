@@ -61,7 +61,7 @@ Researches the target keyword via DataForSEO and rewrites the content for better
 
 Config lives in `.content-seo/config.md` (created by `/init`). Sensitive credentials live in environment variables only — never in files.
 
-See [config.example.md](./config.example.md) for the full schema.
+See [config.example.md](./docs/config.example.md) for the full schema.
 
 ## Roadmap
 

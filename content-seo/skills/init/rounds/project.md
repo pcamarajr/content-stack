@@ -114,7 +114,7 @@ If `.content-ops/config.md` exists on disk, include:
 content_ops_config: ".content-ops/config.md"
 ```
 
-Do not copy `config.example.md`. Write only what was collected in this round.
+Do not copy `docs/config.example.md`. Write only what was collected in this round.
 No .gitignore changes — `.content-seo/config.md` is tracked in git.
 
 ---
