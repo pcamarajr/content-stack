@@ -30,6 +30,7 @@ Then install the plugin you need:
 
 ```bash
 /plugin install content-ops@content-stack
+/plugin install content-seo@content-stack
 /plugin install content-image-gemini@content-stack
 /plugin install astro-builder@content-stack
 /plugin install astro-lsp@content-stack
@@ -79,6 +80,20 @@ Install:
 
 ```bash
 /plugin install content-ops@content-stack
+```
+
+### [`content-seo`](./content-seo/README.md)
+
+SEO audit and optimization plugin for static content sites. Analyzes live published pages for technical issues, fixes them in source markdown, and rewrites content using DataForSEO keyword intelligence.
+
+- **Best for:** improving organic reach for existing content without an SEO agency
+- **Key skills:** `init`, `audit`, `optimize`
+- **Agents:** `page-analyzer`, `keyword-researcher`
+
+Install:
+
+```bash
+/plugin install content-seo@content-stack
 ```
 
 ### [`content-image-gemini`](./content-image-gemini/README.md)

@@ -1,0 +1,18 @@
+{
+  "name": "content-seo",
+  "description": "SEO audit and optimization plugin for static content sites. Analyzes live pages for technical issues, fixes them in source markdown, and rewrites content using DataForSEO keyword intelligence.",
+  "author": {
+    "name": "pcamarajr"
+  },
+  "repository": "https://github.com/pcamarajr/content-stack",
+  "license": "MIT",
+  "keywords": [
+    "seo",
+    "content",
+    "optimization",
+    "audit",
+    "keywords",
+    "dataforseo",
+    "static-site"
+  ]
+}
