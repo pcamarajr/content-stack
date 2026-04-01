@@ -39,11 +39,11 @@ Try to read `.content-ops/config.md` → note if content-ops is present (display
 
 | Round | Complete when |
 | ---- | ----- |
-| project | `site_url`, `default_locale`, and `target_audience` are all set in `.content-seo/config.md` |
-| credentials | `$DATAFORSEO_LOGIN` and `$DATAFORSEO_PASSWORD` environment variables are both non-empty (check with Bash: `[ -n "$DATAFORSEO_LOGIN" ] && [ -n "$DATAFORSEO_PASSWORD" ] && echo "set" || echo "missing"`) |
-| strategy | `pillars` has at least one entry AND `seo_rules` has at least one content type key in `.content-seo/config.md` |
+| project | `gsc_property` and `content_ops_config` are both set in `.content-seo/config.md` |
+| credentials | GSC: `gsc_credentials_path` points to a readable file OR `$GOOGLE_APPLICATION_CREDENTIALS` is set and file exists. DataForSEO: `$DATAFORSEO_LOGIN` and `$DATAFORSEO_PASSWORD` both non-empty (check with Bash). GSC is required; DataForSEO is optional. |
+| strategy | `seo_rules` has at least one content type key in `.content-seo/config.md` |
 
-If `.content-seo/config.md` does not exist: `project` and `strategy` rounds are incomplete. Credentials are always checked live from the environment.
+If `.content-seo/config.md` does not exist: all rounds are incomplete. Credentials are always checked live from the environment.
 
 Use 🔄 (started) when the config file exists but only some required fields for that round are set.
 
@@ -52,18 +52,18 @@ Use 🔄 (started) when the config file exists but only some required fields for
 ```text
 ## content-seo — Setup Status
 
-Site:        [site_url from config, or "—"]
-Config:      .content-seo/config.md ([found | not found])
-content-ops: [found | not found]
+GSC property: [gsc_property from config, or "—"]
+Config:        .content-seo/config.md ([found | not found])
+content-ops:   [found | not found]
 
-✅ /init project      — [one-line summary, e.g. "https://mysite.com · en · audience set"]
-⬜ /init credentials  — not started
-⬜ /init strategy     — not started
+✅ /seo init project      — [one-line summary, e.g. "sc-domain:mysite.com · content-ops linked"]
+⬜ /seo init credentials  — not started
+⬜ /seo init strategy     — not started
 
-→ Next: /init [first incomplete round]
+→ Next: /seo init [first incomplete round]
 
 What each step does:
-  project      — Set site URL, locale, and target audience description
-  credentials  — Configure DataForSEO API credentials via environment variables
-  strategy     — Define SEO content pillars and per-content-type SEO rules
+  project      — Link content-ops config and set GSC property + credentials path
+  credentials  — Verify GSC service account access and optional DataForSEO credentials
+  strategy     — Define per-content-type SEO rules (meta description length, H1 keyword)
 ```

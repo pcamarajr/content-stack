@@ -61,6 +61,52 @@ Read `.content-ops/config.md` in this phase. Extract and hold these values — t
 1. The content strategy (`content_strategy`) — understand topic context
 2. If `content_pillars_path` is configured: find the matching pillar file for this topic
 
+**SEO integration check (at end of Phase 2):**
+
+```
+If .content-seo/config.md exists:
+  Set seo_enabled = true
+  Check env: DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD both set?
+  If both set → set seo_brief_available = true
+  Else → set seo_brief_available = false (continue without SEO brief, no hard stop)
+Else:
+  Set seo_enabled = false
+  Set seo_brief_available = false
+```
+
+---
+
+## Phase 2.5: SEO Brief (conditional)
+
+**Skip this phase entirely if any of the following are true:**
+
+- `seo_enabled` is false
+- `seo_brief_available` is false
+- The content type is the glossary type (i.e., matches `glossary.content_type` in config)
+
+If all conditions pass:
+
+1. Read `.content-seo/config.md` to get `seo_rules` for this content type.
+2. Spawn the `keyword-researcher` agent via Task with a focused prompt:
+
+```text
+Use the keyword-researcher agent.
+
+Keyword: [topic — proposed primary keyword based on title/topic]
+Locale: [default_language from content-ops config]
+Audience: [summary from content_strategy]
+Pillars context: [pillar names from content_pillars_path, comma-separated, or "not configured"]
+Cache path: .content-seo/keyword-cache/
+Cache TTL days: [research_cache_ttl_days from content-ops config]
+
+Check the cache first. Only call DataForSEO for cache misses or stale entries.
+Return: primary keyword, volume, related keywords (top 5 with volumes), content gaps (3 subtopics).
+```
+
+3. Store `seo_brief = { keyword, volume, related_keywords, content_gaps }`.
+4. **In autonomous/backlog mode:** auto-confirm the best keyword returned by the agent. Do not ask the user.
+5. **In interactive mode:** Show the proposed keyword and ask for confirmation before proceeding.
+
 ---
 
 ## Phase 3: Plan
@@ -155,9 +201,33 @@ Follow the structure guide and formatting rules from the content-style skill for
 Return the file path of the created content.
 ```
 
+**If `seo_brief` is set**, add the following to the Task prompt before the closing line:
+
+```text
+SEO brief:
+  Target keyword: [seo_brief.keyword] ([seo_brief.volume]/mo)
+  Related keywords: [seo_brief.related_keywords as comma-separated list]
+  Content gaps to address: [seo_brief.content_gaps as numbered list]
+
+SEO instructions:
+  - Include the target keyword in the first 100 words of the article body
+  - Include the target keyword in at least one H2 heading (naturally)
+  - Weave related keywords into headings and body text naturally — no keyword stuffing
+  - Cover all 3 content gaps as sections or meaningful subsections
+```
+
 **For backlog items:** Also include articles created earlier in this batch as potential cross-references.
 
 **Store the created file path(s)** — they are passed as input to Phase 5.5 and beyond.
+
+**After Phase 5 — inject seo_keyword into frontmatter:**
+
+```
+If seo_brief is set:
+  Read the created file
+  Add seo_keyword: "[seo_brief.keyword]" to the frontmatter
+  Write the updated file
+```
 
 ---
 
