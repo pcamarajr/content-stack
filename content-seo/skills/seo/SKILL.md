@@ -1,7 +1,7 @@
 ---
 name: seo
-description: Site-level SEO intelligence. Routes to one of four workflows — status (site-wide GSC performance), opportunities (pages ranking 4–20), diagnose (deep-dive a page with GSC data + fixes), or brief (keyword research before writing).
-argument-hint: "<status|opportunities|diagnose|brief> [args]"
+description: Site-level SEO intelligence. Routes to one of five workflows — status (site-wide GSC performance), opportunities (pages ranking 4–20), diagnose (deep-dive a page with GSC data + fixes), brief (keyword research before writing), or coverage (audit GSC indexing errors from a CSV export).
+argument-hint: "<status|opportunities|diagnose|brief|coverage> [args]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, TodoWrite, AskUserQuestion
 ---
@@ -24,6 +24,7 @@ Parse `$ARGUMENTS`:
 | `opportunities` | Opportunities workflow |
 | `diagnose <file>` | Diagnose workflow |
 | `brief <topic>` | Brief workflow |
+| `coverage [csv]` | Coverage workflow |
 | `init [round]` | Delegate to init skill: read `skills/init/SKILL.md` and follow instructions |
 | empty or unknown | Show usage (below) |
 
@@ -36,6 +37,7 @@ Parse `$ARGUMENTS`:
   opportunities       — Pages ranking 4–20 with the most untapped traffic
   diagnose <file>     — Deep-dive a page: GSC data + technical audit + content fixes
   brief <topic>       — Keyword research brief before writing (requires DataForSEO)
+  coverage [csv]      — Audit GSC indexing errors: paste URLs from GSC or provide a CSV, find root causes, save report
   init [round]        — Setup wizard (project, credentials, strategy)
 ```
 
@@ -429,3 +431,137 @@ Content gaps to cover:
 **If called standalone:** Ask "Save this brief to a file for reference?" with options "Yes, save" / "No thanks". If yes, write to `.content-seo/briefs/[slug].md`.
 
 **If called from write-content:** Return the brief object to the orchestrator. Do not commit, do not save file.
+
+---
+
+## Coverage workflow
+
+**Arguments:** optional CSV path extracted from `$ARGUMENTS` after `coverage `.
+
+### Step C1: Resolve coverage input
+
+Extract what follows `coverage ` from `$ARGUMENTS`.
+
+- If it's a non-empty string pointing to an existing file → `mode: csv`, `csv_path: [value]`. Proceed to Step C2.
+- Otherwise (empty argument, or file not found) → prompt the user.
+
+**If no valid CSV was provided,** use AskUserQuestion:
+
+```text
+How would you like to provide the GSC coverage data?
+
+Note: GSC's Export button only downloads up to 1,000 representative examples and
+doesn't produce a clean url/reason table. The reliable approach is to open each
+error type in GSC → copy the URLs → paste them here.
+
+  A — Paste URLs directly: paste the URL list for each error type in any format;
+      just describe which error type each group belongs to.
+
+  B — Provide a CSV file path: build a CSV with columns `url` and `reason`
+      and enter the path (e.g. ~/Downloads/gsc-errors.csv).
+```
+
+Options: "Paste URLs now (A)" / "Provide CSV path (B)"
+
+**If user chooses A (paste):**
+
+Use AskUserQuestion: "Paste your URL list. Include the error type for each group — any format works:"
+
+Set `mode: free_form`, `free_form_input: [pasted text]`. Proceed to Step C2.
+
+**If user chooses B (CSV path):**
+
+Use AskUserQuestion: "Enter the CSV file path:"
+
+Validate file exists (`[ -f "[path]" ]`). If not found, ask once more. If still not found, hard-stop with: "File not found: [path]".
+
+Set `mode: csv`, `csv_path: [path]`. Proceed to Step C2.
+
+### Step C2: Spawn coverage-auditor
+
+Spawn the `coverage-auditor` agent via Task:
+
+```text
+Use the coverage-auditor agent.
+
+input_mode: [csv or free_form]
+csv_path: [csv_path — only if mode is csv]
+free_form_input: [free_form_input — only if mode is free_form]
+site_url: [site_url from content-ops config]
+content_types: [content_types from content-ops config]
+```
+
+### Step C3: Format and save report
+
+Parse the `COVERAGE_FINDINGS` returned by the agent and write:
+
+**Compute today's date:**
+
+```bash
+python3 -c "from datetime import date; print(date.today().isoformat())"
+```
+
+**Create directory if needed:**
+
+```bash
+mkdir -p .content-seo/coverage
+```
+
+**Write `.content-seo/coverage/[date].md`** with this structure:
+
+```markdown
+---
+date: [date]
+csv_source: [csv_path]
+total_analyzed: N
+---
+
+## Coverage Audit — [site_url]
+Source: [csv_path] · [N] URLs analyzed · [date]
+
+### Summary
+| Category | Count |
+|---|---|
+[one row per BUCKET + UNRESOLVED]
+
+---
+
+### [Reason] (N URLs)
+
+**Likely root cause:** [codebase_finding]
+**Recommended action:** [recommended_action]
+
+| URL | Source file | Finding | HTTP |
+|---|---|---|---|
+[one row per URL in bucket]
+
+---
+[repeat per bucket]
+
+### Could not determine root cause (N URLs)
+
+| URL | GSC Reason | HTTP Status | Notes |
+|---|---|---|---|
+[UNRESOLVED rows]
+
+---
+
+### Next steps
+[checklist item per non-empty bucket with recommended_action]
+- [ ] Re-run `/seo coverage` after fixes to verify resolution
+```
+
+### Step C4: Confirm to user
+
+```text
+✅ Coverage audit complete
+
+  [N] URLs analyzed · [N] errors · [N] excluded · [N] unresolved
+
+  Report saved: .content-seo/coverage/[date].md
+
+  Top issues:
+  [list top 3 buckets by count with recommended_action]
+
+→ Share the report with a coding agent to apply fixes.
+```

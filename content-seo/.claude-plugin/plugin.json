@@ -1,23 +1,11 @@
 {
   "name": "content-seo",
-  "description": "Site-level SEO intelligence layer for static content sites. Tracks performance via Google Search Console, surfaces ranking opportunities, diagnoses individual pages with live GSC data, and injects keyword briefs into the content creation pipeline.",
+  "description": "Site-level SEO intelligence layer for static content sites. Tracks performance via Google Search Console, surfaces ranking opportunities, diagnoses individual pages with live GSC data, audits GSC coverage/indexing errors, and injects keyword briefs into the content creation pipeline.",
   "author": {
     "name": "pcamarajr"
   },
   "repository": "https://github.com/pcamarajr/content-stack",
   "license": "MIT",
-  "skills": [
-    {
-      "name": "seo",
-      "user-invocable": true,
-      "argument-hint": "<status|opportunities|diagnose|brief> [args]"
-    },
-    {
-      "name": "init",
-      "user-invocable": true,
-      "argument-hint": "[project|credentials|strategy]"
-    }
-  ],
   "keywords": [
     "seo",
     "content",
