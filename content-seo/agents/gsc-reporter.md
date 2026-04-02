@@ -26,13 +26,28 @@ Check for credentials in this order:
 2. Check `GOOGLE_APPLICATION_CREDENTIALS` env var → if set, use that path
 3. If neither resolves to a readable file → **hard stop**: "GSC credentials not configured. Run `/seo init credentials` to set up service account access."
 
-Read the service account JSON from the resolved path:
+Validate the service account JSON at the resolved path without exposing key material:
 
 ```bash
-cat "[resolved_path]"
+python3 -c "
+import json, sys
+try:
+    with open('[resolved_path]') as f:
+        sa = json.load(f)
+    for field in ['client_email', 'private_key']:
+        if not sa.get(field):
+            print(f'ERROR: missing required field: {field}', file=sys.stderr)
+            sys.exit(1)
+    print(sa['client_email'])
+except (json.JSONDecodeError, OSError) as e:
+    print(f'ERROR: {e}', file=sys.stderr)
+    sys.exit(1)
+"
 ```
 
-Extract: `client_email`, `private_key`, `token_uri` (default `https://oauth2.googleapis.com/token` if absent).
+If the script exits with an error → hard stop with the error message.
+
+The `client_email` printed above confirms which service account will be used. The `private_key` and `token_uri` are read only inside the Python process in Step 2 — never echoed to output.
 
 ---
 
