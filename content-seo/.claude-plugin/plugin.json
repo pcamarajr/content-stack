@@ -1,6 +1,6 @@
 {
   "name": "content-seo",
-  "description": "SEO audit and optimization plugin for static content sites. Analyzes live pages for technical issues, fixes them in source markdown, and rewrites content using DataForSEO keyword intelligence.",
+  "description": "Site-level SEO intelligence layer for static content sites. Tracks performance via Google Search Console, surfaces ranking opportunities, diagnoses individual pages with live GSC data, audits GSC coverage/indexing errors, and injects keyword briefs into the content creation pipeline.",
   "author": {
     "name": "pcamarajr"
   },
@@ -9,8 +9,8 @@
   "keywords": [
     "seo",
     "content",
-    "optimization",
-    "audit",
+    "gsc",
+    "google-search-console",
     "keywords",
     "dataforseo",
     "static-site"

@@ -1,68 +1,67 @@
 ---
 # content-seo plugin configuration — Reference only, not copied.
-# Each /init round appends its own section to .content-seo/config.md.
-# Run /init project to create a minimal starting config.
+# Each /seo init round appends its own section to .content-seo/config.md.
+# Run /seo init project to create a minimal starting config.
 
-# Written by /init project
-site_url: "https://yoursite.com"
-default_locale: "en"
-target_audience: "Developers building static content sites who want better organic reach without an SEO agency."
-content_ops_config: ".content-ops/config.md"   # optional — omit if not using content-ops
+# Written by /seo init project
+content_ops_config: ".content-ops/config.md"   # required — hard stop if absent
+gsc_property: "sc-domain:yoursite.com"          # GSC property URL
+gsc_credentials_path: "/path/to/sa.json"        # omit to use GOOGLE_APPLICATION_CREDENTIALS
 
-# Written by /init strategy
-pillars:
-  - "static site generators"
-  - "content management"
-  - "developer tooling"
-
+# Written by /seo init strategy
 seo_rules:
   article:
-    min_word_count: 800
     meta_description_length: [150, 160]
     h1_includes_keyword: true
-    target_keywords_per_article: 1
   glossary:
-    min_word_count: 50
     meta_description_length: [100, 160]
     h1_includes_keyword: true
-    target_keywords_per_article: 1
 ---
 
 # content-seo Configuration Reference
 
-This file documents every config field and which `/init` round writes it. Skills and agents read `.content-seo/config.md` (not this file).
+This file documents every config field and which `/seo init` round writes it. Skills and agents read `.content-seo/config.md` (not this file).
 
-**To create your config:** Run `/init project` — it writes a minimal config. Each subsequent `/init` round appends its section.
+**To create your config:** Run `/seo init project` — it writes a minimal config. Each subsequent round appends its section.
 
-**Important:** If `.content-seo/config.md` doesn't exist, skills will stop and tell you to run `/init project`.
+**Important:** If `.content-seo/config.md` doesn't exist, skills will stop and tell you to run `/seo init project`.
+
+**Important:** `content-seo` requires `content-ops` to be initialized first. Fields like `site_url`, `default_language`, `content_types`, `content_pillars_path`, and `word_range` are read from `.content-ops/config.md` at runtime — not stored in this config.
 
 ## Schema Reference
 
 | Key | Type | Description |
 |---|---|---|
-| `site_url` | string | Base URL of your published site (e.g. `https://mysite.com`) |
-| `default_locale` | string | Primary locale code (e.g. `en`, `pt`) |
-| `target_audience` | string | 1–2 sentence description of who you're writing for |
-| `content_ops_config` | string | Path to content-ops config (optional — enriches context) |
-| `pillars` | string[] | Main topic themes to own in search (2–5 pillars) |
-| `seo_rules.<type>.min_word_count` | number | Minimum words for this content type to rank |
+| `content_ops_config` | string | Path to content-ops config — **required**. Hard stop if absent or file missing. |
+| `gsc_property` | string | GSC property URL (e.g. `sc-domain:yoursite.com` or `https://yoursite.com/`) |
+| `gsc_credentials_path` | string | Path to service account JSON key. Omit to use `GOOGLE_APPLICATION_CREDENTIALS` env var. |
 | `seo_rules.<type>.meta_description_length` | number[] | Target `[min, max]` char range for meta descriptions |
 | `seo_rules.<type>.h1_includes_keyword` | boolean | Whether H1 must include the target keyword |
-| `seo_rules.<type>.target_keywords_per_article` | number | How many primary keywords to optimize for |
+
+## Fields Read from content-ops at Runtime
+
+These are NOT stored in `.content-seo/config.md`:
+
+| Field | Source in content-ops config |
+|---|---|
+| Site URL | `site_url` (or detected from framework) |
+| Default language | `default_language` |
+| Target audience | `content_strategy` file |
+| Content pillars | `content_pillars_path` |
+| Min word count | `content_types.<type>.word_range[0]` |
+| Research cache TTL | `research_cache_ttl_days` |
 
 ## Environment Variables
 
-These are **never written to files**. Set them in your shell:
-
-| Variable | Description |
-|---|---|
-| `DATAFORSEO_LOGIN` | Your DataForSEO account email |
-| `DATAFORSEO_PASSWORD` | Your DataForSEO API password (not your login password) |
-
-Get credentials at [app.dataforseo.com/api-access](https://app.dataforseo.com/api-access).
+| Variable | Description | Required for |
+|---|---|---|
+| `GOOGLE_APPLICATION_CREDENTIALS` | Path to GSC service account JSON | GSC (if `gsc_credentials_path` not set) |
+| `DATAFORSEO_LOGIN` | DataForSEO account email | `/seo brief` only |
+| `DATAFORSEO_PASSWORD` | DataForSEO API password (not login password) | `/seo brief` only |
 
 ## .content-seo/ Layout
 
-| File | Purpose |
+| File / Directory | Purpose |
 |---|---|
-| `config.md` | Plugin configuration (created by `/init`) |
+| `config.md` | Plugin configuration (created by `/seo init`) |
+| `keyword-cache/[slug].json` | Per-keyword DataForSEO cache. TTL from content-ops `research_cache_ttl_days` (default 30 days). |

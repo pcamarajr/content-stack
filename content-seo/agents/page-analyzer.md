@@ -13,6 +13,7 @@ You will receive a brief specifying:
 - Site URL and locale
 - Target audience description
 - SEO rules for this content type
+- `gsc_data` (optional) — GSC performance data for the page: position, clicks, impressions, CTR, top queries
 
 ---
 
@@ -63,6 +64,14 @@ Evaluate the content against the provided target audience and SEO rules:
 - **Thin sections** — any H2 sections with fewer than 50 words of content?
 - **Readability** — flag sentences over 30 words as harder to read
 
+**If `gsc_data` is provided — GSC cross-reference:**
+
+Extract the top queries from `gsc_data.top_queries` (the queries with the most impressions). For each top query:
+
+1. Check if the query term appears in the H1, any H2/H3 heading, or the first 100 words of body text.
+2. If a high-impression query is completely absent from the content: flag it as a keyword mismatch — "Page ranks for '[query]' ([N] impressions) but the term does not appear in H1, headings, or intro."
+3. If 3+ top queries point to a subtopic not covered by any heading: flag it as a content gap.
+
 ---
 
 ## Step 5: Apply technical fixes to source file
@@ -96,13 +105,16 @@ FIXED:
 - [description of change made] — [frontmatter field or file location]
 
 NEEDS_OPTIMIZATION:
-- [content quality issue] — [specific recommendation for /optimize]
+- [content quality issue] — [specific recommendation]
+
+KEYWORD_MISMATCHES:
+- [query term] ([N] impressions) — not found in H1, headings, or intro
 
 MANUAL_ACTION:
 - [issue requiring template or code change] — [what needs to change and where]
 ```
 
-If a section has no items, write `- none` under it.
+If a section has no items, write `- none` under it. Omit `KEYWORD_MISMATCHES` entirely if `gsc_data` was not provided.
 
 Example:
 
@@ -112,8 +124,12 @@ FIXED:
 - Added alt text to 2 images — body: lines 34, 67
 
 NEEDS_OPTIMIZATION:
-- Primary keyword not in first 100 words — /optimize can rewrite the introduction
-- Word count (620) is below min_word_count (800) — /optimize can expand thin sections
+- Primary keyword not in first 100 words — rewrite the introduction to include it
+- Word count (620) is below min_word_count (800) — expand thin sections
+
+KEYWORD_MISMATCHES:
+- "astro static site" (1,240 impressions) — not found in H1, headings, or intro
+- "deploy astro to netlify" (430 impressions) — no matching heading or section
 
 MANUAL_ACTION:
 - No Article schema found — add JSON-LD to the page layout template
