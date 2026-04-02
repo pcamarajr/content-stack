@@ -84,11 +84,11 @@ Install:
 
 ### [`content-seo`](./content-seo/README.md)
 
-SEO audit and optimization plugin for static content sites. Analyzes live published pages for technical issues, fixes them in source markdown, and rewrites content using DataForSEO keyword intelligence.
+Site-level SEO intelligence layer for static content sites. Powered by Google Search Console — tracks performance, surfaces ranking opportunities, diagnoses pages with live data, and injects keyword briefs into the content creation pipeline.
 
-- **Best for:** improving organic reach for existing content without an SEO agency
-- **Key skills:** `init`, `audit`, `optimize`
-- **Agents:** `page-analyzer`, `keyword-researcher`
+- **Best for:** improving organic reach for existing content using real GSC data, not guesswork
+- **Key skills:** `/seo status`, `/seo opportunities`, `/seo diagnose`, `/seo brief`
+- **Agents:** `gsc-reporter`
 
 Install:
 
