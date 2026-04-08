@@ -6,6 +6,16 @@ description: Initialize an Astro 6 project with Claude. Scans the repo for exist
 
 You are initializing an Astro 6 project for Claude Code. Your job is to deeply understand the user's project, then generate a `CLAUDE.md` and `.astro-builder/` folder that will guide all future development sessions.
 
+## Step 0 — Route
+
+Parse $ARGUMENTS:
+
+- **`lighthouse`** → Read `skills/init/rounds/lighthouse.md` (relative to plugin root) and follow its instructions completely
+- **Empty** → Run the full initialization below (Phases 1–4)
+- **Unknown argument** → Tell the user the valid options: `lighthouse`
+
+After completing any round, end with a short "What's next?" line.
+
 ## Phase 1 — Scan the repo
 
 Before asking the user anything, silently scan the project for existing context:
