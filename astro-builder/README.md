@@ -25,12 +25,12 @@ Run setup in any Astro project (new or existing):
 /astro-builder:init
 ```
 
-`/astro-builder:init` will:
+`/astro-builder:init` shows a dashboard of what's configured. From there, run each phase:
 
-1. Scan your repo for existing structure and tooling
-2. Interview you one question at a time (goals, locales, content, design)
-3. Generate project guidance files (`CLAUDE.md` + `.astro-builder/*`)
-4. Optionally scaffold missing files and run quality checks
+```bash
+/astro-builder:init project    # Interview → generate CLAUDE.md + .astro-builder/*
+/astro-builder:init lighthouse # Install Lighthouse + configure git push hook
+```
 
 If you want the fastest start, begin from the ready template:
 
@@ -42,7 +42,9 @@ If you want the fastest start, begin from the ready template:
 
 | Skill | Description |
 |-------|-------------|
-| `/astro-builder:init` | Initialize or re-configure a project |
+| `/astro-builder:init` | Show project setup dashboard |
+| `/astro-builder:init project` | Initialize or re-configure project guidance files |
+| `/astro-builder:init lighthouse` | Set up automated Lighthouse auditing on git push |
 | `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
 | `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale |
@@ -71,6 +73,52 @@ If you want the fastest start, begin from the ready template:
 
 # Audit the full project
 /astro-builder:audit
+```
+
+---
+
+## Lighthouse CI
+
+Run `/astro-builder:init lighthouse` to add automated performance auditing to your project. After setup, every `git push` fires a Husky pre-push hook that runs Lighthouse against affected pages.
+
+### Setup
+
+```bash
+/astro-builder:init lighthouse
+```
+
+Installs `playwright` + bundled Chromium, `lighthouse`, configures Husky, and writes `.astro-builder/pre-push.sh` (the bash audit script) plus a POSIX sh wrapper at `.husky/pre-push` for Husky v9 compatibility.
+
+Requires `jq` as a system tool: `brew install jq` (macOS) or `apt install jq` (Linux).
+
+### How the hook works
+
+1. Detects which files are in the push (`git diff` against the remote ref)
+2. Maps content files to live URLs via `.astro-builder/lighthouse.json`
+3. Layout/component changes → fallback to static pages + latest entry per collection
+4. Runs `pnpm build` — blocks on build failure
+5. Starts Astro preview on the configured port (default: 14321)
+6. Runs Lighthouse (Playwright Chromium) against each URL
+7. Prints a score table per URL
+8. If any score < threshold → blocks push with `exit 1`
+
+### Configuration
+
+`.astro-builder/lighthouse.json` — edit to tune thresholds or URL patterns without re-running init:
+
+```json
+{
+  "thresholds": { "performance": 90, "accessibility": 90, "best-practices": 90, "seo": 90 },
+  "categories": ["performance", "accessibility", "best-practices", "seo"],
+  "port": 14321,
+  "urlMap": {
+    "src/content/articles/**": "/{locale}/articles/{slug}",
+    "src/pages/**": "/{path}"
+  },
+  "staticPages": ["/en/"],
+  "fallbackToAll": true,
+  "fallbackMaxPages": 10
+}
 ```
 
 ---
@@ -107,6 +155,16 @@ your-project/
 ```
 
 Claude reads these files at the start of every session to maintain consistency across your entire project.
+
+### After `/init lighthouse`
+
+```
+your-project/
+├── .astro-builder/
+│   └── lighthouse.json         ← Thresholds, URL map, categories
+└── .husky/
+    └── pre-push                ← Runs Lighthouse on git push
+```
 
 ---
 
