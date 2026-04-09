@@ -25,12 +25,12 @@ Run setup in any Astro project (new or existing):
 /astro-builder:init
 ```
 
-`/astro-builder:init` will:
+`/astro-builder:init` shows a dashboard of what's configured. From there, run each phase:
 
-1. Scan your repo for existing structure and tooling
-2. Interview you one question at a time (goals, locales, content, design)
-3. Generate project guidance files (`CLAUDE.md` + `.astro-builder/*`)
-4. Optionally scaffold missing files and run quality checks
+```bash
+/astro-builder:init project    # Interview → generate CLAUDE.md + .astro-builder/*
+/astro-builder:init lighthouse # Install Lighthouse + configure git push hook
+```
 
 If you want the fastest start, begin from the ready template:
 
@@ -42,7 +42,8 @@ If you want the fastest start, begin from the ready template:
 
 | Skill | Description |
 |-------|-------------|
-| `/astro-builder:init` | Initialize or re-configure a project |
+| `/astro-builder:init` | Show project setup dashboard |
+| `/astro-builder:init project` | Initialize or re-configure project guidance files |
 | `/astro-builder:init lighthouse` | Set up automated Lighthouse auditing on git push |
 | `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |

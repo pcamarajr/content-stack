@@ -114,7 +114,7 @@ Install:
 Astro 6 site builder plugin that scaffolds and evolves static content sites using the page-views pattern, i18n, content collections, and quality gates.
 
 - **Best for:** creating or restructuring Astro content architectures
-- **Key skills:** `init`, `new-page`, `new-content-type`, `translate`, `audit`
+- **Key skills:** `init`, `init project`, `init lighthouse`, `new-page`, `new-content-type`, `translate`, `audit`
 
 Install:
 
