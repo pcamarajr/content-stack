@@ -158,6 +158,11 @@ Install anything missing:
 
 ## Phase 4 — Write pre-push hook
 
+> **Why two files?** Husky v9 runs hooks with `sh -e`, ignoring the shebang. The audit
+> script uses bash-only syntax (`pipefail`, process substitution, here-strings), so it
+> must be executed by bash explicitly. The solution is a thin POSIX sh wrapper in
+> `.husky/pre-push` that delegates to a bash script stored in `.astro-builder/`.
+
 1. Read the template at `${CLAUDE_PLUGIN_ROOT}/docs/lighthouse-templates/pre-push.sh`.
 2. Substitute all placeholders:
    - `__PORT__` → interview Q3 answer (e.g. `14321`)
@@ -166,8 +171,14 @@ Install anything missing:
    - `__ACC_THRESHOLD__` → interview Q1 accessibility value
    - `__BP_THRESHOLD__` → interview Q1 best-practices value
    - `__SEO_THRESHOLD__` → interview Q1 seo value
-3. Write the substituted script to `.husky/pre-push`.
-4. Run `chmod +x .husky/pre-push`.
+3. Write the substituted script to `.astro-builder/pre-push.sh`.
+4. Run `chmod +x .astro-builder/pre-push.sh`.
+5. Write the following POSIX sh wrapper to `.husky/pre-push`:
+   ```sh
+   #!/bin/sh
+   exec bash .astro-builder/pre-push.sh "$@"
+   ```
+6. Run `chmod +x .husky/pre-push`.
 
 ---
 
@@ -210,21 +221,22 @@ Also append `.lighthouseci/` to `.gitignore` if not already present.
   Categories:   [list]
   Port:         N
   URL map:      N patterns
-  Hook:         .husky/pre-push
+  Hook:         .husky/pre-push → .astro-builder/pre-push.sh
 
 Created/updated:
   • .astro-builder/lighthouse.json
-  • .husky/pre-push  (chmod +x)
+  • .astro-builder/pre-push.sh  (chmod +x)  ← bash audit script
+  • .husky/pre-push              (chmod +x)  ← POSIX sh wrapper (Husky v9 compat)
   • .gitignore       (added .lighthouseci/)
   [• package.json    (added "prepare": "husky")  — if changed]
 
 How it works:
-  git push → Husky fires .husky/pre-push → changed files mapped to URLs →
-  pnpm build → preview on port N → Lighthouse audit → scores compared →
-  exit 1 (blocked) or exit 0 (push proceeds)
+  git push → Husky fires .husky/pre-push (sh) → exec bash .astro-builder/pre-push.sh →
+  changed files mapped to URLs → pnpm build → preview on port N →
+  Lighthouse audit → scores compared → exit 1 (blocked) or exit 0 (push proceeds)
 
 Test it:
-  git add .astro-builder/lighthouse.json .husky/pre-push
+  git add .astro-builder/lighthouse.json .astro-builder/pre-push.sh .husky/pre-push
   git commit -m "chore: add Lighthouse CI pre-push hook"
   git push
 ```

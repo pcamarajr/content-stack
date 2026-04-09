@@ -98,7 +98,10 @@ else
       url_template=$(echo "$entry" | jq -r '.value')
 
       # Find most-recently modified file matching the glob pattern
-      latest_file=$(find . -path "./$pattern" -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 || true)
+      # Guard against empty find output: BSD xargs (macOS) runs the command even with no input
+      _found=$(find . -path "./$pattern" -type f 2>/dev/null)
+      latest_file=""
+      [ -n "$_found" ] && latest_file=$(echo "$_found" | xargs ls -t 2>/dev/null | head -1 || true)
 
       if [ -n "$latest_file" ]; then
         locale=$(basename "$(dirname "$latest_file")")

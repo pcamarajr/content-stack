@@ -86,7 +86,7 @@ Run `/astro-builder:init lighthouse` to add automated performance auditing to yo
 /astro-builder:init lighthouse
 ```
 
-Installs `playwright` + bundled Chromium, `lighthouse`, configures Husky, and writes `.husky/pre-push`.
+Installs `playwright` + bundled Chromium, `lighthouse`, configures Husky, and writes `.astro-builder/pre-push.sh` (the bash audit script) plus a POSIX sh wrapper at `.husky/pre-push` for Husky v9 compatibility.
 
 Requires `jq` as a system tool: `brew install jq` (macOS) or `apt install jq` (Linux).
 
