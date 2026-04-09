@@ -44,7 +44,7 @@ Ask the user if they have a design reference (Figma, existing CSS, a brand guide
 - Border style: rounded, sharp, none?
 
 ### 2.5 Component library
-Ask whether they want to use a UI component library (Tailwind CSS, shadcn, DaisyUI, Panda CSS) or write custom CSS. Warn them that this plugin enforces Astro 6 + minimal JS — heavy JS-first libraries (Next UI, Chakra) are not recommended.
+This plugin defaults to custom CSS. Ask the user if they plan to use a different approach. Do not suggest or recommend any library — only mention that custom CSS is the default. Accept whatever the user answers and record it; do not block or warn unless they name a JS-first framework (Next UI, Chakra, etc.), in which case note that heavy JS-first libraries conflict with the Astro 6 + minimal JS constraint.
 
 ### 2.6 Quality gates
 Ask what quality gates they want enforced on every commit:
