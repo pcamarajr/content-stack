@@ -4,6 +4,22 @@ Set up automated Lighthouse performance auditing on `git push` for this Astro pr
 
 ---
 
+## Prerequisite check
+
+Before doing anything else, verify that project init has been run:
+
+- Check that the `.astro-builder/` directory exists.
+- If it does **not** exist, stop immediately and tell the user:
+
+  ```
+  Project init has not been run yet.
+  Run `/astro-builder:init` first, then come back to set up Lighthouse.
+  ```
+
+Do not proceed past this point until the prerequisite is met.
+
+---
+
 ## Phase 1 — Read existing config
 
 Before asking anything, silently scan:
@@ -12,7 +28,7 @@ Before asking anything, silently scan:
 2. Read `.astro-builder/content-schema.md` → scan for URL pattern lines (e.g. `/{locale}/articles/{slug}`) → pre-populate `urlMap` keyed by collection name inferred from context.
 3. Read `astro.config.ts` → extract `i18n.locales` array if present → use as `locales` default.
 
-If `.astro-builder/content-schema.md` is not found: note that URL patterns will need to be entered manually (skip pre-population, do not error).
+If `.astro-builder/content-schema.md` has no URL pattern lines, skip pre-population and let the user enter patterns manually during Q2.
 
 ---
 
