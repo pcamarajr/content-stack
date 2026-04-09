@@ -180,7 +180,7 @@ export CHROME_PATH
 # Section 8 — Start preview server
 # ---------------------------------------------------------------------------
 echo "[lighthouse] Starting preview server on port $PORT..."
-pnpm preview --port "$PORT" &
+pnpm preview --port "$PORT" >/dev/null 2>&1 &
 PREVIEW_PID=$!
 trap 'kill "$PREVIEW_PID" 2>/dev/null || true' EXIT
 
