@@ -13,8 +13,10 @@ Read:
 2. `.astro-builder/anti-patterns.md` — project-specific anti-patterns.
 3. `.astro-builder/content-schema.md` — expected content structure.
 4. `.astro-builder/style-guide.md` — writing rules.
-5. `astro.config.ts` — i18n config, integrations, adapter.
-6. `src/content.config.ts` — collection schemas.
+5. `.astro-builder/design-system.md` — token namespaces.
+6. `src/styles/global.css` — token source of truth.
+7. `astro.config.ts` — i18n config, integrations, adapter.
+8. `src/content.config.ts` — collection schemas.
 
 Also read the canonical Astro 6 anti-patterns from `docs/astro-patterns.md`.
 
@@ -44,6 +46,29 @@ For each content collection defined in `src/content.config.ts`:
 - Check that `date` fields are valid ISO dates.
 - Check that `tags` are arrays (not strings).
 - Flag any files with frontmatter errors.
+
+## Step 4.5 — CSS conventions audit
+
+Read `.astro-builder/design-system.md` to learn the project's token names. Then sweep the codebase for `css-conventions` skill violations. Report findings as P1 unless noted.
+
+Run these greps (adjust shell-globbing as needed):
+
+| Violation | Pattern | Severity |
+|---|---|---|
+| `!important` used | `grep -rn "!important" src --include="*.astro" --include="*.css"`. Allowed only inside `@media (prefers-reduced-motion: reduce)` blocks. | P1 |
+| Tailwind / utility framework | `grep -rn -E "@tailwind\|@apply\|tailwindcss" src package.json` | P0 |
+| CSS-in-JS or preprocessor | `grep -rn -E "styled-components\|@emotion\|sass\|less\|stylus" package.json` | P0 |
+| CSS Modules / sibling .css | find files matching `**/*.module.css` or component-named `.css` siblings | P1 |
+| `<style is:global>` in component | `grep -rn "style is:global" src --include="*.astro"` (outside `src/layouts/BaseLayout.astro` if used to import global.css) | P1 |
+| Inline `style=` with standard properties | `grep -rnE "style=\"[^\"]*[a-z-]+:" src --include="*.astro"`. Only custom-property assignments (`style="--x: ..."`) are allowed. | P1 |
+| Raw hex colors outside global.css | `grep -rn -E "#[0-9a-fA-F]{3,8}" src --include="*.astro"` — flag any in `<style>` blocks. | P1 |
+| Raw `rgb(` / `rgba(` / `hsl(` outside global.css | `grep -rn -E "rgba?\(\|hsla?\(" src --include="*.astro"` in `<style>` blocks | P1 |
+| ID selectors for styling | `grep -rn -E "^\s*#[a-z]" src --include="*.astro"` in `<style>` blocks | P2 |
+| Nesting deeper than 2 levels | manual inspection of any `<style>` block flagged by the file scan | P2 |
+
+For each violation, link to the specific file:line and quote the offending fragment in the report.
+
+---
 
 ## Step 5 — Style guide audit
 
