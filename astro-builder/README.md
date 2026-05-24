@@ -49,6 +49,7 @@ If you want the fastest start, begin from the ready template:
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
 | `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale |
 | `/astro-builder:audit` | Audit for anti-patterns, missing translations, schema errors, and build failures |
+| `css-conventions` _(auto-applied)_ | Enforces CSS discipline whenever styles are written: token-only values, scoped `<style>` blocks, Tier-1 modern CSS, no Tailwind / CSS-in-JS / preprocessors, and a CSS-first interactivity ladder |
 
 ### Examples
 
@@ -147,10 +148,11 @@ Two agents work behind the scenes:
 ```
 your-project/
 ├── CLAUDE.md                          ← Project rules for Claude Code
+├── src/styles/global.css              ← Tokens, reset, base, utilities (@layer)
 └── .astro-builder/
     ├── style-guide.md                 ← Voice, tone, writing conventions
     ├── content-schema.md              ← Content types, fields, relationships
-    ├── design-system.md               ← Colors, typography, component patterns
+    ├── design-system.md               ← Token index (mirrors global.css)
     └── anti-patterns.md               ← What to avoid in this project
 ```
 
