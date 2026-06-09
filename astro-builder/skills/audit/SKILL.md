@@ -18,7 +18,10 @@ Read:
 7. `astro.config.ts` — i18n config, integrations, adapter.
 8. `src/content.config.ts` — collection schemas.
 
-Also read the canonical Astro 6 anti-patterns from `docs/astro-patterns.md`.
+Also read, from the plugin root:
+- `docs/astro-patterns.md` — canonical Astro 6 anti-patterns.
+- `docs/anti-slop.md` — the anti-slop / design-quality rule catalog (used in Step 4.6).
+- `docs/registers.md` — the brand vs. product register model that scopes Step 4.6 severity.
 
 ## Step 2 — Architecture audit
 
@@ -67,6 +70,29 @@ Run these greps (adjust shell-globbing as needed):
 | Nesting deeper than 2 levels | manual inspection of any `<style>` block flagged by the file scan | P2 |
 
 For each violation, link to the specific file:line and quote the offending fragment in the report.
+
+## Step 4.6 — Anti-slop & design-quality audit
+
+Detect AI-generated design tells ("slop") and design-quality defects. Read the full rule catalog at
+`docs/anti-slop.md` (relative to plugin root) — it defines ~40 rules in three categories (`slop`,
+`quality`, `product-only`), each with a detection approach and per-register applicability.
+
+1. **Resolve the register.** Read the `Register` field in `.astro-builder/design-system.md`
+   (default `brand` for marketing/landing sites, `product` for app/docs surfaces). See
+   `docs/registers.md`. The register changes severity:
+   - Drop `product-only` rules entirely on brand surfaces.
+   - Downgrade `brand-advisory` rules (overused fonts, AI palettes, gradient text, italic-serif
+     hero, eyebrow chips) to **P3** advisories on brand surfaces; keep them **P1** on product
+     surfaces.
+   - `both` rules apply at their listed severity in either register.
+2. **Run the `grep`-detectable rules** from the catalog and collect candidate file:line hits.
+3. **Inspect the visual-only rules** on the highest-traffic templates (home, a representative
+   content page, the shared layout) plus any component the user flags.
+4. **Confirm intent before reporting.** A grep hit is a candidate, not a confirmed violation — e.g.
+   `letter-spacing: -0.02em` on a display heading is fine; the rule targets crushed *body* tracking.
+
+Report findings under a dedicated **Anti-slop** subsection of the report, each with file:line, the
+offending fragment, the rule id, and the concrete fix from the catalog.
 
 ---
 

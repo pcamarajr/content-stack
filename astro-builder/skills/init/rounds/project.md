@@ -37,7 +37,20 @@ Ask what types of content the site will publish. Examples: articles, tutorials, 
 - How is it related to other content types (e.g. articles reference glossary entries)?
 
 ### 2.4 Design system
-Ask the user if they have a design reference (Figma, existing CSS, a brand guide URL, or a screenshot folder). If yes, read or fetch it. Otherwise gather the minimum set needed to populate the six token namespaces:
+
+First, resolve the **register** and gather **product/brand context** — these steer every later
+design decision and scope the audit's anti-slop step (see `docs/registers.md`):
+
+- **Register** — is this surface primarily `brand` (marketing, landing, editorial — the page *is*
+  the product) or `product` (app, dashboard, docs reader — the user is *in a task*)? Default `brand`
+  for a marketing/content site, `product` for an app/docs site. Note per-section exceptions if the
+  site has both.
+- **Audience** + **primary use case** — one line each (often already captured in 2.1).
+- **Brand voice** — three concrete physical-object words ("warm, mechanical, opinionated"), not
+  "modern/elegant". Skip for a pure product register if the user has no brand stance.
+- **Named aesthetic reference** + **anti-references** — what it should and shouldn't look like.
+
+Then ask if they have a design reference (Figma, existing CSS, a brand guide URL, or a screenshot folder). If yes, read or fetch it. Otherwise gather the minimum set needed to populate the six token namespaces:
 
 - **Primary color** (hex or description) — used as `--color-primary`; `--color-primary-dark` is derived via `color-mix(in oklch, primary 80%, black)`.
 - **Visual style** — minimal, neobrutalist, editorial, clean SaaS, playful. Drives radius scale (`--radius-*`) and shadow scale (`--shadow-*`).

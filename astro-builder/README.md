@@ -48,8 +48,9 @@ If you want the fastest start, begin from the ready template:
 | `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
 | `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale |
-| `/astro-builder:audit` | Audit for anti-patterns, missing translations, schema errors, and build failures |
+| `/astro-builder:audit` | Audit for anti-patterns, AI design slop, missing translations, schema errors, and build failures |
 | `css-conventions` _(auto-applied)_ | Enforces CSS discipline whenever styles are written: token-only values, scoped `<style>` blocks, Tier-1 modern CSS, no Tailwind / CSS-in-JS / preprocessors, and a CSS-first interactivity ladder |
+| `ux-writing` _(auto-applied)_ | Enforces clear interface copy whenever a user-facing string is written: verb+object button labels, the error-message formula, empty/loading/success states, and i18n-first string placement |
 
 ### Examples
 
@@ -152,7 +153,7 @@ your-project/
 └── .astro-builder/
     ├── style-guide.md                 ← Voice, tone, writing conventions
     ├── content-schema.md              ← Content types, fields, relationships
-    ├── design-system.md               ← Token index (mirrors global.css)
+    ├── design-system.md               ← Token index + register + product/brand context
     └── anti-patterns.md               ← What to avoid in this project
 ```
 
@@ -216,4 +217,6 @@ This plugin cites only two external references for any web or Astro API:
 
 ## License
 
-MIT
+MIT. See [`NOTICE.md`](./NOTICE.md) for third-party attribution — the anti-slop catalog, the
+brand/product register model, and the UX-writing skill are adapted from
+[Impeccable](https://impeccable.style/) (Apache-2.0).
