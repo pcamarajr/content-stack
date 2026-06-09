@@ -37,11 +37,14 @@ Ask what types of content the site will publish. Examples: articles, tutorials, 
 - How is it related to other content types (e.g. articles reference glossary entries)?
 
 ### 2.4 Design system
-Ask the user if they have a design reference (Figma, existing CSS, a brand guide URL, or a screenshot folder). If yes, read or fetch it. If no, ask:
-- Primary color (hex or description)?
-- Typography: display font + body font (or "system defaults")?
-- Visual style: minimal, neobrutalist, editorial, clean SaaS, playful?
-- Border style: rounded, sharp, none?
+Ask the user if they have a design reference (Figma, existing CSS, a brand guide URL, or a screenshot folder). If yes, read or fetch it. Otherwise gather the minimum set needed to populate the six token namespaces:
+
+- **Primary color** (hex or description) — used as `--color-primary`; `--color-primary-dark` is derived via `color-mix(in oklch, primary 80%, black)`.
+- **Visual style** — minimal, neobrutalist, editorial, clean SaaS, playful. Drives radius scale (`--radius-*`) and shadow scale (`--shadow-*`).
+- **Display font** + **body font** (or "system defaults"). `--font-mono` always defaults to `ui-monospace, SFMono-Regular, Menlo, monospace`.
+- **Dark mode**: ask if the site should respect `prefers-color-scheme: dark`. Default yes.
+
+Derive the rest. Use OKLCH for all colors. Pick neutral defaults (`--color-bg: white`, `--color-text: #111`, etc.) unless the user provides specifics.
 
 ### 2.5 Component library
 This plugin defaults to custom CSS. Ask the user if they plan to use a different approach. Do not suggest or recommend any library — only mention that custom CSS is the default. Accept whatever the user answers and record it; do not block or warn unless they name a JS-first framework (Next UI, Chakra, etc.), in which case note that heavy JS-first libraries conflict with the Astro 6 + minimal JS constraint.
@@ -58,7 +61,7 @@ Ask where the site will be deployed: Vercel, Netlify, Cloudflare Pages, GitHub P
 
 ## Phase 3 — Generate artifacts
 
-After completing the interview, generate the following files. Confirm with the user before writing: "I'm ready to generate your configuration. This will create `CLAUDE.md` and a `.astro-builder/` folder. Proceed?"
+After completing the interview, generate the following files. Confirm with the user before writing: "I'm ready to generate your configuration. This will create `CLAUDE.md`, a `.astro-builder/` folder, and `src/styles/global.css`. Proceed?"
 
 ### Files to create:
 
@@ -68,9 +71,11 @@ After completing the interview, generate the following files. Confirm with the u
 
 **`.astro-builder/content-schema.md`** — All content types, their fields, relationships, and i18n strategy. Use `docs/init-templates/content-schema.md.template`.
 
-**`.astro-builder/design-system.md`** — Colors, typography, spacing, component patterns. Use `docs/init-templates/design-system.md.template`.
+**`.astro-builder/design-system.md`** — Token namespaces and component patterns. Use `docs/init-templates/design-system.md.template`. The human-readable index for `src/styles/global.css` — keep them in sync.
 
 **`.astro-builder/anti-patterns.md`** — Project-specific anti-patterns derived from the Astro 6 canonical list plus any project-specific rules the user defined.
+
+**`src/styles/global.css`** — Site-wide CSS. Use `docs/init-templates/global.css.template`. Defines all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`) under `@layer tokens`, plus the four-layer cascade (`reset`, `tokens`, `base`, `utilities`). Derive `--color-primary-dark` via `color-mix(in oklch, var(--color-primary) 80%, black)`. Populate dark-mode overrides if the user opted in. This file is the source of truth for tokens — component CSS in `<style>` blocks references these.
 
 ## Phase 4 — Validate and scaffold
 
@@ -82,8 +87,9 @@ After writing the files:
    ```
 2. Verify that `astro.config.ts` (not `.mjs`) exists. If not, offer to create it.
 3. Verify that `src/content.config.ts` exists. If not, offer to create it based on the content schema.
-4. Run `pnpm install` if dependencies need updating.
-5. Run `pnpm build` and report any errors. Fix them autonomously if possible.
+4. Verify `src/styles/global.css` exists and contains `@layer reset, tokens, base, utilities;` plus all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`). Verify `BaseLayout.astro` (or the root layout) imports it: `import '../styles/global.css'`.
+5. Run `pnpm install` if dependencies need updating.
+6. Run `pnpm build` and report any errors. Fix them autonomously if possible.
 
 ## Phase 5 — Completion summary
 
@@ -98,6 +104,7 @@ Created:
   • .astro-builder/content-schema.md
   • .astro-builder/design-system.md
   • .astro-builder/anti-patterns.md
+  • src/styles/global.css
 ```
 
 What's next? Run `/astro-builder:init lighthouse` to add automated Lighthouse auditing on git push.
