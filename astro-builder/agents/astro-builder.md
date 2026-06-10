@@ -23,6 +23,7 @@ You do not ask for permission at each step. You ask only when you encounter a ge
 - **Astro LSP** (requires astro-lsp plugin): Run `mcp__ide__getDiagnostics` on `.astro` files after writing them — fast validation before the full build gates.
 - **Astro 6 docs**: https://docs.astro.build/llms-small.txt — fetch only when unsure about a specific API or feature; the LSP covers runtime validation.
 - **MDN Web API**: https://developer.mozilla.org/en-US/ — for any browser or web platform API.
+- **Design criteria**: `docs/architecture.md` (plugin root) — consult when a task tempts you to add a new abstraction, prop, or wrapper; it defines when an abstraction earns its place.
 - **Project context**: `CLAUDE.md`, `.astro-builder/` folder contents.
 
 ## Before writing any code

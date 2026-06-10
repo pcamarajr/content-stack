@@ -27,3 +27,20 @@ acknowledged here per the upstream `NOTICE`.
 
 A copy of the Apache 2.0 license terms is available at the URL above. This file satisfies the
 attribution requirement of Section 4 of that license for the adapted portions listed.
+
+Portions of the following component are **adapted** from **mattpocock/skills** by Matt Pocock,
+licensed under the MIT License:
+
+- `docs/architecture.md` — the seam/adapter framing ("one adapter is a hypothetical seam") and
+  the design-it-twice comparison process (contrast candidate interfaces by depth and locality)
+  are adapted from the `improve-codebase-architecture` skill (`DEEPENING.md`,
+  `INTERFACE-DESIGN.md`); the document's overall structure is inspired by those files. The
+  conceptual source for the document is John Ousterhout's *A Philosophy of Software Design*,
+  cited in the document itself.
+
+The material was rewritten for the Astro 6 domain this plugin enforces; the original work is
+**not** vendored verbatim.
+
+- Source: https://github.com/mattpocock/skills
+- License: MIT — Copyright (c) 2026 Matt Pocock
+  (https://github.com/mattpocock/skills/blob/main/LICENSE)
