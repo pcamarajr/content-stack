@@ -48,9 +48,10 @@ If you want the fastest start, begin from the ready template:
 | `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
 | `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale |
-| `/astro-builder:audit` | Orchestrated project audit: architecture, i18n, schema, per-skill domain checklists (CSS and HTML/a11y today), AI design slop, style guide, and build validation |
+| `/astro-builder:audit` | Orchestrated project audit: architecture, i18n, schema, per-skill domain checklists (CSS, HTML/a11y, and SEO today), AI design slop, style guide, and build validation |
 | `css-conventions` _(auto-applied)_ | Enforces CSS discipline whenever styles are written: token-only values, scoped `<style>` blocks, Tier-1 modern CSS, no Tailwind / CSS-in-JS / preprocessors, and a CSS-first interactivity ladder |
 | `html-conventions` _(auto-applied)_ | Enforces semantic, accessible markup whenever templates are written: landmark structure (one `<main>`, one `<h1>`), unbroken heading hierarchy, button-vs-link discipline, ARIA only when no native element exists, explicit alt text, labeled forms, and focus order |
+| `seo-conventions` _(auto-applied)_ | Enforces technical SEO whenever pages, the layout `<head>`, or `astro.config.ts` are touched: the `<head>` as a deep module in BaseLayout (canonical, OG/Twitter, JSON-LD, hreflang all derived), unique titles, required descriptions, `@astrojs/sitemap`, robots.txt, per-locale RSS and 404, explicit root redirect. Site code only — GSC data and keyword work belong to the `content-seo` plugin |
 | `ux-writing` _(auto-applied)_ | Enforces clear interface copy whenever a user-facing string is written: verb+object button labels, the error-message formula, empty/loading/success states, and i18n-first string placement |
 
 ### Examples
