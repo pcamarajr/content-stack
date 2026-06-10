@@ -5,7 +5,7 @@ description: >
   "find what's broken", "review the project for quality issues", or before a release / after a
   large refactor / after onboarding an existing Astro repo. Covers architecture (page-views,
   config locations), i18n completeness, content schema validity, every convention-skill domain
-  checklist (CSS today; more as skills ship), anti-slop design review, style guide adherence, and
+  checklist (CSS and HTML/a11y today; more as skills ship), anti-slop design review, style guide adherence, and
   build validation.
 ---
 
@@ -71,6 +71,7 @@ table below, read the checklist file (path relative to the plugin root) and run 
 | Domain | Checklist |
 |---|---|
 | CSS conventions | `skills/css-conventions/references/audit.md` |
+| HTML conventions | `skills/html-conventions/references/audit.md` |
 
 Contract (defined once here, honored by every checklist):
 - A grep hit is a **candidate**, not a verdict — confirm against the rule's intent and documented
