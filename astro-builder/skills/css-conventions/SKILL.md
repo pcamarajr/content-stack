@@ -16,6 +16,14 @@ The single source of truth for how CSS is authored in an astro-builder project. 
 CSS is written, reviewed, or refactored. Six disciplines, one modern-features checklist, one
 interactivity ladder.
 
+**Why these rules exist:** the platform already ships everything utility frameworks, preprocessors,
+and CSS-in-JS were invented to patch — `@layer`, nesting, `color-mix()`, container queries, custom
+properties. Tokens in one file plus Astro-scoped `<style>` blocks keep every visual decision
+traceable to a single source of truth, so a design change is a token edit, not a codebase sweep.
+Anything that hides the cascade (a build step, inline styles, `!important`) makes the next change
+more expensive. The mechanical checks for these rules live in `references/audit.md` — the audit
+runs them; this file is where the rules are defined.
+
 ---
 
 ## Step 1 — Resolve the project's browser tier
@@ -31,7 +39,7 @@ Map to tier:
 
 | Tier | Resolves to roughly | Stance |
 |------|---------------------|--------|
-| **Tier 1** (default) | Chrome 125+ / Safari 17.5+ / Firefox 128+ | Use everything stable. Two mandatory fallbacks (Step 4). |
+| **Tier 1** (default) | Chrome 125+ / Safari 17.5+ / Firefox 128+ | Use everything stable. Two mandatory fallbacks (Step 3). |
 | **Tier 2** | Chrome 111+ / Safari 16.4+ / Firefox 113+ | Use most modern features. Wrap `field-sizing`, `@scope`, `@starting-style`, `transition-behavior: allow-discrete`, scroll-driven animations, `:popover-open` in `@supports`. |
 | **Tier 3** | Chrome 105+ / Safari 15+ / Firefox 110+ | Be selective. Wrap OKLCH, `color-mix`, `:has()`, container queries, `@layer` in `@supports`. |
 
@@ -143,7 +151,7 @@ project's tier are free to use; items above require an `@supports` wrapper or a 
 - [ ] **OKLCH** for color definitions — *Tier 2+*
 - [ ] **`color-mix()`** for tints/shades/opacity variants — *Tier 2+*
 - [ ] **Relative color syntax** (`oklch(from var(--c) l c h)`) — *Tier 1+*
-- [ ] **`light-dark()`** — *Tier 1, with mandatory fallback (Step 4)*
+- [ ] **`light-dark()`** — *Tier 1, with mandatory fallback (Step 3)*
 - [ ] **`accent-color`** for native form controls — *Tier 2+*
 
 #### Layout & sizing
@@ -183,7 +191,7 @@ project's tier are free to use; items above require an `@supports` wrapper or a 
 - [ ] **`inset` shorthand** instead of top/right/bottom/left longhand — *Tier 2+*
 - [ ] **Logical properties** (`margin-inline`, `padding-block`) for i18n-ready layouts — *Tier 2+*
 - [ ] **`scroll-margin` / `scroll-padding`** for sticky-header anchor offsets — *Tier 2+*
-- [ ] **Anchor positioning** for tooltips / popovers / dropdowns — *Tier 1, non-critical UI only (Step 4)*
+- [ ] **Anchor positioning** for tooltips / popovers / dropdowns — *Tier 1, non-critical UI only (Step 3)*
 
 #### Visual effects
 - [ ] **`backdrop-filter`** for frosted glass / blur overlays — *Tier 2+*
@@ -317,8 +325,29 @@ Load these on demand for exact syntax, browser version floors, and `@supports` p
 - `references/positioning.md` — anchor positioning, logical properties, `scroll-margin`
 - `references/misc.md` — `@property`, `content-visibility`, popover, `backdrop-filter`, blend modes, `clip-path`
 - `references/components.md` — `accent-color`, `env()`, media features, scrollbar, `margin-trim`, scroll-snap
+- `references/audit.md` — the mechanical checks (greps + inspections) for this skill's rules, run
+  by `/astro-builder:audit`. When a rule in this file changes, update its check there.
 
 Load only the file relevant to the feature you're using. Do not load all references at once.
+
+---
+
+## Step 6 — Verify before finishing
+
+After writing or refactoring any CSS, confirm:
+
+- [ ] Every color, font, size, spacing, radius, and shadow value is a token (or a documented
+      allowed raw value — Step 2.1).
+- [ ] New tokens were added to `global.css` first and documented in
+      `.astro-builder/design-system.md`.
+- [ ] All component CSS lives in the component's single `<style>` block — no new `.css` files,
+      no `is:global`, no inline standard properties.
+- [ ] Class names are semantic kebab-case — no utility names, no BEM.
+- [ ] No `!important`, no ID selectors, nesting ≤2 levels.
+- [ ] Features above the project's tier are wrapped in `@supports`; the two mandatory fallbacks
+      (Step 3) are in place if `light-dark()` or anchor positioning is used.
+- [ ] If interactivity was added, the ladder (Step 4) was walked — JS only where CSS could not
+      express the behavior.
 
 ---
 

@@ -2,7 +2,8 @@
   "name": "content-ops",
   "description": "Content creation and management plugin for static site blogs. Handles writing, translation, research, linking, style review, and knowledge indexing.",
   "author": {
-    "name": "pcamarajr"
+    "name": "pcamarajr",
+    "email": "eu@pcamarajr.dev"
   },
   "repository": "https://github.com/pcamarajr/content-stack",
   "license": "MIT",

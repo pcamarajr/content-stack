@@ -2,7 +2,8 @@
   "name": "astro-lsp",
   "description": "Astro language server for code intelligence, diagnostics, and formatting in .astro files",
   "author": {
-    "name": "pcamarajr"
+    "name": "pcamarajr",
+    "email": "eu@pcamarajr.dev"
   },
   "repository": "https://github.com/pcamarajr/content-stack",
   "license": "MIT",

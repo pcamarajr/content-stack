@@ -48,7 +48,7 @@ If you want the fastest start, begin from the ready template:
 | `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
 | `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale |
-| `/astro-builder:audit` | Audit for anti-patterns, AI design slop, missing translations, schema errors, and build failures |
+| `/astro-builder:audit` | Orchestrated project audit: architecture, i18n, schema, per-skill domain checklists (CSS today), AI design slop, style guide, and build validation |
 | `css-conventions` _(auto-applied)_ | Enforces CSS discipline whenever styles are written: token-only values, scoped `<style>` blocks, Tier-1 modern CSS, no Tailwind / CSS-in-JS / preprocessors, and a CSS-first interactivity ladder |
 | `ux-writing` _(auto-applied)_ | Enforces clear interface copy whenever a user-facing string is written: verb+object button labels, the error-message formula, empty/loading/success states, and i18n-first string placement |
 
