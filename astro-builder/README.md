@@ -142,7 +142,7 @@ Requires `jq` as a system tool: `brew install jq` (macOS) or `apt install jq` (L
 
 Two agents work behind the scenes:
 
-**`astro-architect`** — Planning agent. Reads project context, designs solutions, presents implementation plans before execution. Use when you want to understand what will happen before it happens.
+**`astro-architect`** — Planning agent. Reads project context, designs solutions, presents implementation plans before execution — each plan justifies its structural decisions against the criteria in [`docs/architecture.md`](./docs/architecture.md). Use when you want to understand what will happen before it happens.
 
 **`astro-builder`** — Build agent. Fully autonomous. Writes files, runs builds, fixes errors, commits. Operates without interruption until all quality gates pass.
 
@@ -193,6 +193,11 @@ your-project/
 ---
 
 ## Architecture Rules Enforced
+
+These rules are not arbitrary: every one is argued from the design criteria in
+[`docs/architecture.md`](./docs/architecture.md) — deep modules, information hiding, narrow
+interfaces, design it twice — applied both to the sites the plugin generates and to the plugin
+itself (based on John Ousterhout's *A Philosophy of Software Design*).
 
 ### Astro 6 patterns
 
