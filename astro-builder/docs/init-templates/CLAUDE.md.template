@@ -49,6 +49,7 @@ Three layers — never collapse them:
 ### i18n
 
 - All UI strings in `src/i18n/{{DEFAULT_LOCALE}}.json` + `src/i18n/{{SECONDARY_LOCALE}}.json`
+- Locale JSONs use flat dotted keys (`"notFound.title"`) — the default locale file defines the `MessageKey` type in `src/lib/i18n.ts`, so a typo in a `tl()` call is a compile error
 - Use `createTranslator(Astro.currentLocale)` in every component — never pass `lang` or `tl` as props
 - Detect locale via `Astro.currentLocale` — never parse URLs
 - `prefixDefaultLocale: true` — all routes prefixed
@@ -61,13 +62,14 @@ Three layers — never collapse them:
 - Single collection per type with locale subfolders: `articles/{{DEFAULT_LOCALE}}/`, `articles/{{SECONDARY_LOCALE}}/`
 - `translationKey` links content across locales
 - Flexible `tags: string[]` — no fixed category enums
+- `draft: true` keeps an entry out of listings, feeds, and sitemaps
 
 ### Utility layer (`src/lib/`)
 
-- `content.ts` — all content collection queries
-- `urls.ts` — all URL builders
-- `format.ts` — locale-aware date/number formatting
-- `i18n.ts` — `createTranslator()` factory
+- `content.ts` — all content collection queries (page-views never call `getCollection()` directly)
+- `urls.ts` — all URL builders (components never concatenate locale prefixes by hand)
+- `format.ts` — locale-aware date/number formatting via `Intl` (never a date library)
+- `i18n.ts` — `createTranslator()` factory + the `MessageKey` type
 
 ### Path aliases (always use these)
 
