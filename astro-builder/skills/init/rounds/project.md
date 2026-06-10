@@ -1,6 +1,6 @@
 # Round: Project Setup
 
-Initialize an Astro 6 project for Claude Code. Deeply understand the project, then generate a `CLAUDE.md` and `.astro-builder/` folder that will guide all future development sessions.
+Initialize an Astro 6 project for Claude Code. Deeply understand the project, then generate a `CLAUDE.md` and `.astro-builder/` folder that will guide all future development sessions — and scaffold the site code those files promise, so the project builds the moment init finishes.
 
 ---
 
@@ -72,9 +72,9 @@ Ask what quality gates they want enforced on every commit:
 ### 2.7 Deployment target
 Ask where the site will be deployed: Vercel, Netlify, Cloudflare Pages, GitHub Pages, or self-hosted. This determines the Astro adapter.
 
-## Phase 3 — Generate artifacts
+## Phase 3 — Generate guidance artifacts
 
-After completing the interview, generate the following files. Confirm with the user before writing: "I'm ready to generate your configuration. This will create `CLAUDE.md`, a `.astro-builder/` folder, and `src/styles/global.css`. Proceed?"
+After completing the interview, generate the following files. Confirm with the user before writing: "I'm ready to generate your project. This will create `CLAUDE.md`, a `.astro-builder/` folder, `src/styles/global.css`, and scaffold the site code (config, layout, `src/lib/` utilities, i18n files, RSS, 404, robots.txt). Proceed?"
 
 ### Files to create:
 
@@ -90,35 +90,88 @@ After completing the interview, generate the following files. Confirm with the u
 
 **`src/styles/global.css`** — Site-wide CSS. Use `docs/init-templates/global.css.template`. Defines all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`) under `@layer tokens`, plus the four-layer cascade (`reset`, `tokens`, `base`, `utilities`). Derive `--color-primary-dark` via `color-mix(in oklch, var(--color-primary) 80%, black)`. Populate dark-mode overrides if the user opted in. This file is the source of truth for tokens — component CSS in `<style>` blocks references these.
 
-## Phase 4 — Validate and scaffold
+## Phase 4 — Scaffold the site code
 
-After writing the files:
+Everything `CLAUDE.md` promises must exist when this round finishes — the contract written is the contract created. Code that is identical for every astro-builder site ships as a literal template in `docs/init-templates/` (plugin root); only interview-dependent parts are filled in, exactly where each template's `{{...}}` markers say so. Do not improvise structure the templates already define.
 
-1. Check if `package.json` exists. If not, offer to scaffold a new Astro 6 project by running:
+### 4.1 — Ensure a base project
+
+1. If `package.json` does not exist, scaffold a new Astro 6 project:
    ```bash
    pnpm create astro@latest . -- --template minimal --no-install
    ```
-2. Verify that `astro.config.ts` (not `.mjs`) exists. If not, offer to create it.
-3. Verify that `src/content.config.ts` exists. If not, offer to create it based on the content schema.
-4. Verify `src/styles/global.css` exists and contains `@layer reset, tokens, base, utilities;` plus all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`). Verify `BaseLayout.astro` (or the root layout) imports it: `import '../styles/global.css'`.
-5. Run `pnpm install` if dependencies need updating.
-6. Run `pnpm build` and report any errors. Fix them autonomously if possible.
+2. Ensure dependencies (add with `pnpm add` / `pnpm add -D`, never npm or yarn):
+   - `@astrojs/sitemap` and `@astrojs/rss` (runtime)
+   - the adapter package for the deployment target, if it needs one (`@astrojs/vercel`, `@astrojs/netlify`, `@astrojs/cloudflare`); static hosting needs none
+   - `@biomejs/biome` (dev) if the user kept the Biome quality gate
+
+### 4.2 — Overwrite policy (re-runs and existing repos)
+
+Before writing any file below, check whether the target already exists:
+
+- **Missing** → write it.
+- **Exists, identical** to what you would generate → skip silently (templates are deterministic, so re-running init over an untouched scaffold is a no-op).
+- **Exists, different** → never overwrite silently. Collect all such files, then ask the user once (via `AskUserQuestion`) which to overwrite and which to keep. For `tsconfig.json`, prefer merging the path aliases into the existing file over replacing it.
+
+### 4.3 — Scaffold every target, in this order
+
+Config first (aliases and locales must exist before code that uses them), then the utility layer, then strings, then markup.
+
+| # | Target | Template | Model fills |
+|---|--------|----------|-------------|
+| 1 | `tsconfig.json` | `tsconfig.json.template` | nothing — verbatim (or merge `paths` into an existing file) |
+| 2 | `astro.config.ts` | `astro.config.ts.template` | `{{SITE_URL}}`, `{{DEFAULT_LOCALE}}`, `{{LOCALES_TUPLE}}` (e.g. `"en", "it"`), adapter markers per deployment target (delete both markers for static hosting) |
+| 3 | `src/lib/i18n.ts` | `lib/i18n.ts.template` | `{{SITE_NAME}}`, `{{DEFAULT_LOCALE}}` |
+| 4 | `src/lib/urls.ts` | `lib/urls.ts.template` | placeholders + one builder per content type at the `{{CONTENT_TYPE_URL_BUILDERS}}` marker, following the in-file pattern |
+| 5 | `src/lib/format.ts` | `lib/format.ts.template` | `{{SITE_NAME}}`, `{{DEFAULT_LOCALE}}` |
+| 6 | `src/content.config.ts` | `content.config.ts.template` | `{{LOCALES_TUPLE}}` + one `defineCollection()` per content type from the interview at the `{{COLLECTIONS}}` marker (keep the contract fields: `lang`, `translationKey`, `tags`, `draft`); export all at `{{COLLECTION_EXPORTS}}` |
+| 7 | `src/lib/content.ts` | `lib/content.ts.template` | one `getXByLang()` per collection at the `{{CONTENT_HELPERS}}` marker |
+| 8 | `src/i18n/<locale>.json` — one per configured locale | `i18n.json.template` | default locale: verbatim; other locales: same keys, translated values. Then add the `nav.*` (and any footer) keys the BaseLayout fill below introduces — to EVERY locale file |
+| 9 | `src/layouts/BaseLayout.astro` | `BaseLayout.astro.template` | `{{SITE_NAME}}`, `{{NAV_LINKS}}` (hrefs from `src/lib/urls.ts` builders, labels via `tl()`), `{{FOOTER_CONTENT}}` |
+| 10 | `src/page-views/NotFoundPageView.astro` + `src/pages/<locale>/404.astro` per locale | `404.astro.template` | thin wrappers only, per the template's header comment |
+| 11 | `src/pages/<locale>/rss.xml.ts` per locale | `rss.xml.ts.template` | `{{SITE_NAME}}`, `{{PROJECT_DESCRIPTION}}`, `{{DEFAULT_LOCALE}}`; point the feed at the site's primary dated collection |
+| 12 | `public/robots.txt` | `robots.txt.template` | `{{SITE_NAME}}`, `{{SITE_URL}}` |
+| 13 | `src/content/<type>/<locale>/` folders per collection per locale, plus one example entry per collection in the default locale | — | realistic frontmatter covering every required schema field |
+| 14 | `src/page-views/HomePageView.astro` + `src/pages/<locale>/index.astro` per locale | — | minimal homepage written by the model: page-views pattern, `<h1>` + short intro via `tl()` keys added to every locale file. Skip if an index page already exists |
+
+`src/styles/global.css` was already written in Phase 3 — verify BaseLayout imports it (`import "../styles/global.css"`).
+
+### 4.4 — Cross-check before building
+
+1. Every `tl()` key used in any scaffolded `.astro` file exists in EVERY `src/i18n/<locale>.json`.
+2. Every structure `CLAUDE.md` promises now exists: the four `src/lib/` modules, the path aliases in `tsconfig.json`, `src/content.config.ts`, the locale JSONs, BaseLayout, per-locale 404 and RSS, `public/robots.txt`.
+3. No unreplaced `{{...}}` marker remains: `grep -rn "{{" src astro.config.ts tsconfig.json public` must return nothing.
+4. `src/styles/global.css` contains `@layer reset, tokens, base, utilities;` plus all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`).
+
+### 4.5 — Install and verify
+
+1. Run `pnpm install`.
+2. Run `pnpm build` — the scaffold is not done until it passes. Fix errors autonomously and re-run.
 
 ## Phase 5 — Completion summary
 
 ```
-✅ Project setup complete
+✅ Project setup complete — pnpm build passing
 
-  CLAUDE.md and .astro-builder/ generated.
-
-Created:
+Guidance:
   • CLAUDE.md
   • .astro-builder/style-guide.md
   • .astro-builder/content-schema.md
   • .astro-builder/design-system.md
   • .astro-builder/anti-patterns.md
+
+Site code:
+  • astro.config.ts, tsconfig.json
   • src/styles/global.css
+  • src/lib/i18n.ts, urls.ts, format.ts, content.ts
+  • src/content.config.ts + src/content/<type>/<locale>/
+  • src/i18n/<locale>.json (every locale)
+  • src/layouts/BaseLayout.astro
+  • src/page-views/ + src/pages/<locale>/ (home, 404, rss.xml)
+  • public/robots.txt
 ```
+
+(List only what was actually created or updated in this run.)
 
 What's next? Run `/astro-builder:init lighthouse` to add automated Lighthouse auditing on git push.
 

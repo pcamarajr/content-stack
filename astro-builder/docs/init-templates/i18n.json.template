@@ -1,0 +1,9 @@
+{
+  "layout.skipToContent": "Skip to content",
+  "layout.mainNav": "Main navigation",
+  "nav.home": "Home",
+  "notFound.title": "Page not found",
+  "notFound.description": "This page does not exist or has been moved.",
+  "notFound.body": "The page you are looking for does not exist or has been moved.",
+  "notFound.backHome": "Back to the homepage"
+}

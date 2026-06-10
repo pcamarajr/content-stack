@@ -28,9 +28,11 @@ Run setup in any Astro project (new or existing):
 `/astro-builder:init` shows a dashboard of what's configured. From there, run each phase:
 
 ```bash
-/astro-builder:init project    # Interview → generate CLAUDE.md + .astro-builder/*
+/astro-builder:init project    # Interview → scaffold a working site (CLAUDE.md, config, layout, lib, i18n, SEO surface)
 /astro-builder:init lighthouse # Install Lighthouse + configure git push hook
 ```
+
+`init project` does not stop at configuration: it scaffolds the site code its `CLAUDE.md` promises — `astro.config.ts`, path aliases, `BaseLayout`, the `src/lib/` utility layer, per-locale i18n files, content collections, RSS, 404, and robots.txt — then runs `pnpm build` to prove the result compiles.
 
 If you want the fastest start, begin from the ready template:
 
@@ -43,7 +45,7 @@ If you want the fastest start, begin from the ready template:
 | Skill | Description |
 |-------|-------------|
 | `/astro-builder:init` | Show project setup dashboard |
-| `/astro-builder:init project` | Initialize or re-configure project guidance files |
+| `/astro-builder:init project` | Interview → generate guidance files AND scaffold a buildable site: config, BaseLayout, `src/lib/` utilities, i18n JSONs, content collections, RSS, 404, robots.txt |
 | `/astro-builder:init lighthouse` | Set up automated Lighthouse auditing on git push |
 | `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
 | `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
@@ -151,7 +153,24 @@ Two agents work behind the scenes:
 ```
 your-project/
 ├── CLAUDE.md                          ← Project rules for Claude Code
-├── src/styles/global.css              ← Tokens, reset, base, utilities (@layer)
+├── astro.config.ts                    ← site, i18n routing, root redirect, sitemap, adapter
+├── tsconfig.json                      ← Path aliases (@lib/*, @layouts/*, @page-views/*, …)
+├── public/
+│   └── robots.txt                     ← References /sitemap-index.xml
+├── src/
+│   ├── content.config.ts              ← Collections from the interview (lang, translationKey, tags, draft)
+│   ├── content/<type>/<locale>/       ← One folder per collection per locale + example entry
+│   ├── i18n/<locale>.json             ← UI strings, flat dotted keys, one file per locale
+│   ├── layouts/
+│   │   └── BaseLayout.astro           ← Page shell + the SEO/a11y <head> deep module
+│   ├── lib/
+│   │   ├── i18n.ts                    ← createTranslator() + typed MessageKey
+│   │   ├── urls.ts                    ← Locale-aware URL builders
+│   │   ├── format.ts                  ← Intl date/number formatting
+│   │   └── content.ts                 ← All collection queries (getXByLang)
+│   ├── page-views/                    ← HomePageView, NotFoundPageView
+│   ├── pages/<locale>/                ← Thin wrappers: index, 404, rss.xml.ts
+│   └── styles/global.css              ← Tokens, reset, base, utilities (@layer)
 └── .astro-builder/
     ├── style-guide.md                 ← Voice, tone, writing conventions
     ├── content-schema.md              ← Content types, fields, relationships
@@ -159,7 +178,7 @@ your-project/
     └── anti-patterns.md               ← What to avoid in this project
 ```
 
-Claude reads these files at the start of every session to maintain consistency across your entire project.
+The result is a working site: `init` finishes by running `pnpm build` and fixing what fails. Claude reads the guidance files at the start of every session to maintain consistency across your entire project.
 
 ### After `/init lighthouse`
 

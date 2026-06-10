@@ -111,7 +111,7 @@ Install:
 
 ### [`astro-builder`](./astro-builder/README.md)
 
-Astro 6 site builder plugin that scaffolds and evolves static content sites using the page-views pattern, i18n, content collections, and quality gates.
+Astro 6 site builder plugin that scaffolds and evolves static content sites using the page-views pattern, i18n, content collections, and quality gates. `init` interviews you, then scaffolds a working, buildable site — config, layout, `src/lib/` utilities, i18n files, and the full SEO surface.
 
 - **Best for:** creating or restructuring Astro content architectures
 - **Key skills:** `init`, `init project`, `init lighthouse`, `new-page`, `new-content-type`, `translate`, `audit`, `css-conventions` (auto-applied), `html-conventions` (auto-applied), `seo-conventions` (auto-applied), `ux-writing` (auto-applied)
