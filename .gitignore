@@ -3,8 +3,8 @@
 .worktrees/
 .cost-log/
 
-# Personal-knowledge memory system (local-only, see personal-knowledge-cli)
-.claude/CLAUDE.md
-.claude/skills/memory/
-.claude/skills/import-memories/
-.claude/skills/init-memory/
+# personal-knowledge CLI: managed skill/rule files
+/.claude/skills/memory/
+/.cursor/rules/memory.mdc
+/.claude/skills/init-memory/
+/.claude/skills/import-memories/
