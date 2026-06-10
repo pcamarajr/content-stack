@@ -6,16 +6,69 @@
 // Encodes the html-conventions skill: lang from Astro.currentLocale, skip link
 // as the first focusable element, header/nav/main/footer landmarks, one <main>.
 // The <h1> belongs to the page-view, inside <main> — never here.
+//
+// The <head> below is the SEO deep module (seo-conventions skill): page-views
+// pass only title/description (+ image/type/publishedAt for articles); the
+// full title, canonical, OG/Twitter tags, JSON-LD, and hreflang alternates are
+// all derived here from Astro.site, the current route, and the i18n config.
+// Hand-written SEO tags anywhere else are a violation.
 import "../styles/global.css";
+import { getAbsoluteLocaleUrl } from "astro:i18n";
+import { i18n } from "astro:config/client";
 import { createTranslator } from "@lib/i18n";
 
 interface Props {
   title: string;
   description: string;
+  /** Social-share image, root-relative or absolute. Resolved against Astro.site. */
+  image?: string;
+  /** "website" (default) for index/landing pages, "article" for content entries. */
+  type?: "website" | "article";
+  /** Set when type is "article" — drives article:published_time and JSON-LD datePublished. */
+  publishedAt?: Date;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image, type = "website", publishedAt } = Astro.props;
 const tl = createTranslator(Astro.currentLocale);
+
+const siteName = "{{SITE_NAME}}";
+const pageTitle = `${title} · ${siteName}`;
+
+// Astro.site is mandatory in astro.config.ts — every absolute URL derives from it.
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = image ? new URL(image, Astro.site) : undefined;
+
+// Locale-agnostic path for hreflang alternates. prefixDefaultLocale: true
+// guarantees every route carries a locale prefix; we strip the one the
+// framework reports — never parse the URL to *detect* the locale.
+const localePath = Astro.url.pathname.replace(
+  new RegExp(`^/${Astro.currentLocale}/`),
+  "/",
+);
+const locales = i18n.locales.map((l) => (typeof l === "string" ? l : l.path));
+
+const isHome = Astro.url.pathname === `/${Astro.currentLocale}/`;
+const jsonLd =
+  type === "article"
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: title,
+        description,
+        inLanguage: Astro.currentLocale,
+        mainEntityOfPage: canonical.href,
+        ...(publishedAt && { datePublished: publishedAt.toISOString() }),
+        ...(socialImage && { image: socialImage.href }),
+      }
+    : isHome
+      ? {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: siteName,
+          url: Astro.site?.href,
+          inLanguage: Astro.currentLocale,
+        }
+      : undefined;
 ---
 
 <!doctype html>
@@ -23,8 +76,58 @@ const tl = createTranslator(Astro.currentLocale);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    {
+      locales.map((locale) => (
+        <link
+          rel="alternate"
+          hreflang={locale}
+          href={getAbsoluteLocaleUrl(locale, localePath)}
+        />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={getAbsoluteLocaleUrl(i18n.defaultLocale, localePath)}
+    />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={siteName}
+      href={`/${Astro.currentLocale}/rss.xml`}
+    />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={Astro.currentLocale} />
+    {socialImage && <meta property="og:image" content={socialImage.href} />}
+    {
+      type === "article" && publishedAt && (
+        <meta
+          property="article:published_time"
+          content={publishedAt.toISOString()}
+        />
+      )
+    }
+    <meta
+      name="twitter:card"
+      content={socialImage ? "summary_large_image" : "summary"}
+    />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {socialImage && <meta name="twitter:image" content={socialImage.href} />}
+    {
+      jsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+      )
+    }
   </head>
   <body>
     <a href="#main" class="skip-link">{tl("layout.skipToContent")}</a>
