@@ -47,9 +47,9 @@ If you want the fastest start, begin from the ready template:
 | `/astro-builder:init` | Show project setup dashboard |
 | `/astro-builder:init project` | Interview → generate guidance files AND scaffold a buildable site: config, BaseLayout, `src/lib/` utilities, i18n JSONs, content collections, RSS, 404, robots.txt |
 | `/astro-builder:init lighthouse` | Set up automated Lighthouse auditing on git push |
-| `/astro-builder:new-page` | Scaffold a page + page-view pair for all locales |
-| `/astro-builder:new-content-type` | Add a new content collection with schema, utilities, and example content |
-| `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale |
+| `/astro-builder:new-page` | Scaffold a route for all locales: thin page wrappers (≤5 lines), a page-view wired to the BaseLayout SEO contract (`title`/`description`, `type="article"` + `publishedAt` for content pages), and i18n keys in every locale JSON |
+| `/astro-builder:new-content-type` | Add a content collection following the project contract: schema with `lang`/`translationKey`/`tags`/`draft`, a `getXByLang()` helper in `src/lib/content.ts`, a URL builder on `buildLocaleUrl`, and example content |
+| `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale — same slug, target `lang`, matching `translationKey`; hreflang and RSS are derived by the architecture, no manual wiring |
 | `/astro-builder:audit` | Orchestrated project audit: architecture, i18n, schema, per-skill domain checklists (CSS, HTML/a11y, and SEO today), AI design slop, style guide, and build validation |
 | `css-conventions` _(auto-applied)_ | Enforces CSS discipline whenever styles are written: token-only values, scoped `<style>` blocks, Tier-1 modern CSS, no Tailwind / CSS-in-JS / preprocessors, and a CSS-first interactivity ladder |
 | `html-conventions` _(auto-applied)_ | Enforces semantic, accessible markup whenever templates are written: landmark structure (one `<main>`, one `<h1>`), unbroken heading hierarchy, button-vs-link discipline, ARIA only when no native element exists, explicit alt text, labeled forms, and focus order |
