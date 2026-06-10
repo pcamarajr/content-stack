@@ -1,10 +1,23 @@
 ---
-description: Audit the Astro 6 project for anti-patterns, missing translations, broken internal links, style guide violations, and schema inconsistencies. Produces a prioritized report with actionable fixes.
+description: >
+  Audit an astro-builder project end to end and produce a prioritized, actionable report. Trigger
+  when the user runs /astro-builder:audit, asks to "audit the site", "check for anti-patterns",
+  "find what's broken", "review the project for quality issues", or before a release / after a
+  large refactor / after onboarding an existing Astro repo. Covers architecture (page-views,
+  config locations), i18n completeness, content schema validity, every convention-skill domain
+  checklist (CSS today; more as skills ship), anti-slop design review, style guide adherence, and
+  build validation.
 ---
 
 # /astro-builder:audit
 
-You are auditing this Astro 6 project for quality issues. Run a thorough inspection across four categories, then produce a prioritized report.
+You are auditing this Astro 6 project for quality issues across every domain the plugin enforces.
+
+**Why this shape:** the audit is a thin orchestrator. Each convention skill owns its rules in its
+`SKILL.md` and the mechanical checks for those rules in its `references/audit.md` — the rule and
+its check live together, and the audit never restates them. Adding a new domain to the audit costs
+one line in the Domain checklists table. The steps below that have no backing skill (architecture,
+i18n, schema, style guide, build) are the audit's own.
 
 ## Step 1 — Load project context
 
@@ -13,15 +26,15 @@ Read:
 2. `.astro-builder/anti-patterns.md` — project-specific anti-patterns.
 3. `.astro-builder/content-schema.md` — expected content structure.
 4. `.astro-builder/style-guide.md` — writing rules.
-5. `.astro-builder/design-system.md` — token namespaces.
+5. `.astro-builder/design-system.md` — token namespaces and register.
 6. `src/styles/global.css` — token source of truth.
 7. `astro.config.ts` — i18n config, integrations, adapter.
 8. `src/content.config.ts` — collection schemas.
 
 Also read, from the plugin root:
 - `docs/astro-patterns.md` — canonical Astro 6 anti-patterns.
-- `docs/anti-slop.md` — the anti-slop / design-quality rule catalog (used in Step 4.6).
-- `docs/registers.md` — the brand vs. product register model that scopes Step 4.6 severity.
+- `docs/anti-slop.md` — the anti-slop / design-quality rule catalog (used in Step 6).
+- `docs/registers.md` — the brand vs. product register model that scopes Step 6 severity.
 
 ## Step 2 — Architecture audit
 
@@ -50,28 +63,23 @@ For each content collection defined in `src/content.config.ts`:
 - Check that `tags` are arrays (not strings).
 - Flag any files with frontmatter errors.
 
-## Step 4.5 — CSS conventions audit
+## Step 5 — Domain checklists
 
-Read `.astro-builder/design-system.md` to learn the project's token names. Then sweep the codebase for `css-conventions` skill violations. Report findings as P1 unless noted.
+Each convention skill ships its mechanical checks in `references/audit.md`. For every row in the
+table below, read the checklist file (path relative to the plugin root) and run every check in it.
 
-Run these greps (adjust shell-globbing as needed):
+| Domain | Checklist |
+|---|---|
+| CSS conventions | `skills/css-conventions/references/audit.md` |
 
-| Violation | Pattern | Severity |
-|---|---|---|
-| `!important` used | `grep -rn "!important" src --include="*.astro" --include="*.css"`. Allowed only inside `@media (prefers-reduced-motion: reduce)` blocks. | P1 |
-| Tailwind / utility framework | `grep -rn -E "@tailwind\|@apply\|tailwindcss" src package.json` | P0 |
-| CSS-in-JS or preprocessor | `grep -rn -E "styled-components\|@emotion\|sass\|less\|stylus" package.json` | P0 |
-| CSS Modules / sibling .css | find files matching `**/*.module.css` or component-named `.css` siblings | P1 |
-| `<style is:global>` in component | `grep -rn "style is:global" src --include="*.astro"` (outside `src/layouts/BaseLayout.astro` if used to import global.css) | P1 |
-| Inline `style=` with standard properties | `grep -rnE "style=\"[^\"]*[a-z-]+:" src --include="*.astro"`. Only custom-property assignments (`style="--x: ..."`) are allowed. | P1 |
-| Raw hex colors outside global.css | `grep -rn -E "#[0-9a-fA-F]{3,8}" src --include="*.astro"` — flag any in `<style>` blocks. | P1 |
-| Raw `rgb(` / `rgba(` / `hsl(` outside global.css | `grep -rn -E "rgba?\(\|hsla?\(" src --include="*.astro"` in `<style>` blocks | P1 |
-| ID selectors for styling | `grep -rn -E "^\s*#[a-z]" src --include="*.astro"` in `<style>` blocks | P2 |
-| Nesting deeper than 2 levels | manual inspection of any `<style>` block flagged by the file scan | P2 |
+Contract (defined once here, honored by every checklist):
+- A grep hit is a **candidate**, not a verdict — confirm against the rule's intent and documented
+  exceptions before reporting.
+- Report each confirmed finding with `file:line`, the offending fragment, the check's severity,
+  and its suggested fix, grouped under a per-domain subsection of the report.
+- To add a new domain to the audit, add one row to this table — nothing else.
 
-For each violation, link to the specific file:line and quote the offending fragment in the report.
-
-## Step 4.6 — Anti-slop & design-quality audit
+## Step 6 — Anti-slop & design-quality audit
 
 Detect AI-generated design tells ("slop") and design-quality defects. Read the full rule catalog at
 `docs/anti-slop.md` (relative to plugin root) — it defines ~40 rules in three categories (`slop`,
@@ -94,9 +102,7 @@ Detect AI-generated design tells ("slop") and design-quality defects. Read the f
 Report findings under a dedicated **Anti-slop** subsection of the report, each with file:line, the
 offending fragment, the rule id, and the concrete fix from the catalog.
 
----
-
-## Step 5 — Style guide audit
+## Step 7 — Style guide audit
 
 Read `.astro-builder/style-guide.md` and check a sample of 5 content files per collection:
 - Does the tone match the defined voice?
@@ -105,13 +111,13 @@ Read `.astro-builder/style-guide.md` and check a sample of 5 content files per c
 
 This is a best-effort check — report findings but don't auto-fix style issues.
 
-## Step 6 — Build validation
+## Step 8 — Build validation
 
 Run `pnpm build`. If it fails, include the full error output in the report as a P0 issue.
 Run `tsc --noEmit`. Include any TypeScript errors as P0 issues.
 Run `biome check .` if Biome is configured. Include lint errors as P1 issues.
 
-## Step 7 — Report
+## Step 9 — Report
 
 Produce a structured report in this format:
 
@@ -133,6 +139,14 @@ Produce a structured report in this format:
 - Build status: PASS / FAIL
 ```
 
+Before presenting the report, verify:
+
+- [ ] Every domain checklist in the Step 5 table was read and fully run.
+- [ ] Every finding has `file:line`, the offending fragment, and a concrete fix.
+- [ ] Every grep candidate was confirmed against its rule's intent — no raw hits reported.
+- [ ] Anti-slop severities reflect the resolved register.
+- [ ] Build, TypeScript, and lint results are reflected in the P0/P1 sections.
+
 After presenting the report, ask: "Would you like me to fix all P0 and P1 issues automatically?"
 
 If yes, fix them autonomously, then re-run `pnpm build` and `tsc --noEmit` to confirm all P0/P1 issues are resolved.
@@ -141,4 +155,6 @@ If yes, fix them autonomously, then re-run `pnpm build` and `tsc --noEmit` to co
 
 - Never auto-fix P2 style issues without asking.
 - Never modify content body text during the audit without explicit instruction.
+- Never restate a convention skill's rules here — rules live in each skill's `SKILL.md`, checks in
+  its `references/audit.md`. This file only orchestrates.
 - Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
