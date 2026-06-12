@@ -1,0 +1,29 @@
+name: lint-pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Squash-merge: the PR title becomes the commit on main that
+          # release-please reads — the scope should be the plugin name.
+          scopes: |
+            astro-builder
+            astro-lsp
+            content-image-gemini
+            content-ops
+            content-seo
+            cost-tracker
+            marketplace
+            deps
+          requireScope: false

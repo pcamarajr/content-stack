@@ -37,12 +37,23 @@ Every plugin entry must have: `name`, `version` (semver), `description`, `author
 
 ---
 
+## Releases
+
+Versions are managed by **release-please** (manifest mode, one package per plugin) — never bump a `version` by hand. PRs are squash-merged, so the PR title must be a conventional commit scoped to the plugin (e.g. `feat(astro-builder): ...`); `feat`/`fix`/`!` trigger releases, `chore`/`docs`/`refactor`/`ci` do not — a refactor users will perceive as a feature should be titled `feat(...)`. Merging the release PR that release-please opens updates `marketplace.json` + the plugin's `CHANGELOG.md`/`version.txt` and cuts the tag (`<plugin>-v<version>`) and GitHub Release. Config: `release-please-config.json` + `.release-please-manifest.json`.
+
+Commit messages and PR titles/descriptions are always written in English. Conventional-commit format is enforced locally by a husky `commit-msg` hook (commitlint — run `npm install` once to activate) and in CI by the PR-title lint.
+
 ---
 
 ## Adding a new plugin
 
 1. Create the plugin directory with `README.md` and its components
-2. Run `/version-plugin` — it will register the entry in `marketplace.json` and update the root `README.md`
+2. Add the entry to `.claude-plugin/marketplace.json` with `version: "1.0.0"` — the only time a version is written by hand
+3. Scaffold `<plugin>/.claude-plugin/plugin.json` (name, description, author, repository, license — no `version` field; version lives exclusively in `marketplace.json`)
+4. Register in `release-please-config.json` (copy an existing `packages` entry, adjusting the plugin name in the key and the jsonpath) and `.release-please-manifest.json` (`"<plugin>": "1.0.0"`)
+5. Add the plugin name to the `scopes` list in `.github/workflows/lint-pr-title.yml`
+6. Add the plugin section to the root `README.md`, in alphabetical order
+7. Title the PR `feat(<plugin>): ...` — `feat` makes release-please cut the plugin's first release, anchored at `1.0.0` by the manifest
 
 ---
 
