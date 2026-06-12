@@ -1,11 +1,11 @@
 ---
 name: version-plugin
-description: This skill should be used when the user asks to "version a plugin", "register a new plugin", "add a plugin to the marketplace", "update plugin version", "bump the version", "release a new version of a plugin", or runs "/version-plugin". Guides the semver decision, updates marketplace.json, scaffolds plugin.json if missing, syncs the root README, and scaffolds the plugin README if new.
+description: This skill should be used when the user asks to "version a plugin", "register a new plugin", "add a plugin to the marketplace", "update plugin version", "bump the version", "release a new version of a plugin", or runs "/version-plugin". Registers new plugins (marketplace.json, release-please config/manifest, READMEs). Version bumps for existing plugins are automated by release-please — this skill explains the flow instead of bumping manually.
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Edit, Write, AskUserQuestion
 ---
 
-You are running the `version-plugin` skill. Correctly version a plugin in this marketplace, update all registries, and ensure documentation is in sync.
+You are running the `version-plugin` skill. Correctly register a plugin in this marketplace, update all registries, and ensure documentation is in sync.
 
 ---
 
@@ -18,6 +18,8 @@ Ask (or infer from context):
 - **New plugin** → go to [New plugin flow](#new-plugin-flow)
 - **Update** → go to [Update flow](#update-flow)
 
+> **Versioning is automated.** Releases are cut by release-please from conventional commits (squash-merge PR titles). Never bump a `version` field by hand — for updates, the job of this skill is to make sure the PR title has the right type/scope and the docs are in sync.
+
 ---
 
 ## New plugin flow
@@ -28,7 +30,7 @@ Check that the plugin folder exists under the repo root and contains at minimum 
 
 ### 1.2 Set version to `1.0.0`
 
-New plugins always start at `1.0.0`.
+New plugins always start at `1.0.0`. This is the only time a version is written by hand — from here on, release-please owns it.
 
 ### 1.3 Collect metadata
 
@@ -129,19 +131,31 @@ Part of the [content-stack](https://github.com/pcamarajr/content-stack) marketpl
 MIT
 ````
 
-### 1.8 Commit the changes
+### 1.8 Register in release-please
+
+Add the plugin to both release automation files:
+
+- `release-please-config.json` — new entry under `packages`, keyed by the plugin directory, following the existing pattern (`release-type: simple` + the `extra-files` jsonpath entry targeting the plugin's `version` in `/.claude-plugin/marketplace.json`)
+- `.release-please-manifest.json` — `"<plugin-name>": "1.0.0"`
+
+Also add the plugin name to the `scopes` list in `.github/workflows/lint-pr-title.yml`.
+
+### 1.9 Commit the changes
 
 Stage and commit all modified files:
 
 ```
-chore: register <plugin-name>@1.0.0 in marketplace
+feat(<plugin-name>): register <plugin-name> in marketplace
 ```
 
-### 1.9 Confirm and summarize
+The `feat` type matters — it makes release-please cut the plugin's first release (the manifest anchors it at `1.0.0`).
+
+### 1.10 Confirm and summarize
 
 Show the user what was changed:
 
 - Entry added to `marketplace.json`
+- Entries added to `release-please-config.json`, `.release-please-manifest.json`, and the PR-title lint scopes
 - `plugin.json` created (if applicable)
 - Section added to root `README.md`
 - Plugin `README.md` created or updated (if applicable)
@@ -150,67 +164,36 @@ Show the user what was changed:
 
 ## Update flow
 
-### 2.1 Identify the plugin
+Versions are bumped by **release-please** — never by hand. The squash-merged PR title is the conventional commit it reads:
 
-Ask which plugin is being updated, or infer from the current working context.
-
-### 2.2 Read the current version
-
-Read `.claude-plugin/marketplace.json` and find the plugin's current `version`.
-
-### 2.3 Determine the version bump
-
-Ask the user to describe what changed, then apply these rules:
-
-| Change type | Bump |
+| PR title | Effect on the scoped plugin |
 | --- | --- |
-| Bug fix, wording correction, documentation update, skill text tweak | **patch** (x.x.N) |
-| New skill, new agent, new hook, new command, new optional feature | **minor** (x.N.0) |
-| Breaking config change, removed/renamed skill or agent, architecture overhaul | **major** (N.0.0) |
+| `fix(<plugin>): ...` | **patch** |
+| `feat(<plugin>): ...` | **minor** (0.x plugins also bump minor on feat) |
+| `feat(<plugin>)!: ...` or `BREAKING CHANGE:` footer | **major** |
+| `chore`/`docs`/`refactor`/`ci` | no release |
 
-If unsure, ask: _"Is this a fix, a new feature, or a breaking change?"_
+release-please attributes commits to plugins by the files touched; the scope in the title is for humans and the changelog. After merge, it opens/updates a release PR per plugin — merging that PR updates `marketplace.json`, the plugin's `CHANGELOG.md`/`version.txt`, and cuts the tag (`<plugin>-v<version>`) and GitHub Release.
 
-Show the proposed new version and ask for confirmation before proceeding.
+What this skill still does on updates:
 
-### 2.4 Update `.claude-plugin/marketplace.json`
+### 2.1 Check the PR title
 
-Update the `version` field for the plugin to the new version.
+Confirm the PR title is a conventional commit with the right type for the intended bump (table above). A refactor that users will perceive as a feature should be titled `feat(...)`.
 
-### 2.5 Update plugin `README.md` if needed
+### 2.2 Update plugin `README.md` if needed
 
 If skills or agents were added/removed, update the skills/agents table in the plugin's README.
 
-### 2.6 Update root `README.md` if needed
+### 2.3 Update root `README.md` if needed
 
 If the plugin's description, skills list, or agents list changed, update the corresponding section in the root `README.md`.
-
-### 2.7 Commit the changes
-
-Stage and commit all modified files:
-
-```
-chore: bump <plugin-name> to <new-version>
-```
-
-### 2.8 Suggest a git tag
-
-For `minor` and `major` bumps, suggest creating a git tag:
-
-```bash
-git tag <plugin-name>@<new-version>
-```
-
-Ask if the user wants to create it now.
-
-### 2.9 Confirm and summarize
-
-Show the user exactly what was changed.
 
 ---
 
 ## Rules
 
-- Never downgrade a version
+- Never bump a `version` field by hand — that's release-please's job (the only exception is registering a new plugin at `1.0.0`)
 - Never skip semver components (e.g. `1.0` is not valid — use `1.0.0`)
 - Version lives exclusively in `marketplace.json` — do not add or update `version` in `plugin.json`
 - Always read the current state of `marketplace.json` before making changes

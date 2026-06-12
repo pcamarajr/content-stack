@@ -1,0 +1,68 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "7ab6127b36ee46dd8a418615fb054762e37b796f",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "packages": {
+    "astro-builder": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='astro-builder')].version"
+        }
+      ]
+    },
+    "astro-lsp": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='astro-lsp')].version"
+        }
+      ]
+    },
+    "content-image-gemini": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='content-image-gemini')].version"
+        }
+      ]
+    },
+    "content-ops": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='content-ops')].version"
+        }
+      ]
+    },
+    "content-seo": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='content-seo')].version"
+        }
+      ]
+    },
+    "cost-tracker": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='cost-tracker')].version"
+        }
+      ]
+    }
+  }
+}

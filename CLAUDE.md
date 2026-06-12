@@ -37,12 +37,16 @@ Every plugin entry must have: `name`, `version` (semver), `description`, `author
 
 ---
 
+## Releases
+
+Versions are managed by **release-please** (manifest mode, one package per plugin) — never bump a `version` by hand. PRs are squash-merged, so the PR title must be a conventional commit scoped to the plugin (e.g. `feat(astro-builder): ...`); `feat`/`fix`/`!` trigger releases. Merging the release PR that release-please opens updates `marketplace.json` + the plugin's `CHANGELOG.md` and cuts the tag/GitHub Release. Config: `release-please-config.json` + `.release-please-manifest.json`.
+
 ---
 
 ## Adding a new plugin
 
 1. Create the plugin directory with `README.md` and its components
-2. Run `/version-plugin` — it will register the entry in `marketplace.json` and update the root `README.md`
+2. Run `/version-plugin` — it registers the entry in `marketplace.json`, the release-please config/manifest, and updates the root `README.md`
 
 ---
 
