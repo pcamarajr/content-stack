@@ -15,8 +15,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Squash-merge: o título do PR vira o commit na main que o
-          # release-please lê — o escopo deve ser o nome do plugin.
+          # Squash-merge: the PR title becomes the commit on main that
+          # release-please reads — the scope should be the plugin name.
           scopes: |
             astro-builder
             astro-lsp
