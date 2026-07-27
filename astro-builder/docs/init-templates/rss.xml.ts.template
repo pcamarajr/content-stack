@@ -8,13 +8,16 @@
 import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
 import type { APIContext } from "astro";
+import { createUrls } from "@lib/urls";
 
 export async function GET(context: APIContext) {
   const locale = context.currentLocale ?? "{{DEFAULT_LOCALE}}";
+  // Locale bound once — every link below comes from a url.* method.
+  const url = createUrls(locale);
 
   // Feed only this locale's published entries.
   const entries = await getCollection(
-    "articles",
+    "{{FEED_COLLECTION}}",
     ({ data }) => data.lang === locale && !data.draft,
   );
 
@@ -29,9 +32,20 @@ export async function GET(context: APIContext) {
         title: entry.data.title,
         description: entry.data.description,
         pubDate: entry.data.date,
-        // glob-loader ids include the locale folder ("en/my-article") —
-        // strip it; the URL prefix carries the locale.
-        link: `/${locale}/articles/${entry.id.replace(`${locale}/`, "")}/`,
+        /*
+          DELETE THIS COMMENT once the marker below is filled — it is an
+          instruction to the generator, not part of the site.
+
+          glob-loader ids include the locale folder ("en/my-article") — the
+          stripping happens inside createUrls, since the URL prefix already
+          carries the locale, so this endpoint calls a builder and never
+          concatenates a path. Fill FEED_ENTRY_URL with the singular builder
+          method src/lib/urls.ts exposes for this collection (`url.article`,
+          `url.tutorial`, …); if it has none yet, add it there first. The
+          public `url.path(...)` primitive is the fallback only when the feed
+          is genuinely not a per-entry route.
+        */
+        link: {{FEED_ENTRY_URL}}(entry.id),
       })),
     customData: `<language>${locale}</language>`,
   });

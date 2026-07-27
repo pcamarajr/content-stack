@@ -44,7 +44,7 @@ before reporting.
 | `hero-eyebrow-chip` | Tiny uppercase letter-spaced label / pill chip directly above an oversized hero headline. | visual. | brand-advisory | P2 |
 | `repeated-section-kickers` | Tiny uppercase tracked labels repeated above every section heading — editorial scaffolding. | visual. | brand-advisory | P3 |
 | `numbered-section-markers` | `01 / 02 / 03` display markers as section labels. | `grep -rnE ">0[1-9][^0-9<]" src --include="*.astro"` near headings. | brand-advisory | P3 |
-| `em-dash-overuse` | More than two em-dashes in a body passage — AI cadence tell. | `grep -rno "—" src/content` then count per file (>2). | both | P2 |
+| `em-dash-overuse` | More than two em-dashes in a body passage — AI cadence tell. | `grep -rnoE "—\|---" src/content` then count per file (>2). Count both forms: markdown sources normally write `---`, which Astro's smart punctuation renders as an em dash, so grepping only the literal character under-counts. Ignore `---` frontmatter fences. | both | P2 |
 | `marketing-buzzword` | streamline / empower / supercharge / world-class / enterprise-grade / next-generation / cutting-edge / seamless / leverage / unlock. | `grep -rniE "streamline\|empower\|supercharge\|world-class\|enterprise-grade\|next-generation\|cutting-edge\|seamless(ly)?\|leverage\|unlock your" src/content src --include="*.astro"` | both | P2 |
 | `aphoristic-cadence` | 3+ sections landing on "X. No Y." / "Not a feature. A platform." manufactured-contrast aphorisms. | visual / read the copy. | both | P3 |
 | `oversized-h1` | A full-sentence headline blown up to display size, dominating the fold. | visual. (Short punchy headlines at display size are fine.) | brand-advisory | P2 |
@@ -54,7 +54,7 @@ before reporting.
 
 | id | Rule | Detection | Register | Sev |
 |---|---|---|---|---|
-| `broken-image` | `<img>` with empty/missing/placeholder `src` ships as a broken box. | `grep -rnE "<img[^>]*src=(\"\"\|''\|\"#\")" src --include="*.astro"` + flag `Astro.glob` images that 404. | both | P1 |
+| `broken-image` | `<img>` with empty/missing/placeholder `src` ships as a broken box. | `grep -rnE "<img[^>]*src=(\"\"\|''\|\"#\")" src --include="*.astro"` + flag images resolved through `import.meta.glob` or collection asset fields that 404 at build time. | both | P1 |
 | `gray-on-color` | Gray text on a colored background — washed out. | visual: muted text color over a non-neutral surface. Use a darker shade of the bg color. | both | P1 |
 | `low-contrast` | Text below WCAG AA (4.5:1 body, 3:1 large). | Compute contrast on `--color-text`/`--color-text-muted` vs surfaces. | both | P1 |
 | `layout-transition` | Animating `width`/`height`/`padding`/`margin` — layout thrash. | `grep -rnE "transition:[^;]*(width\|height\|padding\|margin)\|@keyframes" src --include="*.astro" --include="*.css"` | both | P1 |

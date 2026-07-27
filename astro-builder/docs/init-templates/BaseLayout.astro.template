@@ -7,15 +7,24 @@
 // as the first focusable element, header/nav/main/footer landmarks, one <main>.
 // The <h1> belongs to the page-view, inside <main> — never here.
 //
+// Two Astro 7 authoring rules govern every tag in the markup below:
+//   1. Close every tag explicitly — the Rust compiler (@astrojs/compiler-rs)
+//      turns an unclosed tag into a build error and no longer auto-corrects
+//      semantically invalid HTML (a block element inside a paragraph, etc.).
+//   2. Make whitespace between adjacent inline elements explicit — with
+//      compressHTML defaulting to "jsx", a newline between them renders as
+//      nothing; use a literal space or {' '} where a gap must be visible.
+//
 // The <head> below is the SEO deep module (seo-conventions skill): page-views
 // pass only title/description (+ image/type/publishedAt for articles); the
 // full title, canonical, OG/Twitter tags, JSON-LD, and hreflang alternates are
 // all derived here from Astro.site, the current route, and the i18n config.
 // Hand-written SEO tags anywhere else are a violation.
-import "../styles/global.css";
+import "@styles/global.css";
 import { getAbsoluteLocaleUrl } from "astro:i18n";
 import { i18n } from "astro:config/client";
 import { createTranslator } from "@lib/i18n";
+import { createUrls } from "@lib/urls";
 
 interface Props {
   title: string;
@@ -30,6 +39,9 @@ interface Props {
 
 const { title, description, image, type = "website", publishedAt } = Astro.props;
 const tl = createTranslator(Astro.currentLocale);
+// Locale bound once, exactly like the translator: every href below comes from
+// a url.* method — this file never concatenates a locale prefix by hand.
+const url = createUrls(Astro.currentLocale);
 
 const siteName = "{{SITE_NAME}}";
 const pageTitle = `${title} · ${siteName}`;
@@ -47,7 +59,7 @@ const localePath = Astro.url.pathname.replace(
 );
 const locales = i18n.locales.map((l) => (typeof l === "string" ? l : l.path));
 
-const isHome = Astro.url.pathname === `/${Astro.currentLocale}/`;
+const isHome = Astro.url.pathname === url.home();
 const jsonLd =
   type === "article"
     ? {
@@ -99,7 +111,7 @@ const jsonLd =
       rel="alternate"
       type="application/rss+xml"
       title={siteName}
-      href={`/${Astro.currentLocale}/rss.xml`}
+      href={url.rss()}
     />
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical.href} />
@@ -133,6 +145,16 @@ const jsonLd =
     <a href="#main" class="skip-link">{tl("layout.skipToContent")}</a>
     <header>
       <nav aria-label={tl("layout.mainNav")}>
+        {/*
+          DELETE THIS COMMENT once the marker below is filled — it is an
+          instruction to the generator, not part of the site.
+
+          The NAV_LINKS marker below expands to one anchor per top-level
+          destination. Every href comes from a url.* method (url.home(),
+          url.path("articles"), …) and every label from tl("nav.*") — never a
+          hand-built locale-prefixed string, never literal text. Adjacent links
+          on one line need an explicit space between them.
+        */}
         {{NAV_LINKS}}
       </nav>
     </header>

@@ -21,6 +21,16 @@ pnpm build            # Production build
 pnpm preview          # Preview production build
 ```
 
+**Background dev server (Astro 7)**: `astro dev` detects AI coding agents and starts detached,
+so `pnpm dev` may return immediately instead of streaming logs.
+
+```bash
+pnpm dev -- --background      # Force a detached dev server
+pnpm exec astro dev status    # Is a background server running, and where
+pnpm exec astro dev logs      # Tail the background server's output
+pnpm exec astro dev stop      # Stop the background server
+```
+
 **Quality gates** (every commit must pass):
 
 ```bash
@@ -37,6 +47,16 @@ biome check --write . # Auto-fix formatting before committing
 - **URL pattern**: All locales prefixed (e.g. `/{{DEFAULT_LOCALE}}/`, `/{{SECONDARY_LOCALE}}/`)
 
 ## Architecture
+
+### Astro 7 rules
+
+- **Close every tag.** The `.astro` compiler is Rust (`@astrojs/compiler-rs`) and an unclosed tag fails the build.
+- **No invalid nesting** (no block element inside a `<p>`, etc.) — Astro 7 no longer auto-corrects the HTML for you.
+- **Whitespace between inline elements must be explicit.** `compressHTML` defaults to `'jsx'`, so a newline between `<span>` and `<em>` renders as nothing: use a literal space or `{' '}`.
+- **Markdown/MDX use the built-in Rust processor** (GFM, smart punctuation, heading IDs included). Custom remark/rehype plugins require `pnpm add @astrojs/markdown-remark` plus `markdown: { processor: unified() }` in `astro.config.ts`.
+- **Never create `src/fetch.ts`** — it is the reserved advanced-routing entrypoint (use `fetchFile` for a custom router).
+- **Never add `@astrojs/db`** — the integration and the `astro db` CLI were removed in Astro 7.
+- **`logger`, `cache`, and `routeRules` are top-level config keys**, never `experimental.*`.
 
 ### Page-views pattern (mandatory)
 
@@ -67,7 +87,7 @@ Three layers — never collapse them:
 ### Utility layer (`src/lib/`)
 
 - `content.ts` — all content collection queries (page-views never call `getCollection()` directly)
-- `urls.ts` — all URL builders (components never concatenate locale prefixes by hand)
+- `urls.ts` — the locale-bound `createUrls(locale)` factory; components bind the locale once (like `createTranslator`) and never concatenate locale prefixes
 - `format.ts` — locale-aware date/number formatting via `Intl` (never a date library)
 - `i18n.ts` — `createTranslator()` factory + the `MessageKey` type
 
@@ -88,7 +108,8 @@ Three layers — never collapse them:
 - Package manager: `pnpm` (never npm or yarn)
 - Linting/formatting: Biome (never ESLint or Prettier)
 - Config: `astro.config.ts` (never `.mjs`)
-- Node.js: 22 LTS
+- Astro: 7.x
+- Node.js: >= 22.12.0 (Astro 7 engine requirement)
 
 ### CSS conventions
 
@@ -117,6 +138,6 @@ See `.astro-builder/` for full context:
 ## Workflow rules
 
 - Every task ends with a git commit (descriptive message)
-- Always follow Astro 6 docs: https://docs.astro.build/llms-small.txt
+- Always follow Astro 7 docs: https://docs.astro.build/llms-small.txt
 - Use only official Astro integrations (`@astrojs/sitemap`, `@astrojs/rss`, `@astrojs/mdx`)
 - Follow MDN Web API references for browser API usage: https://developer.mozilla.org/en-US/

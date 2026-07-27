@@ -1,6 +1,6 @@
 # Round: Project Setup
 
-Initialize an Astro 6 project for Claude Code. Deeply understand the project, then generate a `CLAUDE.md` and `.astro-builder/` folder that will guide all future development sessions — and scaffold the site code those files promise, so the project builds the moment init finishes.
+Initialize an Astro 7 project for Claude Code. Deeply understand the project, then generate a `CLAUDE.md` and `.astro-builder/` folder that will guide all future development sessions — and scaffold the site code those files promise, so the project builds the moment init finishes.
 
 ---
 
@@ -8,15 +8,35 @@ Initialize an Astro 6 project for Claude Code. Deeply understand the project, th
 
 Before asking the user anything, silently scan the project for existing context:
 
-1. Read `package.json` — check Astro version, installed integrations, and scripts.
-2. Read `astro.config.ts` or `astro.config.mjs` if present.
-3. Read `src/content.config.ts` or `src/content/config.ts` if present.
-4. Look for any `README.md`, `CLAUDE.md`, `docs/`, or `.astro-builder/` folder.
-5. Scan `src/styles/` for CSS variables, color tokens, or design tokens.
-6. Look for `src/i18n/` or any locale JSON files.
-7. Check for existing content in `src/content/` or `src/pages/`.
+1. Read `package.json` — report the detected `astro` version, installed integrations, and scripts.
+   If `astro` resolves to **anything below 7**, do not scaffold on top of it silently: tell the user
+   the detected version and point them at https://docs.astro.build/en/guides/upgrade-to/v7/ before
+   continuing.
+2. Run `node -v` and compare against Astro 7's `engines.node: ">=22.12.0"` (npm >= 9.6.5). If the
+   local Node is older, stop with a clear message: Astro 7 will not install or build on this Node,
+   upgrade to 22.12.0 or newer first.
+3. Read `astro.config.ts` or `astro.config.mjs` if present.
+4. Read `src/content.config.ts` or `src/content/config.ts` if present.
+5. Look for any `README.md`, `CLAUDE.md`, `docs/`, or `.astro-builder/` folder.
+6. Scan `src/styles/` for CSS variables, color tokens, or design tokens.
+7. Look for `src/i18n/` or any locale JSON files.
+8. Check for existing content in `src/content/` or `src/pages/`.
 
-Summarize what you found to the user in 3-5 bullet points, then begin the interview.
+Then run the Astro 7 onboarding detections — each one, if it hits, is reported to the user with the
+action to take:
+
+| Detection | Action |
+|---|---|
+| `src/fetch.ts` exists for non-routing reasons | `src/fetch.ts` is a **reserved** advanced-routing entrypoint in Astro 7 (advanced routing is always on) and will be read as routing config — likely erroring. Rename the file (e.g. `src/fetchClient.ts`), or set `fetchFile: './src/router.ts'` / `fetchFile: null` in `astro.config.ts` |
+| `@astrojs/db` in dependencies, or an `astro db` script | `@astrojs/db` is removed in Astro 7, along with `astro db` and the DB-studio commands (`astro login`, `astro logout`, `astro link`, `astro init`). Migrate to `node:sqlite` (Node 22.5+), Drizzle, or a hosted DB (Turso / PlanetScale / Neon) |
+| An `experimental` block in the Astro config containing `logger`, `cache`, `routeRules`, `queuedRendering`, `rustCompiler` or `advancedRouting` | Move `logger`, `cache` and `routeRules` to the **top level** of the config (`logger` handlers: `json` / `node` / `console`; `context.logger` is always available). Delete `queuedRendering`, `rustCompiler` and `advancedRouting` — they are removed entirely |
+| `markdown.remarkPlugins`, `markdown.rehypePlugins` or `markdown.remarkRehype` in the config | These keys are deprecated but **still work** in Astro 7 — they now require `@astrojs/markdown-remark` (no longer bundled) and `markdown: { processor: unified() }`; under the default Sätteri processor they have **no effect**. GFM, smart punctuation and heading IDs are built in — if the plugins add nothing beyond those, delete them. Otherwise `pnpm add @astrojs/markdown-remark`, then `import { unified } from "@astrojs/markdown-remark"` and set `markdown: { processor: unified() }` |
+| `TRANSITION_*` constants, `isTransitionBeforePreparationEvent()`, `isTransitionBeforeSwapEvent()` or `createAnimationScope()` imported from `astro:transitions` | Removed in Astro 7 — use the lifecycle event-name strings directly (`'astro:before-preparation'`, `'astro:before-swap'`, …) |
+| Top-level `getContainerRenderer` imports (`@astrojs/react`, preact, solid-js, svelte, vue, mdx) | Moved to a subpath: `@astrojs/react/container-renderer` |
+| Custom Vite plugins in the config | Astro 7 bundles Vite 8 (Rolldown) — the plugins may need updating. See https://vite.dev/guide/migration |
+
+Summarize what you found to the user in 3-5 bullet points (including every Astro 7 detection that
+hit), then begin the interview.
 
 ## Phase 2 — Interview the user
 
@@ -35,6 +55,13 @@ Ask what types of content the site will publish. Examples: articles, tutorials, 
 - What fields does it have (title, date, author, tags, etc.)?
 - Does it need to be translatable across locales?
 - How is it related to other content types (e.g. articles reference glossary entries)?
+
+Then ask one markdown question, so the `markdown.processor` decision is made here instead of later:
+does any content need markdown behavior **beyond** what Astro 7 ships built in (GFM, smart
+punctuation, heading IDs)? Examples of a "yes": footnotes via a custom remark plugin, math,
+directives, a rehype pass over the HTML. A "no" (the default) keeps the native Sätteri processor and
+installs nothing. A "yes" means `@astrojs/markdown-remark` is installed in Phase 4.1 and the
+`markdown: { processor: unified() }` block is uncommented in `astro.config.ts`.
 
 ### 2.4 Design system
 
@@ -60,7 +87,7 @@ Then ask if they have a design reference (Figma, existing CSS, a brand guide URL
 Derive the rest. Use OKLCH for all colors. Pick neutral defaults (`--color-bg: white`, `--color-text: #111`, etc.) unless the user provides specifics.
 
 ### 2.5 Component library
-This plugin defaults to custom CSS. Ask the user if they plan to use a different approach. Do not suggest or recommend any library — only mention that custom CSS is the default. Accept whatever the user answers and record it; do not block or warn unless they name a JS-first framework (Next UI, Chakra, etc.), in which case note that heavy JS-first libraries conflict with the Astro 6 + minimal JS constraint.
+This plugin defaults to custom CSS. Ask the user if they plan to use a different approach. Do not suggest or recommend any library — only mention that custom CSS is the default. Accept whatever the user answers and record it; do not block or warn unless they name a JS-first framework (Next UI, Chakra, etc.), in which case note that heavy JS-first libraries conflict with the Astro 7 + minimal JS constraint.
 
 ### 2.6 Quality gates
 Ask what quality gates they want enforced on every commit:
@@ -86,7 +113,7 @@ After completing the interview, generate the following files. Confirm with the u
 
 **`.astro-builder/design-system.md`** — Token namespaces and component patterns. Use `docs/init-templates/design-system.md.template`. The human-readable index for `src/styles/global.css` — keep them in sync.
 
-**`.astro-builder/anti-patterns.md`** — Project-specific anti-patterns derived from the Astro 6 canonical list plus any project-specific rules the user defined.
+**`.astro-builder/anti-patterns.md`** — Project-specific anti-patterns derived from the Astro 7 canonical list plus any project-specific rules the user defined.
 
 **`src/styles/global.css`** — Site-wide CSS. Use `docs/init-templates/global.css.template`. Defines all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`) under `@layer tokens`, plus the four-layer cascade (`reset`, `tokens`, `base`, `utilities`). Derive `--color-primary-dark` via `color-mix(in oklch, var(--color-primary) 80%, black)`. Populate dark-mode overrides if the user opted in. This file is the source of truth for tokens — component CSS in `<style>` blocks references these.
 
@@ -96,14 +123,32 @@ Everything `CLAUDE.md` promises must exist when this round finishes — the cont
 
 ### 4.1 — Ensure a base project
 
-1. If `package.json` does not exist, scaffold a new Astro 6 project:
+Astro 7 requires **Node >= 22.12.0** (`engines.node`) and npm >= 9.6.5. Confirm `node -v` satisfies
+that before installing anything — Phase 1 already checked it, so this is just a guard for repos
+scaffolded in a different shell.
+
+1. If `package.json` does not exist, scaffold a new Astro 7 project:
    ```bash
    pnpm create astro@latest . -- --template minimal --no-install
    ```
+   The resulting project must be Astro 7 — after the install in Phase 4.5, verify `astro` resolves to
+   `7.x` (`pnpm list astro`). If it resolved to an older major, install Astro 7 explicitly before
+   going further.
 2. Ensure dependencies (add with `pnpm add` / `pnpm add -D`, never npm or yarn):
    - `@astrojs/sitemap` and `@astrojs/rss` (runtime)
    - the adapter package for the deployment target, if it needs one (`@astrojs/vercel`, `@astrojs/netlify`, `@astrojs/cloudflare`); static hosting needs none
    - `@biomejs/biome` (dev) if the user kept the Biome quality gate
+   - `@astrojs/markdown-remark` (runtime) **only** if the Phase 2.3 markdown question surfaced a need
+     for custom remark/rehype plugins. Astro 7's default Sätteri processor already covers GFM, smart
+     punctuation and heading IDs, so the common case installs nothing here
+   - never install `@astrojs/db` — it is removed in Astro 7
+3. Declare the engine floor in `package.json` so the requirement is enforced by the package manager,
+   not just documented:
+   ```json
+   "engines": { "node": ">=22.12.0" }
+   ```
+   If an `engines.node` range already exists and is lower than `>=22.12.0`, raise it. `/astro-builder:audit`
+   flags a missing or lower floor, so this field is part of the scaffold, never an afterthought.
 
 ### 4.2 — Overwrite policy (re-runs and existing repos)
 
@@ -120,21 +165,21 @@ Config first (aliases and locales must exist before code that uses them), then t
 | # | Target | Template | Model fills |
 |---|--------|----------|-------------|
 | 1 | `tsconfig.json` | `tsconfig.json.template` | nothing — verbatim (or merge `paths` into an existing file) |
-| 2 | `astro.config.ts` | `astro.config.ts.template` | `{{SITE_URL}}`, `{{DEFAULT_LOCALE}}`, `{{LOCALES_TUPLE}}` (e.g. `"en", "it"`), adapter markers per deployment target (delete both markers for static hosting) |
+| 2 | `astro.config.ts` | `astro.config.ts.template` | `{{SITE_URL}}`, `{{DEFAULT_LOCALE}}`, `{{LOCALES_TUPLE}}` (e.g. `"en", "it"`), adapter markers per deployment target (delete both markers for static hosting). The template also carries the Astro 7 keys: `compressHTML` (default `'jsx'` — set `true`/`false` only to restore pre-7 behavior) and a commented `markdown.processor` block — uncomment it (and keep `@astrojs/markdown-remark` installed) only if the Phase 2.3 markdown answer was "yes" |
 | 3 | `src/lib/i18n.ts` | `lib/i18n.ts.template` | `{{SITE_NAME}}`, `{{DEFAULT_LOCALE}}` |
-| 4 | `src/lib/urls.ts` | `lib/urls.ts.template` | placeholders + one builder per content type at the `{{CONTENT_TYPE_URL_BUILDERS}}` marker, following the in-file pattern |
+| 4 | `src/lib/urls.ts` | `lib/urls.ts.template` | placeholders + one method per content type at the `{{CONTENT_TYPE_URL_BUILDERS}}` marker, following the in-file pattern. The file exposes the locale-bound `createUrls(locale)` factory — every content-type URL is a method on the object it returns, not a standalone `buildXUrl(slug, locale)` function (see `docs/init-templates/lib/urls.ts.template`). Delete the `/* … */` instruction block above `{{CONTENT_TYPE_URL_BUILDERS}}` once the marker is filled — it addresses the generator, not the site owner, and must not survive into `src/` |
 | 5 | `src/lib/format.ts` | `lib/format.ts.template` | `{{SITE_NAME}}`, `{{DEFAULT_LOCALE}}` |
 | 6 | `src/content.config.ts` | `content.config.ts.template` | `{{LOCALES_TUPLE}}` + one `defineCollection()` per content type from the interview at the `{{COLLECTIONS}}` marker (keep the contract fields: `lang`, `translationKey`, `tags`, `draft`); export all at `{{COLLECTION_EXPORTS}}` |
 | 7 | `src/lib/content.ts` | `lib/content.ts.template` | one `getXByLang()` per collection at the `{{CONTENT_HELPERS}}` marker |
 | 8 | `src/i18n/<locale>.json` — one per configured locale | `i18n.json.template` | default locale: verbatim; other locales: same keys, translated values. Then add the `nav.*` (and any footer) keys the BaseLayout fill below introduces — to EVERY locale file |
-| 9 | `src/layouts/BaseLayout.astro` | `BaseLayout.astro.template` | `{{SITE_NAME}}`, `{{NAV_LINKS}}` (hrefs from `src/lib/urls.ts` builders, labels via `tl()`), `{{FOOTER_CONTENT}}` |
+| 9 | `src/layouts/BaseLayout.astro` | `BaseLayout.astro.template` | `{{SITE_NAME}}`, `{{NAV_LINKS}}` (hrefs from `src/lib/urls.ts` builders, labels via `tl()`), `{{FOOTER_CONTENT}}`. Delete the `{/* … */}` instruction block above `{{NAV_LINKS}}` once the marker is filled — it addresses the generator, not the site owner, and must not survive into `src/` |
 | 10 | `src/page-views/NotFoundPageView.astro` + `src/pages/<locale>/404.astro` per locale | `404.astro.template` | thin wrappers only, per the template's header comment |
-| 11 | `src/pages/<locale>/rss.xml.ts` per locale | `rss.xml.ts.template` | `{{SITE_NAME}}`, `{{PROJECT_DESCRIPTION}}`, `{{DEFAULT_LOCALE}}`; point the feed at the site's primary dated collection |
+| 11 | `src/pages/<locale>/rss.xml.ts` per locale | `rss.xml.ts.template` | `{{SITE_NAME}}`, `{{PROJECT_DESCRIPTION}}`, `{{DEFAULT_LOCALE}}`, plus `{{FEED_COLLECTION}}` = the site's primary dated collection and `{{FEED_ENTRY_URL}}` = the `createUrls` method written for it in step 4 (e.g. `url.article`) — the two must agree, and the method must already exist in `src/lib/urls.ts`. Delete the `/* … */` instruction block above `{{FEED_ENTRY_URL}}` once the marker is filled — it addresses the generator, not the site owner, and must not survive into `src/` |
 | 12 | `public/robots.txt` | `robots.txt.template` | `{{SITE_NAME}}`, `{{SITE_URL}}` |
 | 13 | `src/content/<type>/<locale>/` folders per collection per locale, plus one example entry per collection in the default locale | — | realistic frontmatter covering every required schema field |
 | 14 | `src/page-views/HomePageView.astro` + `src/pages/<locale>/index.astro` per locale | — | minimal homepage written by the model: page-views pattern, `<h1>` + short intro via `tl()` keys added to every locale file. Skip if an index page already exists |
 
-`src/styles/global.css` was already written in Phase 3 — verify BaseLayout imports it (`import "../styles/global.css"`).
+`src/styles/global.css` was already written in Phase 3 — verify BaseLayout imports it (`import "@styles/global.css"`).
 
 ### 4.4 — Cross-check before building
 
@@ -142,11 +187,27 @@ Config first (aliases and locales must exist before code that uses them), then t
 2. Every structure `CLAUDE.md` promises now exists: the four `src/lib/` modules, the path aliases in `tsconfig.json`, `src/content.config.ts`, the locale JSONs, BaseLayout, per-locale 404 and RSS, `public/robots.txt`.
 3. No unreplaced `{{...}}` marker remains: `grep -rn "{{" src astro.config.ts tsconfig.json public` must return nothing.
 4. `src/styles/global.css` contains `@layer reset, tokens, base, utilities;` plus all six token namespaces (`--color-*`, `--font-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`).
+5. No `src/fetch.ts` was created — it is Astro 7's reserved advanced-routing entrypoint and this
+   scaffold never uses it.
+6. `astro.config.ts` declares no `experimental` config key:
+   `grep -nE "^\s*experimental\s*:" astro.config.ts` must return nothing (`logger`, `cache` and
+   `routeRules` are top-level in Astro 7; `queuedRendering`, `rustCompiler` and `advancedRouting` no
+   longer exist). Grep for the key, not the bare word — the template mentions `experimental` in a
+   comment on purpose.
+7. Every scaffolded `.astro` file has all tags closed and valid nesting — no block element inside a
+   `<p>`. Astro 7's Rust compiler errors on both instead of auto-correcting.
+8. `package.json` carries `"engines": { "node": ">=22.12.0" }` (Phase 4.1 step 3).
+9. No template instruction block survived into `src/`: `grep -rn "DELETE THIS COMMENT" src` must
+   return nothing.
 
 ### 4.5 — Install and verify
 
 1. Run `pnpm install`.
 2. Run `pnpm build` — the scaffold is not done until it passes. Fix errors autonomously and re-run.
+   A build error naming an unclosed tag or invalid nesting is Astro 7 compiler strictness, not a
+   template bug — close the tag / fix the nesting. A build error naming a remark or rehype plugin
+   means the default Sätteri processor is in use: `pnpm add @astrojs/markdown-remark`, then
+   `import { unified } from "@astrojs/markdown-remark"` and set `markdown: { processor: unified() }`.
 
 ## Phase 5 — Completion summary
 
@@ -179,10 +240,14 @@ What's next? Run `/astro-builder:init lighthouse` to add automated Lighthouse au
 
 ## Constraints
 
-- Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
+- Always follow the Astro 7 documentation: https://docs.astro.build/llms-small.txt
 - Always follow MDN Web API references for any browser/web API usage.
 - Never use `src/content/config.ts` — always `src/content.config.ts`.
 - Never use `astro.config.mjs` — always `astro.config.ts`.
+- Never create `src/fetch.ts` — it is Astro 7's reserved advanced-routing entrypoint.
+- Never install `@astrojs/db` — it is removed in Astro 7.
+- Never use removed `experimental.*` flags — `logger`, `cache` and `routeRules` are top-level; `queuedRendering`, `rustCompiler` and `advancedRouting` are gone.
+- Always close every tag and keep nesting valid — the Astro 7 compiler errors instead of correcting.
 - Never use ESLint or Prettier — always Biome.
 - Never parse URLs to detect locale — always use `Astro.currentLocale`.
 - Never use `redirectToDefaultLocale: true` — use explicit `redirects` config.

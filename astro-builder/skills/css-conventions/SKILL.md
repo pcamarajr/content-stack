@@ -72,6 +72,12 @@ All values in these six domains must come from CSS custom properties defined in
 - If the value you need isn't in the design system, add a token to `global.css` first, then use it.
 - Document new tokens in `.astro-builder/design-system.md`.
 
+**Build-output gotcha:** Astro 7's Rust compiler may serialize CSS differently in the build
+output than you authored it — named colors emitted as hex (`white` → `#fff`), different `url()`
+quoting. These differences are cosmetic; the computed styles are identical. Never chase them and
+never "fix" a token because the built CSS reads differently — `global.css` stays the source of
+truth.
+
 **Allowed raw values (not design-system axes):**
 
 - One-off layout dimensions: `width`, `height`, `max-width`, `min-height`, positional `top/left/right/bottom`, container `inline-size` thresholds. These are component-specific, not design-system axes.
@@ -354,7 +360,7 @@ After writing or refactoring any CSS, confirm:
 ## Constraints
 
 - Always follow MDN Web API references for browser/web API usage.
-- Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
+- Always follow the Astro 7 documentation: https://docs.astro.build/llms-small.txt
 - All token names use the six canonical namespaces. Inventing a new namespace (e.g. `--ui-*`, `--page-*`) is forbidden.
 - The `.astro-builder/design-system.md` file is the human-readable index of tokens. `global.css` is the source of truth.
 - When new tokens are needed, add to `global.css` first, then document in `design-system.md`.

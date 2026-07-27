@@ -1,6 +1,6 @@
 # astro-builder
 
-Build and evolve Astro 6 content sites with a repeatable architecture, not one-off prompts.
+Build and evolve Astro 7 content sites with a repeatable architecture, not one-off prompts.
 
 `astro-builder` is part of [content-stack](https://github.com/pcamarajr/content-stack), built for founders, marketers, and lean teams that want a production-ready content site without custom engineering for every step.
 
@@ -14,6 +14,8 @@ Current scope is intentionally basic. The long-term direction is a strongly opin
 /plugin marketplace add pcamarajr/content-stack
 /plugin install astro-builder@content-stack
 ```
+
+Targets Astro 7 (7.1.x) and requires Node >= 22.12.0 — the engine floor Astro 7 declares.
 
 ---
 
@@ -48,7 +50,7 @@ If you want the fastest start, begin from the ready template:
 | `/astro-builder:init project` | Interview → generate guidance files AND scaffold a buildable site: config, BaseLayout, `src/lib/` utilities, i18n JSONs, content collections, RSS, 404, robots.txt |
 | `/astro-builder:init lighthouse` | Set up automated Lighthouse auditing on git push |
 | `/astro-builder:new-page` | Scaffold a route for all locales: thin page wrappers (≤5 lines), a page-view wired to the BaseLayout SEO contract (`title`/`description`, `type="article"` + `publishedAt` for content pages), and i18n keys in every locale JSON |
-| `/astro-builder:new-content-type` | Add a content collection following the project contract: schema with `lang`/`translationKey`/`tags`/`draft`, a `getXByLang()` helper in `src/lib/content.ts`, a URL builder on `buildLocaleUrl`, and example content |
+| `/astro-builder:new-content-type` | Add a content collection following the project contract: schema with `lang`/`translationKey`/`tags`/`draft`, a `getXByLang()` helper in `src/lib/content.ts`, a builder method on the locale-bound `createUrls(locale)` factory in `src/lib/urls.ts`, and example content |
 | `/astro-builder:translate` | Localize a content entry or i18n JSON to another locale — same slug, target `lang`, matching `translationKey`; hreflang and RSS are derived by the architecture, no manual wiring |
 | `/astro-builder:audit` | Orchestrated project audit: architecture, i18n, schema, per-skill domain checklists (CSS, HTML/a11y, and SEO today), AI design slop, style guide, and build validation |
 | `css-conventions` _(auto-applied)_ | Enforces CSS discipline whenever styles are written: token-only values, scoped `<style>` blocks, Tier-1 modern CSS, no Tailwind / CSS-in-JS / preprocessors, and a CSS-first interactivity ladder |
@@ -199,7 +201,7 @@ These rules are not arbitrary: every one is argued from the design criteria in
 interfaces, design it twice — applied both to the sites the plugin generates and to the plugin
 itself (based on John Ousterhout's *A Philosophy of Software Design*).
 
-### Astro 6 patterns
+### Astro 7 patterns
 
 - `src/content.config.ts` with `glob()` loaders (never `src/content/config.ts`)
 - `astro.config.ts` in TypeScript (never `.mjs`)
@@ -208,6 +210,9 @@ itself (based on John Ousterhout's *A Philosophy of Software Design*).
 - `prefixDefaultLocale: true` on all routes
 - `translationKey` to link content across locales
 - Flexible `tags: string[]` (never fixed category enums)
+- Node.js >= 22.12.0 (Astro 7 engine requirement)
+- Every tag explicitly closed and no invalid nesting — the Astro 7 Rust compiler errors instead of
+  auto-correcting
 
 ### Tooling
 
@@ -229,7 +234,8 @@ biome check .   # Zero lint/format errors
 
 This plugin cites only two external references for any web or Astro API:
 
-- **Astro 6**: https://docs.astro.build/llms-small.txt
+- **Astro 7**: https://docs.astro.build/llms-small.txt (upgrade notes:
+  https://docs.astro.build/en/guides/upgrade-to/v7/)
 - **MDN Web API**: https://developer.mozilla.org/en-US/
 
 ---

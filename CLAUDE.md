@@ -11,7 +11,7 @@ content-stack/
 ├── .claude-plugin/
 │   └── marketplace.json        ← plugin registry (name, version, description, source)
 ├── content-ops/                 ← content creation & management plugin
-├── astro-builder/               ← Astro 6 site builder plugin
+├── astro-builder/               ← Astro 7 site builder plugin
 ├── astro-lsp/                   ← Astro language server plugin
 └── README.md                    ← marketplace landing page (install commands, plugin list)
 ```

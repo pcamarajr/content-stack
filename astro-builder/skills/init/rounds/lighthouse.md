@@ -26,7 +26,8 @@ Before asking anything, silently scan:
 
 1. Read `.astro-builder/lighthouse.json` if present → extract `thresholds`, `urlMap`, `staticPages`, `port`, `fallbackMaxPages`, `locales`, `categories`.
 2. Read `.astro-builder/content-schema.md` → scan for URL pattern lines (e.g. `/{locale}/articles/{slug}`) → pre-populate `urlMap` keyed by collection name inferred from context.
-3. Read `astro.config.ts` → extract `i18n.locales` array if present → use as `locales` default.
+3. Read `astro.config.ts` → extract `i18n.locales` array if present → use as `locales` default. The
+   `i18n` config shape is unchanged in Astro 7, so this detection needs no version handling.
 
 If `.astro-builder/content-schema.md` has no URL pattern lines, skip pre-population and let the user enter patterns manually during Q2.
 
@@ -110,6 +111,11 @@ AskUserQuestion:
     - "4321 (Astro default)"
     - "Other — specify"
 ```
+
+The hook always audits the **preview** server (`pnpm build` + `pnpm preview --port`), never `dev`.
+Astro 7's new dev-server behavior — AI-agent auto-detection that detaches the server,
+`astro dev --background`, `astro dev stop|status|logs`, `--ignore-lock` — therefore does not affect
+this hook at all. The port chosen here only needs to be free for `pnpm preview`.
 
 ### Q4 — Fallback max pages
 
