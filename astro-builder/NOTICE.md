@@ -15,7 +15,7 @@ licensed under the Apache License, Version 2.0:
 - `skills/ux-writing/SKILL.md` — the UX-writing guidance is adapted from Impeccable's
   `skill/reference/clarify.md` (formerly `ux-writing.md`).
 
-These materials were rewritten and re-scoped for the Astro 6 + native-CSS workflow this plugin
+These materials were rewritten and re-scoped for the Astro 7 + native-CSS workflow this plugin
 enforces. The original work is **not** vendored verbatim; it serves as the conceptual source.
 
 - Project: Impeccable — https://impeccable.style/
@@ -38,7 +38,7 @@ licensed under the MIT License:
   conceptual source for the document is John Ousterhout's *A Philosophy of Software Design*,
   cited in the document itself.
 
-The material was rewritten for the Astro 6 domain this plugin enforces; the original work is
+The material was rewritten for the Astro 7 domain this plugin enforces; the original work is
 **not** vendored verbatim.
 
 - Source: https://github.com/mattpocock/skills

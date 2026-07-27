@@ -11,7 +11,7 @@ description: >
 
 # /astro-builder:new-content-type $ARGUMENTS
 
-You are adding a new Astro 6 content collection to this project. The argument is the collection
+You are adding a new Astro 7 content collection to this project. The argument is the collection
 name (e.g. `tutorials`, `changelogs`, `case-studies`).
 
 **Why this workflow exists:** a content type is not just a schema — it is a contract spread
@@ -56,7 +56,7 @@ keeps the door open.
 
 ### 3.1 — Schema in `src/content.config.ts`
 
-Add the collection with the Astro 6 `glob()` loader, following the contract every collection in
+Add the collection with the Astro 7 `glob()` loader, following the contract every collection in
 this stack shares. The `locales` tuple already at the top of the file is the single source of
 truth for the `lang` enum — reuse it, never restate the locales:
 
@@ -85,6 +85,20 @@ Export it in the `collections` object.
 | `translationKey: z.string().optional()` | `translationKey: z.string()` | optional linkage = entries that silently can't be translated |
 | `category: z.enum(["guide", "news"])` | `tags: z.array(z.string()).default([])` | fixed enums need a schema change per new label |
 | no `draft` field | `draft: z.boolean().default(false)` | drafts must be excludable from listings, feeds, sitemaps |
+
+**Astro 7 notes.** The Content Layer API above is unchanged from Astro 6 — `defineCollection` and
+`z` from `astro:content`, `glob` from `astro/loaders`, `src/content.config.ts` as the location.
+Two things are new and worth knowing:
+
+- `glob()` accepts an optional `deferRender` option (Astro 7.1, default `false`). Setting it to
+  `true` defers rendering a Markdown entry until a page actually renders it, instead of rendering
+  eagerly during content sync — build memory stays bounded, but the rendered HTML is no longer
+  cached. Treat it as opt-in for a collection whose build genuinely runs out of memory, never as
+  the default for a fresh content type.
+- Markdown bodies are rendered by Astro 7's built-in Rust processor, with GFM, smart punctuation
+  and heading IDs already included, so a new content type needs **no** remark/rehype configuration.
+  Custom plugins are the exception, not the starting point: they require
+  `pnpm add @astrojs/markdown-remark` plus `markdown: { processor: unified() }` in `astro.config.ts`.
 
 ### 3.2 — Content folders and example entries
 
@@ -125,19 +139,37 @@ const tutorials = await getTutorialsByLang(Astro.currentLocale);
 
 ### 3.4 — URL builder in `src/lib/urls.ts`
 
-Add one builder delegating to the `buildLocaleUrl` primitive. Entry ids from `glob()` loaders
-include the locale folder (`"en/my-tutorial"`) — strip it; the URL prefix carries the locale:
+`src/lib/urls.ts` exports a single function, `createUrls(locale)`, which binds the locale once and
+returns the site's URL builders — the same shape as `createTranslator(locale)`. Adding a content
+type therefore means adding **one method** to the object that `createUrls` returns, at the
+`{{CONTENT_TYPE_URL_BUILDERS}}` marker, delegating to `path` — the locale-prefixing primitive that
+every other method uses. `path` is part of the returned object, so it is public too (BaseLayout
+calls `url.path("articles")` for nav links); inside `createUrls` you call it unqualified. Entry ids
+from `glob()` loaders include the locale folder (`"en/my-tutorial"`) — strip it; the URL prefix
+carries the locale. Method names are singular nouns (`article`, `tutorial`, `tag`):
 
 ```typescript
-export function buildTutorialUrl(slug: string, locale: string): string {
-  return buildLocaleUrl(locale, "tutorials", slug.replace(`${locale}/`, ""));
-}
+// inside createUrls(...)'s returned object
+tutorial: (id: string) => path("tutorials", id.replace(`${lang}/`, "")),
+```
+
+The call site binds the locale once and never passes it again:
+
+```astro
+const url = createUrls(Astro.currentLocale);
+// <a href={url.tutorial(entry.id)}>
 ```
 
 ```typescript
 // 🔴 Bad: hand-concatenated path — no trailing slash, locale shape duplicated
-export function buildTutorialUrl(slug: string, lang: string): string {
-  return `/${lang}/tutorials/${slug}`;
+tutorial: (slug: string) => `/${lang}/tutorials/${slug}`,
+```
+
+```typescript
+// 🔴 Bad: a standalone builder exported beside the factory — a second public
+// surface for the same behavior, and the locale is back at every call site
+export function buildTutorialUrl(slug: string, locale: string): string {
+  return `/${locale}/tutorials/${slug.replace(`${locale}/`, "")}/`;
 }
 ```
 
@@ -175,8 +207,9 @@ Before reporting, confirm:
       default locale.
 - [ ] `src/lib/content.ts` has a `getXByLang()` filtering `lang` + `!draft` inside
       `getCollection()` and sorting newest first.
-- [ ] `src/lib/urls.ts` has a builder delegating to `buildLocaleUrl`, stripping the locale
-      folder from the entry id.
+- [ ] `src/lib/urls.ts` exposes one `createUrls` method for the new collection, delegating to the
+      `path` primitive and stripping the locale folder from the entry id — no new standalone
+      exported builder next to the factory.
 - [ ] `.astro-builder/content-schema.md` documents the new type.
 - [ ] `pnpm build` and `tsc --noEmit` pass.
 
@@ -185,12 +218,13 @@ Before reporting, confirm:
 - Never create separate collections per language — one collection with locale subfolders;
   `lang` discriminates.
 - Never use `src/content/config.ts` — always `src/content.config.ts`.
-- Always use the `glob()` loader (Astro 6 pattern).
+- Always use the `glob()` loader (Astro 7 Content Layer pattern).
 - Always use flexible `tags: string[]` — never fixed category enums.
 - Always link locales via a **required** `translationKey`.
 - Page-views never call `getCollection()` — all queries go through `src/lib/content.ts`; all
   internal URLs come from `src/lib/urls.ts`.
 - The init scaffolds for these contracts are `docs/init-templates/content.config.ts.template`,
   `lib/content.ts.template`, and `lib/urls.ts.template` (plugin root) — keep this skill in sync
-  with them.
-- Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
+  with them. `lib/urls.ts.template` is the source of truth for the `createUrls` shape: read it
+  before adding a builder, and never introduce a second URL surface next to it.
+- Always follow the Astro 7 documentation: https://docs.astro.build/llms-small.txt

@@ -7,8 +7,10 @@ description: >
   before adding a heading, and when reviewing templates for accessibility. Semantics and
   accessibility are one domain: the right element IS the accessible one. Enforces landmark
   structure (one `<main>`, one `<h1>`), unbroken heading hierarchy, button-vs-link discipline,
-  ARIA-only-when-native-can't, explicit alt text, labeled forms, and focus order — the markup
-  counterpart to the css-conventions skill.
+  ARIA-only-when-native-can't, explicit alt text, labeled forms, and focus order — plus
+  well-formed markup for Astro 7's stricter Rust compiler (every tag closed, nesting valid,
+  whitespace between inline elements explicit). The markup counterpart to the css-conventions
+  skill.
 ---
 
 # HTML Conventions — astro-builder
@@ -67,7 +69,80 @@ then `header` → `nav` → `main` → `footer`. Page-views fill `<main>` — th
 The init scaffold for this skeleton is `docs/init-templates/BaseLayout.astro.template` (plugin
 root) — keep it in sync with these rules.
 
-## 2 — Heading hierarchy
+## 2 — Well-formed markup
+
+Astro 7 compiles `.astro` files with the Rust compiler (`@astrojs/compiler-rs`), now the only
+option. It is stricter than the compiler it replaced in two ways authors feel immediately:
+unclosed tags are build errors, and semantically invalid nesting is no longer silently
+restructured. A third change comes from `compressHTML`, whose default is now `'jsx'`: whitespace
+between elements is stripped instead of collapsed. Well-formed markup is therefore not a matter
+of taste — it is the difference between a page that builds and renders as authored and one that
+doesn't.
+
+- **Close every tag.** An unclosed `<p>`, `<div>`, `<li>`, or component tag fails `pnpm build`
+  with a compiler error naming the file and the tag. Void elements (`<img>`, `<br>`, `<meta>`,
+  `<link>`) carry no closing tag as before, and self-closed components (`<Image />`) are fine.
+
+```astro
+<!-- 🔴 Bad: the first <p> is never closed — Astro 7 fails the build -->
+<p>First paragraph<p>Second paragraph</p>
+
+<!-- ✅ Good: two properly closed paragraphs; void elements stay void -->
+<p>First paragraph</p>
+<p>Second paragraph</p>
+<img src="/divider.svg" alt="" />
+```
+
+- **Keep nesting valid.** No block-level element (`<div>`, `<section>`, `<ul>`, `<p>`,
+  `<h1>`–`<h6>`) inside a `<p>` — this is the case the Astro docs call out for the Rust compiler.
+  Astro 7 ships the markup as authored instead of repairing it, so the browser applies its own
+  implicit-close rule: the `<p>` ends *before* the block element, which becomes a sibling. The
+  styling scoped to "inside the paragraph" stops applying and the outline you thought you wrote is
+  not the one the accessibility tree gets.
+
+```astro
+<!-- 🔴 Bad: a list and a heading inside a paragraph — the browser closes <p> early -->
+<p>
+  {tl("about.intro")}
+  <ul><li>{tl("about.pointOne")}</li></ul>
+  <h2>{tl("about.teamTitle")}</h2>
+</p>
+
+<!-- ✅ Good: the paragraph is prose only; blocks are siblings -->
+<p>{tl("about.intro")}</p>
+<ul><li>{tl("about.pointOne")}</li></ul>
+<h2>{tl("about.teamTitle")}</h2>
+```
+
+- **Never nest one interactive element inside another** (`<a>` inside `<a>`, `<button>` inside
+  `<a>`). This one is an accessibility rule, not a compiler one — the Astro docs do not list it
+  among the nesting cases the Rust compiler stopped repairing, and it was never something to rely on
+  a compiler to fix. Nested interactive elements give the accessibility tree an ambiguous target and
+  leave keyboard users with a focus stop whose action they cannot predict. Make the two actions
+  siblings, or make the outer element a plain container.
+
+- **Spacing between inline elements must be explicit.** With `compressHTML: 'jsx'` (the Astro 7
+  default) a newline between two inline elements produces no space at all — `<span>` and `<em>` on
+  separate lines render glued together. Write the space you mean: a literal space on the same
+  line, or `{' '}` between the elements.
+
+```astro
+<!-- 🔴 Bad: the space came from a newline — Astro 7 strips it ("helloworld") -->
+<span>{tl("home.hello")}</span>
+<em>{tl("home.world")}</em>
+
+<!-- ✅ Good: the space is authored — same line, or an explicit {' '} -->
+<span>{tl("home.hello")}</span> <em>{tl("home.world")}</em>
+
+<span>{tl("home.hello")}</span>{' '}
+<em>{tl("home.world")}</em>
+```
+
+Setting `compressHTML: true` in `astro.config.ts` restores the old HTML-aware collapsing (and
+`false` disables compression entirely), but that is a project-wide decision made once with the
+user — never a per-page fix for a missing space.
+
+## 3 — Heading hierarchy
 
 Headings are the document outline, not a font-size picker. Screen-reader users navigate by
 heading level; a skipped level is a hole in their map.
@@ -89,7 +164,7 @@ heading level; a skipped level is a hole in their map.
 <h2>{tl("article.relatedTitle")}</h2>
 ```
 
-## 3 — Buttons vs links
+## 4 — Buttons vs links
 
 One question decides it: **does it navigate or does it act?**
 
@@ -108,16 +183,22 @@ One question decides it: **does it navigate or does it act?**
   keydown handlers earns back what `<button>` gives for free.
 
 ```astro
+---
+import { createTranslator } from "@lib/i18n";
+import { createUrls } from "@lib/urls";
+const tl = createTranslator(Astro.currentLocale);
+const url = createUrls(Astro.currentLocale);
+---
 <!-- 🔴 Bad: a div pretending, and a link that acts -->
 <div class="button" onclick="openMenu()">Menu</div>
 <a onclick="copyLink()">Copy link</a>
 
 <!-- ✅ Good: behavior picks the element; CSS picks the look -->
 <button type="button" class="menu-toggle">{tl("nav.menu")}</button>
-<a href={`/${Astro.currentLocale}/pricing`} class="button">{tl("nav.pricing")}</a>
+<a href={url.path("pricing")} class="button">{tl("nav.pricing")}</a>
 ```
 
-## 4 — ARIA minimum
+## 5 — ARIA minimum
 
 The first rule of ARIA: **don't use ARIA when a native element exists.** ARIA adds announcements;
 it never adds behavior — a `role` promises keyboard support that you then owe in JS.
@@ -135,11 +216,11 @@ it never adds behavior — a `role` promises keyboard support that you then owe 
   genuinely missing (icon-only buttons, multiple `<nav>`s).
 - **Legitimate ARIA in this stack** (no native equivalent exists): `aria-current="page"` on the
   active nav link, `aria-expanded` on a disclosure toggle, `aria-label` to distinguish landmarks,
-  `aria-describedby` for form errors (§6), `aria-hidden="true"` on purely decorative inline SVGs.
+  `aria-describedby` for form errors (§7), `aria-hidden="true"` on purely decorative inline SVGs.
 - **`aria-hidden="true"` never goes on a focusable element** — it hides the element from the
   accessibility tree while keyboard users can still land on it: a focus black hole.
 
-## 5 — Images & alt text
+## 6 — Images & alt text
 
 Every `<img>` (and Astro `<Image />`) carries an explicit `alt`. Omitted alt is never valid —
 screen readers fall back to announcing the file name.
@@ -162,7 +243,7 @@ screen readers fall back to announcing the file name.
 <img src="/divider.svg" alt="" />
 ```
 
-## 6 — Forms
+## 7 — Forms
 
 Every control has a programmatic label; every error is programmatically attached to its field.
 Placeholder text is not a label — it vanishes on first keystroke (see `ux-writing`).
@@ -195,7 +276,7 @@ Placeholder text is not a label — it vanishes on first keystroke (see `ux-writ
 </fieldset>
 ```
 
-## 7 — Focus
+## 8 — Focus
 
 Keyboard users experience the page as a sequence of focus stops. The DOM order is that sequence —
 manage it with structure, not numbers.
@@ -226,7 +307,7 @@ manage it with structure, not numbers.
 }
 ```
 
-## 8 — Lists, tables, time
+## 9 — Lists, tables, time
 
 Data with a shape gets the element with that shape — CSS can restyle anything, but only the right
 element announces itself.
@@ -257,6 +338,13 @@ element announces itself.
 After writing or refactoring any markup, confirm:
 
 - [ ] The page has exactly one `<main>` (in the layout) and exactly one `<h1>` (in the page-view).
+- [ ] Every tag is explicitly closed — the Astro 7 compiler errors on unclosed tags (§2).
+- [ ] No block-level element sits inside a `<p>` — Astro 7 no longer restructures invalid nesting
+      (§2).
+- [ ] No interactive element sits inside another interactive element — an accessibility rule, not a
+      compiler one (§2).
+- [ ] Any space between adjacent inline elements is authored explicitly (same line or `{' '}`) —
+      `compressHTML` defaults to `'jsx'` and strips whitespace between elements (§2).
 - [ ] Heading levels descend without skips; no heading was chosen for its size.
 - [ ] Every interactive element is a real `<button>` or `<a href>` — no clickable `div`/`span`,
       no `<a>` without `href`.
@@ -283,5 +371,5 @@ After writing or refactoring any markup, confirm:
   `/astro-builder:audit`. When a rule here changes, update its check there.
 - Focus-indicator styling crosses into `css-conventions` — the rule (never remove without
   replacement) lives here; the token and `@layer base` placement live there.
-- Always follow MDN for element and ARIA semantics, and the Astro 6 documentation:
+- Always follow MDN for element and ARIA semantics, and the Astro 7 documentation:
   https://docs.astro.build/llms-small.txt

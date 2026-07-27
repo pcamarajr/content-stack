@@ -195,7 +195,7 @@ never *detects* the locale from the URL.
 ## 7 — Site plumbing: sitemap, robots, RSS, 404, root redirect
 
 Five artifacts every astro-builder site ships. Init scaffolds them from `docs/init-templates/`
-(plugin root); the audit checks all five.
+(plugin root); the audit checks all five. The 404 rule: one localized 404 per configured locale.
 
 | Artifact | Rule | Scaffold |
 |---|---|---|
@@ -236,6 +236,8 @@ After touching any page-view, the layout `<head>`, or `astro.config.ts`, confirm
       `type="article"`, `publishedAt`, and `image` when one exists.
 - [ ] No `<meta>`, `<title>`, `<link rel="canonical">`, `og:*`/`twitter:*`, or JSON-LD block
       exists outside `BaseLayout.astro`.
+- [ ] The `<head>` markup is well-formed — every tag closed — since the Astro 7 compiler errors
+      on unclosed tags (the well-formedness rules live in `html-conventions`).
 - [ ] Titles are unique across pages; the site-name suffix is appended only by the layout.
 - [ ] Descriptions are ~70–160 characters and read as the page's one-sentence pitch.
 - [ ] `Astro.site` is set in `astro.config.ts`; no hardcoded origin anywhere.
@@ -261,4 +263,4 @@ After touching any page-view, the layout `<head>`, or `astro.config.ts`, confirm
   sitemaps or feed XML.
 - The mechanical checks for this skill live in `references/audit.md`, run by
   `/astro-builder:audit`. When a rule here changes, update its check there.
-- Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
+- Always follow the Astro 7 documentation: https://docs.astro.build/llms-small.txt

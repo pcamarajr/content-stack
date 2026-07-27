@@ -54,6 +54,8 @@ draft: false
 Content body starts here...
 ```
 
+Markdown bodies are rendered by Astro 7's built-in processor — GFM, smart punctuation, and heading IDs work with no plugin configuration.
+
 ## i18n strategy
 
 - Each translatable content type has locale subfolders: `en/`, `it/`, etc.

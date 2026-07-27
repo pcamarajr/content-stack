@@ -9,3 +9,6 @@ node_modules/
 /.cursor/rules/memory.mdc
 /.claude/skills/init-memory/
 /.claude/skills/import-memories/
+
+# Serena (local tooling config)
+.serena/

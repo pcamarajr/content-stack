@@ -12,7 +12,7 @@ description: >
 
 # /astro-builder:translate $ARGUMENTS
 
-You are localizing content in this Astro 6 project. The argument format is
+You are localizing content in this Astro 7 project. The argument format is
 `{file-path} {target-locale}` (e.g. `src/content/articles/en/hello-world.md it`).
 
 **Why this workflow exists:** in this architecture, translation is a *content* operation, never
@@ -66,6 +66,12 @@ This is **localization**, not word-for-word translation:
 - Preserve all markdown formatting: headings, emphasis, code blocks, links, lists.
 - Do **not** translate code blocks — only comments inside them.
 - Preserve relative links as-is (slugs never change across locales, so paths stay valid).
+- Write plain markdown: Astro 7 renders md/mdx with its built-in processor, which already applies
+  GFM, smart punctuation, and heading IDs, so a translated file needs no plugin configuration —
+  never hand-insert typographic characters (curly quotes, em dashes, `&nbsp;`) to emulate it. Write
+  `"quotes"` and `---`; the processor produces the typographic forms. This is a *spelling* rule, not
+  a licence to add dashes: `---` renders as an em dash, so the `em-dash-overuse` detector in
+  `docs/anti-slop.md` counts it exactly like the literal character.
 
 | Bad | Good | Why |
 |---|---|---|
@@ -159,5 +165,5 @@ If `$ARGUMENTS` points at an i18n JSON (e.g. `src/i18n/en.json it`), translate t
 - Never hand-write hreflang links, RSS items, or routes for a translation — placement +
   frontmatter make the architecture derive them (see `seo-conventions`).
 - i18n JSONs keep identical flat dotted key sets across all locales; placeholders unchanged.
-- Follow MDN Web API references for any web-related terminology; always follow the Astro 6
+- Follow MDN Web API references for any web-related terminology; always follow the Astro 7
   documentation: https://docs.astro.build/llms-small.txt

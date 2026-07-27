@@ -28,9 +28,37 @@ export default defineConfig({
 
   redirects: { "/": "/{{DEFAULT_LOCALE}}" },
 
+  // Astro 7's default (v6 shipped `true`). "jsx" strips whitespace between
+  // elements JSX-style, so a newline is no longer rendered as a space:
+  // adjacent inline elements that need a visible gap must carry a literal
+  // space or {' '} in the template. Set `true` to restore v6's HTML-aware
+  // collapsing, or `false` to keep the markup verbatim.
+  compressHTML: "jsx",
+
+  // Astro 7 renders Markdown and MDX with the built-in Rust processor
+  // (Sätteri) — GFM, smart punctuation, and heading IDs are included with no
+  // configuration. `markdown.remarkPlugins` / `rehypePlugins` / `remarkRehype`
+  // are deprecated but still functional — they have no effect under Sätteri and
+  // now require `@astrojs/markdown-remark` (no longer bundled) plus
+  // `markdown.processor`, which is the pipeline selector now.
+  // Custom remark/rehype plugins therefore mean opting back into unified:
+  //   pnpm add @astrojs/markdown-remark
+  //   import { unified } from "@astrojs/markdown-remark";
+  // and only then uncommenting:
+  // markdown: { processor: unified() },
+
   // Official Astro integrations only. @astrojs/sitemap emits
   // /sitemap-index.xml at build time; public/robots.txt points at it.
   integrations: [sitemap()],
+
+  // Astro 7 promoted `logger`, `cache`, and `routeRules` to TOP-LEVEL config
+  // keys — never write them under `experimental`. A static content site needs
+  // none of the three, so none appear above.
+  //
+  // Advanced routing is on by default, which reserves src/fetch.ts as its
+  // router entrypoint: do NOT create that file. If a custom router is ever
+  // needed, move it with `fetchFile: "./src/router.ts"` (or disable the
+  // entrypoint entirely with `fetchFile: null`).
 
   // {{ADAPTER}} — e.g. `adapter: vercel(),` — omit for static hosting.
 });

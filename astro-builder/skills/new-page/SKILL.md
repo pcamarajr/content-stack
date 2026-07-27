@@ -11,7 +11,7 @@ description: >
 
 # /astro-builder:new-page $ARGUMENTS
 
-You are scaffolding a new page in this Astro 6 project. The argument is the page name or path
+You are scaffolding a new page in this Astro 7 project. The argument is the page name or path
 (e.g. `about`, `blog/archive`, `tags/[tag]`).
 
 **Why this workflow exists:** a page in this stack is three artifacts that must agree — one thin
@@ -139,7 +139,7 @@ const { entry } = Astro.props;
 | article page without `type="article"` | `type="article"` + `publishedAt={entry.data.date}` | drives `article:published_time` + Article JSON-LD |
 | no `<h1>`, or `<h1>` in a component | exactly one `<h1>` in the page-view, inside `<main>` | the page-view owns the page title — html-conventions §1 |
 | `const lang = Astro.url.pathname.split("/")[1]` | `Astro.currentLocale` | the framework already knows the locale |
-| `href={\`/${locale}/articles/${slug}\`}` | builders from `@lib/urls` (`buildLocaleUrl`, `buildArticleUrl`, …) | one module knows the URL shape |
+| `href={\`/${locale}/articles/${slug}\`}` | `const url = createUrls(Astro.currentLocale)` from `@lib/urls`, then `href={url.article(entry.id)}` | one module knows the URL shape, and the locale is bound once, like `tl` |
 | `<p>Read more</p>` hardcoded | `tl("about.readMore")` | every visible string routes through i18n — ux-writing |
 
 ### 3.3 — i18n keys, in every locale file
@@ -194,9 +194,15 @@ Before reporting, confirm:
       `publishedAt` (+ `image` when available) if it renders a dated content entry.
 - [ ] No SEO tag (`<meta>`, canonical, OG/Twitter, JSON-LD) was written outside BaseLayout.
 - [ ] The page-view renders exactly one `<h1>` and re-declares no landmark.
+- [ ] Every tag in the new page-view is explicitly closed and its nesting is valid — the Astro 7
+      compiler errors on unclosed tags and no longer auto-corrects invalid nesting (rules and
+      examples live in `html-conventions`).
+- [ ] Any needed space between adjacent inline elements is explicit (same line or `{' '}`) —
+      `compressHTML` defaults to `'jsx'` (see `html-conventions`).
 - [ ] Every new i18n key exists in **every** locale JSON, flat dotted format.
 - [ ] All visible strings route through `tl()` — nothing hardcoded.
-- [ ] Internal links use `@lib/urls` builders; collection data comes from `@lib/content` helpers.
+- [ ] Internal links come from `@lib/urls` (`createUrls(Astro.currentLocale)`); collection data
+      comes from `@lib/content` helpers.
 - [ ] `pnpm build` passes.
 
 ## Constraints
@@ -210,4 +216,4 @@ Before reporting, confirm:
 - Follow the path aliases from `tsconfig.json` (`@page-views/*`, `@layouts/*`, `@lib/*`, …).
 - Markup, SEO, copy, and CSS rules come from the convention skills: `html-conventions`,
   `seo-conventions`, `ux-writing`, `css-conventions`.
-- Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
+- Always follow the Astro 7 documentation: https://docs.astro.build/llms-small.txt

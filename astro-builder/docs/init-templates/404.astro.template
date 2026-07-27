@@ -8,19 +8,22 @@
 // EVERY configured locale:
 //
 //   ---
-//   import NotFoundPageView from "../../page-views/NotFoundPageView.astro";
+//   import NotFoundPageView from "@page-views/NotFoundPageView.astro";
 //   ---
 //   <NotFoundPageView />
 //
 // Add the notFound.* keys to every locale's src/i18n/<locale>.json.
-import BaseLayout from "../layouts/BaseLayout.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
 import { createTranslator } from "@lib/i18n";
+import { createUrls } from "@lib/urls";
 
 const tl = createTranslator(Astro.currentLocale);
+// Locale bound once, like the translator — no hand-built locale prefixes here.
+const url = createUrls(Astro.currentLocale);
 ---
 
 <BaseLayout title={tl("notFound.title")} description={tl("notFound.description")}>
   <h1>{tl("notFound.title")}</h1>
   <p>{tl("notFound.body")}</p>
-  <a href={`/${Astro.currentLocale}/`}>{tl("notFound.backHome")}</a>
+  <a href={url.home()}>{tl("notFound.backHome")}</a>
 </BaseLayout>

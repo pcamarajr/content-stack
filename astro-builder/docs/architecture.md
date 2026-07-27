@@ -16,6 +16,13 @@ modules.
 
 ## Part 1 — The code the builder generates
 
+Astro 7 moves two concerns that used to be cosmetic into the correctness column. Its Rust compiler
+no longer auto-corrects markup, so an unclosed tag or a block element nested inside a `<p>` fails
+the build instead of being silently repaired; and the new `compressHTML: 'jsx'` default strips
+whitespace JSX-style, so significant space between inline elements has to be written explicitly.
+Both are rules, not criteria, and they belong to `skills/html-conventions/SKILL.md` — the point
+here is only that "the markup renders anyway" is no longer an argument.
+
 ### 1.1 — Deep modules: small interface, large functionality
 
 A module's cost to its callers is its interface; its value is the functionality behind it. A
@@ -69,15 +76,21 @@ When complexity must exist, put it inside the module so callers don't carry it. 
 - **`lib/i18n.ts`** — `createTranslator(Astro.currentLocale)` returns `tl(key)`. Nothing else
   knows where strings live, the fallback order, or the default locale. The `MessageKey` union
   turns a typo into a compile error instead of a blank string in production.
-- **`lib/urls.ts`** — `buildLocaleUrl(locale, ...segments)` is the one place that knows every
-  route carries a locale prefix and a trailing slash. Components never concatenate paths.
+- **`lib/urls.ts`** — `createUrls(Astro.currentLocale)` returns a locale-bound set of builders; it
+  is the one place that knows every route carries a locale prefix and a trailing slash, and the one
+  place that strips the locale folder out of glob-loader entry ids. Components bind the locale once
+  (exactly like `createTranslator`) and never concatenate paths.
 
 ```astro
+---
+const url = createUrls(Astro.currentLocale);
+---
+
 <!-- 🔴 Every component re-derives routing policy; change the URL scheme, sweep the codebase -->
 <a href={`/${Astro.currentLocale}/articles/${article.id.replace(`${Astro.currentLocale}/`, "")}/`}>
 
-<!-- ✅ Policy lives once, behind one function -->
-<a href={buildArticleUrl(article.id, locale)}>
+<!-- ✅ Policy lives once, behind one locale-bound factory -->
+<a href={url.article(article.id)}>
 ```
 
 The complexity (locale prefixes, slug stripping, trailing slashes) didn't disappear — it moved
@@ -86,10 +99,10 @@ down, where it is written once and tested once.
 ### 1.3 — Information hiding: one decision, one place
 
 Each design decision should live in exactly one module; everything else consumes its result.
-In generated sites: `prefixDefaultLocale: true` is *known* only by `lib/urls.ts` (building
-prefixes) and BaseLayout's `localePath` strip (removing the one the framework reports). No
-component parses a URL to detect the locale — that would copy the routing decision into every
-parser.
+In generated sites: `prefixDefaultLocale: true` is *known* only by the `createUrls` factory in
+`lib/urls.ts` (building prefixes) and BaseLayout's `localePath` strip (removing the one the
+framework reports). No component parses a URL to detect the locale — that would copy the routing
+decision into every parser.
 
 The same principle shapes this plugin: **a convention rule and its mechanical check live
 together.** Each convention skill defines its rules in `SKILL.md` and ships their checks in

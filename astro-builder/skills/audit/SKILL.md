@@ -11,7 +11,7 @@ description: >
 
 # /astro-builder:audit
 
-You are auditing this Astro 6 project for quality issues across every domain the plugin enforces.
+You are auditing this Astro 7 project for quality issues across every domain the plugin enforces.
 
 **Why this shape:** the audit is a thin orchestrator. Each convention skill owns its rules in its
 `SKILL.md` and the mechanical checks for those rules in its `references/audit.md` — the rule and
@@ -32,7 +32,7 @@ Read:
 8. `src/content.config.ts` — collection schemas.
 
 Also read, from the plugin root:
-- `docs/astro-patterns.md` — canonical Astro 6 anti-patterns.
+- `docs/astro-patterns.md` — canonical Astro 7 anti-patterns.
 - `docs/anti-slop.md` — the anti-slop / design-quality rule catalog (used in Step 6).
 - `docs/registers.md` — the brand vs. product register model that scopes Step 6 severity.
 
@@ -45,6 +45,39 @@ Check for violations of the page-views pattern:
 - **No prop threading**: Components should never receive `lang` or `tl` as props — each resolves its own locale. Grep for `lang={` and `tl={` in component calls.
 - **Config file location**: `src/content/config.ts` must not exist. Only `src/content.config.ts` is valid.
 - **Astro config extension**: `astro.config.mjs` must not exist. Only `astro.config.ts` is valid.
+
+**Astro 7 config surface** — grep `astro.config.ts` for the `experimental` *key*
+(`grep -nE "^\s*experimental\s*:" astro.config.ts`), not the bare word: the scaffolded template
+mentions `experimental` in a comment on purpose, and a bare-word grep reports it as a violation.
+Then check the rest:
+
+- **Removed experimental flags**: `experimental.rustCompiler`, `experimental.advancedRouting` and
+  `experimental.queuedRendering` no longer exist — flag each as P1 with "delete the key" as the fix.
+- **Stabilized experimental flags**: `experimental.logger`, `experimental.cache` and
+  `experimental.routeRules` moved to the top level (`logger`, `cache`, `routeRules`) — P1, fix is to
+  hoist them out of `experimental`.
+- **Reserved routing entrypoint**: `src/fetch.ts` must not exist unless it is a deliberate
+  advanced-routing entrypoint. Otherwise flag P1 — rename the file, or set
+  `fetchFile: './src/router.ts'` / `fetchFile: null` in `astro.config.ts`.
+- **Removed `@astrojs/db`**: no `@astrojs/db` dependency and no `astro db` script in `package.json` —
+  flag P1 and point at `node:sqlite` (Node 22.5+), Drizzle, or a hosted DB (Turso / PlanetScale / Neon).
+- **Markdown plugins without their processor**: `markdown.remarkPlugins`, `markdown.rehypePlugins` or
+  `markdown.remarkRehype` present **without** `@astrojs/markdown-remark` installed and
+  `markdown: { processor: unified() }` set is a **P1**. The options are deprecated but still
+  functional in Astro 7 — they just need that package (no longer bundled) plus the `unified()`
+  processor; without both, the default Sätteri processor runs and the options have no effect.
+  Fix: `pnpm add @astrojs/markdown-remark`,
+  `import { unified } from "@astrojs/markdown-remark"`, set `markdown: { processor: unified() }` — or
+  delete the plugins if the built-in GFM, smart punctuation and heading IDs already cover them.
+- **Removed `astro:transitions` exports**: `TRANSITION_*` constants,
+  `isTransitionBeforePreparationEvent()`, `isTransitionBeforeSwapEvent()` and
+  `createAnimationScope()` are **P1** — use the lifecycle event-name strings
+  (`'astro:before-preparation'`, `'astro:before-swap'`, …).
+- **Container renderer import path**: a top-level `getContainerRenderer` import from
+  `@astrojs/react` / `preact` / `solid-js` / `svelte` / `vue` / `mdx` is **P1** — it moved to the
+  `@astrojs/<framework>/container-renderer` subpath.
+- **Node version floor**: `engines.node` in `package.json` and the Node version pinned in CI must be
+  `>=22.12.0` (Astro 7's requirement) — anything lower is a **P1**.
 
 ## Step 3 — i18n audit
 
@@ -115,9 +148,21 @@ This is a best-effort check — report findings but don't auto-fix style issues.
 
 ## Step 8 — Build validation
 
-Run `pnpm build`. If it fails, include the full error output in the report as a P0 issue.
+Run `pnpm build`. If it fails, include the full error output in the report. **Severity follows the
+convention rule the failure maps to** — a build error that a domain checklist already owns is
+reported at that rule's severity (e.g. a block element inside a `<p>` is HTML-13, a P1), not
+automatically P0. A build failure that maps to no convention rule is a **P0**.
 Run `tsc --noEmit`. Include any TypeScript errors as P0 issues.
 Run `biome check .` if Biome is configured. Include lint errors as P1 issues.
+
+Two Astro 7 failure modes to name explicitly when they show up:
+
+- A build error about an **unclosed tag** or a **block element inside a `<p>`** is Astro 7
+  Rust-compiler strictness — the compiler errors where Astro 6 auto-corrected. Report it under the
+  html-conventions rule it belongs to (`references/audit.md`: HTML-12 for unclosed tags, HTML-13 for
+  a block element inside a `<p>`), at that rule's severity, with the fix at `file:line`.
+- An install or build failure with no other explanation is usually **Node < 22.12.0**. Check `node -v`
+  against Astro 7's `engines.node: ">=22.12.0"` before chasing anything else.
 
 ## Step 9 — Report
 
@@ -159,4 +204,4 @@ If yes, fix them autonomously, then re-run `pnpm build` and `tsc --noEmit` to co
 - Never modify content body text during the audit without explicit instruction.
 - Never restate a convention skill's rules here — rules live in each skill's `SKILL.md`, checks in
   its `references/audit.md`. This file only orchestrates.
-- Always follow the Astro 6 documentation: https://docs.astro.build/llms-small.txt
+- Always follow the Astro 7 documentation: https://docs.astro.build/llms-small.txt

@@ -22,6 +22,12 @@ import { getCollection } from "astro:content";
 //   );
 // }
 
+// A collection large enough to exhaust build memory can pair a getXByLang()
+// here with the glob loader's `deferRender: true` option (Astro 7.1) — it
+// defers each entry's rendering to the page that renders it instead of
+// rendering eagerly during content sync, trading the rendered-HTML cache for
+// bounded memory (see content.config.ts).
+
 // {{CONTENT_HELPERS}} — one getXByLang() per collection from the interview,
 // following the pattern above. Add narrower helpers (getXBySlug,
 // getAllXTags) only when a page-view actually needs them.

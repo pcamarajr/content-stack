@@ -13,6 +13,9 @@ Before running: identify the layout file (`src/layouts/BaseLayout.astro` or equi
 `astro.config.ts` — several checks treat the layout as the one legitimate home for SEO markup,
 and three checks read the config directly. These checks audit only the site's code; search
 performance data (GSC, keywords) is the `content-seo` plugin's territory and is out of scope.
+Note that an Astro 7 `astro.config.ts` may legitimately carry top-level `compressHTML`, `logger`,
+`cache`, or `routeRules` keys (Astro 7 stabilized them) — their presence is configuration, not a
+finding.
 
 ---
 
@@ -141,3 +144,7 @@ performance data (GSC, keywords) is the `content-seo` plugin's territory and is 
   this architecture (routes exist per locale) — only report targets that 404 in `dist/`.
 - **Fix:** alternates are derived in BaseLayout — if any sampled page is wrong, the bug is in
   the layout derivation (or the page bypassed the layout), never in per-page data.
+- **Note on built output:** Astro 7's `compressHTML: 'jsx'` default strips whitespace from the
+  built HTML, so `dist/` files may hold every `<link>` on a single line. Grep per *tag*, not per
+  line — the `grep -o '<link rel="alternate" …'` form above is already line-agnostic; do not add
+  patterns that assume a newline between tags, and do not read a missing newline as a finding.
