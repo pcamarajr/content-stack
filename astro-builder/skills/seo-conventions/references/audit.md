@@ -13,9 +13,9 @@ Before running: identify the layout file (`src/layouts/BaseLayout.astro` or equi
 `astro.config.ts` — several checks treat the layout as the one legitimate home for SEO markup,
 and three checks read the config directly. These checks audit only the site's code; search
 performance data (GSC, keywords) is the `content-seo` plugin's territory and is out of scope.
-Note that an Astro 7 `astro.config.ts` may legitimately carry top-level `compressHTML`, `logger`,
-`cache`, or `routeRules` keys (Astro 7 stabilized them) — their presence is configuration, not a
-finding.
+Note that an Astro 7 `astro.config.ts` may legitimately carry top-level `logger`, `cache`, or
+`routeRules` keys (Astro 7 stabilized them out of `experimental`), alongside `compressHTML` (already
+top-level in v6, only its default changed) — their presence is configuration, not a finding.
 
 ---
 

@@ -211,8 +211,9 @@ itself (based on John Ousterhout's *A Philosophy of Software Design*).
 - `translationKey` to link content across locales
 - Flexible `tags: string[]` (never fixed category enums)
 - Node.js >= 22.12.0 (Astro 7 engine requirement)
-- Every tag explicitly closed and no invalid nesting — the Astro 7 Rust compiler errors instead of
-  auto-correcting
+- Every tag explicitly closed — the Astro 7 Rust compiler errors on an unclosed tag
+- No invalid nesting — the Rust compiler no longer auto-corrects it; the browser gets the markup as
+  authored
 
 ### Tooling
 
