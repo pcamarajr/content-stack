@@ -56,6 +56,9 @@ Then check the rest:
 - **Stabilized experimental flags**: `experimental.logger`, `experimental.cache` and
   `experimental.routeRules` moved to the top level (`logger`, `cache`, `routeRules`) — P1, fix is to
   hoist them out of `experimental`.
+- **Still-experimental flags are not findings**: `experimental.collectionStorage` (Astro 7.1, default
+  `'single-file'`) is current API — leave it alone. An `experimental` key holding only flags Astro 7
+  still ships is configuration, not a violation.
 - **Reserved routing entrypoint**: `src/fetch.ts` must not exist unless it is a deliberate
   advanced-routing entrypoint. Otherwise flag P1 — rename the file, or set
   `fetchFile: './src/router.ts'` / `fetchFile: null` in `astro.config.ts`.
@@ -150,17 +153,18 @@ This is a best-effort check — report findings but don't auto-fix style issues.
 
 Run `pnpm build`. If it fails, include the full error output in the report. **Severity follows the
 convention rule the failure maps to** — a build error that a domain checklist already owns is
-reported at that rule's severity (e.g. a block element inside a `<p>` is HTML-13, a P1), not
-automatically P0. A build failure that maps to no convention rule is a **P0**.
+reported at that rule's severity (e.g. an unclosed tag is HTML-12, a P0), not automatically P0 by
+default. A build failure that maps to no convention rule is a **P0**.
 Run `tsc --noEmit`. Include any TypeScript errors as P0 issues.
 Run `biome check .` if Biome is configured. Include lint errors as P1 issues.
 
 Two Astro 7 failure modes to name explicitly when they show up:
 
-- A build error about an **unclosed tag** or a **block element inside a `<p>`** is Astro 7
-  Rust-compiler strictness — the compiler errors where Astro 6 auto-corrected. Report it under the
-  html-conventions rule it belongs to (`references/audit.md`: HTML-12 for unclosed tags, HTML-13 for
-  a block element inside a `<p>`), at that rule's severity, with the fix at `file:line`.
+- A build error about an **unclosed tag** is Astro 7 Rust-compiler strictness — the compiler errors
+  where Astro 6 silently accepted it. Report it as HTML-12 (`references/audit.md`) with the fix at
+  `file:line`. **Invalid nesting does not error**: the Rust compiler passes the markup through
+  as-is and leaves the browser to handle it, so a green build says nothing about HTML-13 — that rule
+  is only ever caught by its own grep-plus-inspection check in Step 5, never here.
 - An install or build failure with no other explanation is usually **Node < 22.12.0**. Check `node -v`
   against Astro 7's `engines.node: ">=22.12.0"` before chasing anything else.
 

@@ -17,9 +17,10 @@ modules.
 ## Part 1 — The code the builder generates
 
 Astro 7 moves two concerns that used to be cosmetic into the correctness column. Its Rust compiler
-no longer auto-corrects markup, so an unclosed tag or a block element nested inside a `<p>` fails
-the build instead of being silently repaired; and the new `compressHTML: 'jsx'` default strips
-whitespace JSX-style, so significant space between inline elements has to be written explicitly.
+fails the build on an unclosed tag and no longer repairs invalid markup, so a block element nested
+inside a `<p>` reaches the browser exactly as authored; and the new `compressHTML: 'jsx'` default
+strips whitespace JSX-style, so significant space between inline elements has to be written
+explicitly.
 Both are rules, not criteria, and they belong to `skills/html-conventions/SKILL.md` — the point
 here is only that "the markup renders anyway" is no longer an argument.
 

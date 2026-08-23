@@ -195,7 +195,9 @@ Config first (aliases and locales must exist before code that uses them), then t
    longer exist). Grep for the key, not the bare word — the template mentions `experimental` in a
    comment on purpose.
 7. Every scaffolded `.astro` file has all tags closed and valid nesting — no block element inside a
-   `<p>`. Astro 7's Rust compiler errors on both instead of auto-correcting.
+   `<p>`. Astro 7's Rust compiler errors on an unclosed tag; invalid nesting it passes through
+   as-is, so a passing build in 4.5 proves the first half of this check and nothing about the
+   second — read the nesting.
 8. `package.json` carries `"engines": { "node": ">=22.12.0" }` (Phase 4.1 step 3).
 9. No template instruction block survived into `src/`: `grep -rn "DELETE THIS COMMENT" src` must
    return nothing.
@@ -204,8 +206,9 @@ Config first (aliases and locales must exist before code that uses them), then t
 
 1. Run `pnpm install`.
 2. Run `pnpm build` — the scaffold is not done until it passes. Fix errors autonomously and re-run.
-   A build error naming an unclosed tag or invalid nesting is Astro 7 compiler strictness, not a
-   template bug — close the tag / fix the nesting. A build error naming a remark or rehype plugin
+   A build error naming an unclosed tag is Astro 7 compiler strictness, not a template bug — close
+   the tag. Invalid nesting never surfaces here (the compiler ships it as authored), which is why
+   4.4 step 7 asks you to read it. A build error naming a remark or rehype plugin
    means the default Sätteri processor is in use: `pnpm add @astrojs/markdown-remark`, then
    `import { unified } from "@astrojs/markdown-remark"` and set `markdown: { processor: unified() }`.
 
@@ -247,7 +250,7 @@ What's next? Run `/astro-builder:init lighthouse` to add automated Lighthouse au
 - Never create `src/fetch.ts` — it is Astro 7's reserved advanced-routing entrypoint.
 - Never install `@astrojs/db` — it is removed in Astro 7.
 - Never use removed `experimental.*` flags — `logger`, `cache` and `routeRules` are top-level; `queuedRendering`, `rustCompiler` and `advancedRouting` are gone.
-- Always close every tag and keep nesting valid — the Astro 7 compiler errors instead of correcting.
+- Always close every tag (the Astro 7 compiler errors on an unclosed one) and keep nesting valid (it no longer corrects invalid nesting — the browser gets the markup as authored).
 - Never use ESLint or Prettier — always Biome.
 - Never parse URLs to detect locale — always use `Astro.currentLocale`.
 - Never use `redirectToDefaultLocale: true` — use explicit `redirects` config.
