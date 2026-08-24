@@ -27,7 +27,9 @@ jobs:
 
       - name: Reject changes to the autopilot control plane
         run: |
-          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          # fetch-depth: 0 above already has full history for every ref; a
+          # shallow re-fetch here would clobber origin/<base> and lose the
+          # merge base once the base branch advances.
           CHANGED=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
           PROTECTED=$(echo "$CHANGED" | grep -E '^(\.autopilot/|\.github/)' || true)
 
