@@ -1,0 +1,52 @@
+name: Intention
+description: Propose a goal for the autopilot loop to work toward. Inert until a maintainer approves it.
+title: "[Intention]: "
+labels:
+  - intention
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An intention is a goal, not a task — the autopilot strategist and executor
+        only act on task issues filed as sub-issues of an **approved** intention.
+
+        **After filing:** pin this issue. A maintainer must apply the
+        `intention:approved` label before any task under it can run — that label
+        is the entire autonomy boundary, so only apply it once you agree the loop
+        should pursue the goal, metric, and constraints below.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome should the autopilot loop work toward?
+      placeholder: e.g. Grow organic sessions to the recipes section
+    validations:
+      required: true
+  - type: input
+    id: metric
+    attributes:
+      label: Metric
+      description: How will success be measured? Name the number and its source.
+      placeholder: e.g. GSC clicks on /recipes/** pages, tracked nightly
+    validations:
+      required: true
+  - type: input
+    id: horizon
+    attributes:
+      label: Horizon
+      description: By when? A date or a duration.
+      placeholder: e.g. 2026-12-31, or "90 days"
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: >
+        Anything the loop must respect while pursuing this goal — tone, scope,
+        pages or paths that are off-limits, budget, anything else out of bounds.
+      placeholder: |
+        - Do not touch the pricing pages
+        - English content only for now
+    validations:
+      required: false

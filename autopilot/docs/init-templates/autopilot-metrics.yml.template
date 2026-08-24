@@ -1,0 +1,94 @@
+name: autopilot-metrics
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # nightly; GSC data itself lags ~3 days
+  workflow_dispatch: {}
+
+concurrency:
+  group: autopilot-metrics
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: "{{DEFAULT_BRANCH}}"
+
+      - name: Check for GSC service account secret
+        id: check
+        env:
+          GSC_SERVICE_ACCOUNT: ${{ secrets.GSC_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$GSC_SERVICE_ACCOUNT" ]; then
+            echo "::warning::GSC_SERVICE_ACCOUNT secret is not set — skipping tonight's metrics run."
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write service account credentials
+        if: steps.check.outputs.has_secret == 'true'
+        env:
+          GSC_SERVICE_ACCOUNT: ${{ secrets.GSC_SERVICE_ACCOUNT }}
+        run: |
+          umask 077
+          printf '%s' "$GSC_SERVICE_ACCOUNT" > "$RUNNER_TEMP/gsc-service-account.json"
+
+      - name: Compute report date
+        if: steps.check.outputs.has_secret == 'true'
+        id: date
+        run: echo "today=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git identity
+        if: steps.check.outputs.has_secret == 'true'
+        run: |
+          git config user.name "autopilot[bot]"
+          git config user.email "autopilot[bot]@users.noreply.github.com"
+
+      - name: Run GSC metrics report
+        if: steps.check.outputs.has_secret == 'true'
+        uses: anthropics/claude-code-action@v1
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gsc-service-account.json
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Bash,Read,Write,Task"
+          prompt: |
+            Use the content-seo plugin's gsc-reporter agent (via the Task
+            tool) to fetch Search Console data, then write and commit the
+            result yourself — no PR, this is a scheduled data snapshot.
+
+            Brief for the gsc-reporter agent:
+              gsc_property: {{GSC_PROPERTY}}
+              credentials_path: (unset — resolve GOOGLE_APPLICATION_CREDENTIALS from the environment)
+              query_type: site-wide
+              date_range: last_28_days
+              dimensions: both
+
+            Steps:
+            1. Invoke the gsc-reporter agent with the brief above.
+            2. Take the GSC_DATA and SUMMARY it returns and write them as a
+               single JSON file to
+               `.autopilot/metrics/gsc-${{ steps.date.outputs.today }}.json`
+               (create the `.autopilot/metrics/` directory if it does not
+               exist yet).
+            3. Commit that one file to `{{DEFAULT_BRANCH}}` with the message
+               `chore(autopilot): gsc metrics for ${{ steps.date.outputs.today }}`
+               and push it directly.
+            4. Do not modify, stage, or commit any other file. Do not touch
+               `.autopilot/config.yml`, `.github/`, or any workflow or gate
+               definition.
+
+      - name: Clean up credentials
+        if: always() && steps.check.outputs.has_secret == 'true'
+        run: rm -f "$RUNNER_TEMP/gsc-service-account.json"

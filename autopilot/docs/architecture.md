@@ -142,3 +142,9 @@ work.
 2. **Owner prerequisite (blocks milestone 3):** GSC service account for
    listadeleitura.com.br — Google Cloud → JSON key → added as a GSC property user →
    stored in the site repo's Actions secrets. Verified still missing on 2026-08-24.
+3. **Textual parent-intention linkage (accepted v1 gap).** The executor guard parses
+   `Parent intention: #<n>` from the task issue body as plain text, not a GitHub
+   sub-issue relationship — any open, `intention`-labeled, `intention:approved`
+   intention number the task body names passes the check, whether or not that
+   intention is genuinely linked to the task. Tightening this to real sub-issue
+   verification is deferred, not abandoned.

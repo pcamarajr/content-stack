@@ -1,0 +1,44 @@
+# .autopilot/config.yml
+#
+# Autonomy boundary and operating limits for the autopilot loop.
+# Ratcheting autonomy is an edit to merge_policy — nothing else changes.
+# The executor and gates workflows re-read this file at run time (except the
+# two values baked in at init time below, which also live here for reference).
+merge_policy:
+  # auto   = merge automatically when all gates pass
+  # manual = always wait for human review
+  content: auto      # new/edited content (articles, pages)
+  translate: auto    # translations of existing content
+  code: manual        # anything touching site code/config
+  strategy: manual    # changes to .autopilot/, workflows, gates
+
+limits:
+  max_open_tasks: 5      # executor refuses new tasks past this
+  max_turns: 50           # per executor run
+  timeout_minutes: 30     # per executor run
+  retries: 1              # then autopilot:blocked
+
+gates:                    # Documentation only — this list names the gate set.
+                           # The gate jobs themselves (path-guard, build,
+                           # audit, anti-slop) are defined in
+                           # .github/workflows/autopilot-gates.yml. Editing
+                           # this list does not add, remove, or reconfigure a
+                           # gate; that requires editing the workflow file.
+  - build
+  - audit
+  - anti-slop
+
+build:
+  # Informational only. {{BUILD_COMMAND}} (and the install command) are
+  # baked directly into .github/workflows/autopilot-gates.yml at init time —
+  # a workflow-file placeholder substitution, not a runtime read. Editing
+  # this value here does NOT change what CI runs; to actually change the
+  # build/install command, edit the workflow file (or re-run init) and
+  # update this value to match, so it stays accurate for anything else that
+  # reads it later (a local dry-run, the strategist, etc).
+  command: "{{BUILD_COMMAND}}"
+
+metrics:
+  provider: gsc
+  property: "{{GSC_PROPERTY}}"   # e.g. sc-domain:example.com
+  schedule: nightly
