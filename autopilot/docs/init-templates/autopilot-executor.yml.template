@@ -249,7 +249,11 @@ jobs:
             2. Create and switch to a branch named exactly
                `autopilot/task-${{ github.event.issue.number }}` before making
                any change.
-            3. Do the work the skill produces, then commit it.
+            3. Do the work the skill produces, then self-review before
+               committing: run /content-ops:review-content on every content
+               file you wrote and fix all Must Fix findings yourself — the
+               anti-slop gate applies the same standard and will reject the
+               PR otherwise. Then commit.
             4. Push the branch and open a pull request against
                `{{DEFAULT_BRANCH}}` that:
                - has the title `autopilot: <short summary of the task>`,

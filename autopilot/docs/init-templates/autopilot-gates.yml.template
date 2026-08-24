@@ -69,6 +69,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      pull-requests: write
       id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
@@ -97,8 +98,10 @@ jobs:
               echo "FAIL" > /tmp/audit-result.txt   (if any P0 issue was found)
               echo "PASS" > /tmp/audit-result.txt   (otherwise)
 
-            Then, on the line above that command in your final message, list
-            every P0 issue found (or write "none").
+            Before writing that file, post your findings so humans can see
+            them: run
+              gh pr comment ${{ github.event.pull_request.number }} --body "<the list of P0 issues found, or 'Audit gate: no P0 issues'>"
+            (GITHUB_TOKEN is already in your environment.)
 
       - name: Enforce audit result
         run: |
@@ -114,6 +117,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      pull-requests: write
       id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
@@ -146,8 +150,10 @@ jobs:
               echo "FAIL" > /tmp/anti-slop-result.txt   (if any Must Fix was found)
               echo "PASS" > /tmp/anti-slop-result.txt   (otherwise)
 
-            Then, on the line above that command in your final message, list
-            every Must Fix found (or write "none").
+            Before writing that file, post your findings so humans can see
+            them: run
+              gh pr comment ${{ github.event.pull_request.number }} --body "<the list of Must Fix items found, or 'Anti-slop gate: no Must Fix items'>"
+            (GITHUB_TOKEN is already in your environment.)
 
       - name: Enforce anti-slop result
         run: |
@@ -155,6 +161,30 @@ jobs:
             echo "::error::content-ops review found unresolved Must Fix items (or produced no result)."
             cat /tmp/anti-slop-result.txt 2>/dev/null || true
             exit 1
+          fi
+
+  # Red gates must not vanish into the Actions tab: tell the PR and the
+  # task issue what happened so a human (or the strategist) can triage.
+  report-failure:
+    needs: [path-guard, build, audit, anti-slop]
+    if: failure() && startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Comment on PR and task issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh pr comment "$PR" --body "Autopilot gates failed: $RUN_URL — see the gate comments above for findings."
+          TASK_NUM=$(echo "$HEAD_REF" | grep -oP 'autopilot/task-\K[0-9]+' || true)
+          if [ -n "$TASK_NUM" ]; then
+            gh issue comment "$TASK_NUM" --body "Gates failed on PR #$PR: $RUN_URL — needs triage or a revised attempt."
           fi
 
   auto-merge:
