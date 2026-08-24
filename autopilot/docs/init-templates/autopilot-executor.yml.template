@@ -214,6 +214,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTOPILOT_PAT }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Use the PAT as the action's own token too — otherwise it mints a
+          # claude[bot] app token, the PR lands authored by a bot, and the
+          # gate actions (which block non-human actors by default) refuse to run.
+          github_token: ${{ secrets.AUTOPILOT_PAT }}
           # The action does not read .claude/settings.json — the autopilot
           # action library must be installed explicitly.
           plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"

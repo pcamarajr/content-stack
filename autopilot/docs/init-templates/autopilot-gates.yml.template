@@ -46,6 +46,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Makes pnpm/yarn available per the repo's packageManager field; no-op for npm.
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Install dependencies
         run: "{{PACKAGE_MANAGER_INSTALL}}"
 
@@ -66,6 +75,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Task PRs may be authored/synchronized by a bot identity.
+          allowed_bots: "claude"
           plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
           plugins: |
             astro-builder@content-stack
@@ -110,6 +121,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Task PRs may be authored/synchronized by a bot identity.
+          allowed_bots: "claude"
           plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
           plugins: |
             content-ops@content-stack
