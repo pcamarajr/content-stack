@@ -20,6 +20,7 @@ jobs:
           scopes: |
             astro-builder
             astro-lsp
+            autopilot
             content-image-gemini
             content-ops
             content-seo

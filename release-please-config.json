@@ -24,6 +24,16 @@
         }
       ]
     },
+    "autopilot": {
+      "release-type": "simple",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[?(@.name=='autopilot')].version"
+        }
+      ]
+    },
     "content-image-gemini": {
       "release-type": "simple",
       "extra-files": [

@@ -39,6 +39,17 @@
       "category": "development"
     },
     {
+      "name": "autopilot",
+      "description": "Autonomous operation layer for static content sites. Intentions live as pinned GitHub issues, a scheduled strategist session files tasks, GitHub Actions executors open PRs, and green-gated PRs merge themselves within a configurable autonomy boundary. Uses content-ops, content-seo, and astro-builder as its action library.",
+      "version": "1.0.0",
+      "author": {
+        "name": "pcamarajr",
+        "email": "eu@pcamarajr.dev"
+      },
+      "source": "./autopilot",
+      "category": "automation"
+    },
+    {
       "name": "content-seo",
       "description": "Site-level SEO intelligence layer for static content sites. Powered by Google Search Console — tracks performance, surfaces ranking opportunities, diagnoses pages with live data, and injects keyword briefs into the content creation pipeline.",
       "version": "2.0.0",

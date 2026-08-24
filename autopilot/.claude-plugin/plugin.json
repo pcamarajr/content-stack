@@ -1,0 +1,11 @@
+{
+  "name": "autopilot",
+  "description": "Autonomous operation layer for static content sites. Intentions live as pinned GitHub issues, a scheduled strategist session files tasks, GitHub Actions executors open PRs, and green-gated PRs merge themselves within a configurable autonomy boundary. Uses content-ops, content-seo, and astro-builder as its action library.",
+  "author": {
+    "name": "pcamarajr",
+    "email": "eu@pcamarajr.dev"
+  },
+  "homepage": "https://github.com/pcamarajr/content-stack",
+  "repository": "https://github.com/pcamarajr/content-stack",
+  "license": "MIT"
+}
