@@ -60,6 +60,9 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gsc-service-account.json
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
+          plugins: |
+            content-seo@content-stack
           claude_args: |
             --max-turns 15
             --allowedTools "Bash,Read,Write,Task"

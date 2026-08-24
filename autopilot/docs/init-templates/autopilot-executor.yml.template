@@ -213,6 +213,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTOPILOT_PAT }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The action does not read .claude/settings.json — the autopilot
+          # action library must be installed explicitly.
+          plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
+          plugins: |
+            content-ops@content-stack
+            astro-builder@content-stack
+            content-seo@content-stack
           claude_args: |
             --max-turns ${{ needs.guard.outputs.max_turns }}
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch"
@@ -291,10 +298,13 @@ jobs:
             echo "max_retries=$MAX_RETRIES"
           } >> "$GITHUB_OUTPUT"
 
+      # The re-added label below must come from the PAT: a `labeled` event
+      # produced by the default GITHUB_TOKEN never triggers this workflow
+      # again, so a GITHUB_TOKEN retry would silently retry nothing.
       - name: Retry
         if: fromJSON(steps.attempts.outputs.count) < fromJSON(steps.attempts.outputs.max_retries)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.AUTOPILOT_PAT }}
           ISSUE: ${{ github.event.issue.number }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
