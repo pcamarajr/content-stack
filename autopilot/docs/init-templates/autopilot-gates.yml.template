@@ -87,7 +87,7 @@ jobs:
           claude_args: |
             --model claude-sonnet-5
             --max-turns 40
-            --allowedTools "Bash,Read,Grep,Glob,Task"
+            --allowedTools "Bash,Read,Grep,Glob,Task,Skill"
           prompt: |
             Run /astro-builder:audit against this checkout. Never auto-fix
             anything — you are a read-only reviewer here, the repo is not
@@ -138,7 +138,7 @@ jobs:
           claude_args: |
             --model claude-sonnet-5
             --max-turns 40
-            --allowedTools "Bash,Read,Grep,Glob,Task"
+            --allowedTools "Bash,Read,Grep,Glob,Task,Skill"
           prompt: |
             Diff this PR's head against `origin/${{ github.event.pull_request.base.ref }}`
             to find the changed content files, then run

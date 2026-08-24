@@ -228,7 +228,7 @@ jobs:
           claude_args: |
             --model claude-sonnet-5
             --max-turns ${{ needs.guard.outputs.max_turns }}
-            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch"
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,Skill,WebSearch,WebFetch"
           prompt: |
             You are the autopilot executor. You implement exactly one task issue
             on this repo, open a PR for it, and stop — you never merge, and you
@@ -300,8 +300,13 @@ jobs:
           ISSUE: ${{ github.event.issue.number }}
         run: |
           MARKER="<!-- autopilot-executor-attempt-failed -->"
+          # Only count failures since the last time a human unblocked the
+          # task (removed autopilot:blocked) — otherwise stale markers from a
+          # long-fixed failure eat the retry budget forever.
+          LAST_UNBLOCK=$(gh api "repos/${{ github.repository }}/issues/$ISSUE/timeline" --paginate \
+            --jq '[.[] | select(.event=="unlabeled" and .label.name=="autopilot:blocked") | .created_at] | max // ""')
           COUNT=$(gh issue view "$ISSUE" --json comments \
-            --jq "[.comments[].body | select(startswith(\"$MARKER\"))] | length")
+            --jq "[.comments[] | select(.body | startswith(\"$MARKER\")) | select(.createdAt > \"$LAST_UNBLOCK\")] | length")
           MAX_RETRIES=$(yq '.limits.retries' .autopilot/config.yml)
           {
             echo "count=$COUNT"
