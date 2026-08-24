@@ -64,6 +64,7 @@ jobs:
   audit:
     if: startsWith(github.head_ref, 'autopilot/task-')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write  # claude-code-action requires OIDC
@@ -81,7 +82,7 @@ jobs:
           plugins: |
             astro-builder@content-stack
           claude_args: |
-            --max-turns 20
+            --max-turns 40
             --allowedTools "Bash,Read,Grep,Glob,Task"
           prompt: |
             Run /astro-builder:audit against this checkout. Never auto-fix
@@ -108,6 +109,7 @@ jobs:
   anti-slop:
     if: startsWith(github.head_ref, 'autopilot/task-')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write  # claude-code-action requires OIDC
@@ -127,7 +129,7 @@ jobs:
           plugins: |
             content-ops@content-stack
           claude_args: |
-            --max-turns 20
+            --max-turns 40
             --allowedTools "Bash,Read,Grep,Glob,Task"
           prompt: |
             Diff this PR's head against `origin/${{ github.event.pull_request.base.ref }}`
