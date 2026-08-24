@@ -1,0 +1,317 @@
+name: autopilot-executor
+
+# Fires on every label change; the guard job below narrows this to a task
+# issue that just received autopilot:run.
+on:
+  issues:
+    types: [labeled]
+
+# Only one executor run at a time, repo-wide — queue rather than cancel, so a
+# run that's mid-task is never interrupted by the next labeled task.
+concurrency:
+  group: autopilot-executor
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  # Guard job: the control plane enforces, the brain (or a human) only
+  # proposes. Everything here runs BEFORE any Claude call.
+  guard:
+    if: >
+      github.event.label.name == 'autopilot:run' &&
+      contains(github.event.issue.labels.*.name, 'task')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      proceed: ${{ steps.decide.outputs.proceed }}
+      parent_number: ${{ steps.decide.outputs.parent_number }}
+      change_type_label: ${{ steps.decide.outputs.change_type_label }}
+      max_turns: ${{ steps.decide.outputs.max_turns }}
+      timeout_minutes: ${{ steps.decide.outputs.timeout_minutes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: "{{DEFAULT_BRANCH}}"
+
+      - name: Parse task issue body
+        id: parse
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python3 - <<'PYEOF'
+          import os
+          import re
+
+          body = os.environ.get("ISSUE_BODY") or ""
+
+          def section(label):
+              m = re.search(
+                  rf"### {re.escape(label)}\s*\n+(.*?)(?=\n### |\Z)", body, re.S
+              )
+              return m.group(1).strip() if m else ""
+
+          parent_raw = section("Parent intention")
+          skill_raw = section("Skill to run")
+          skill_other = section('Skill (if "other" above)')
+
+          parent_match = re.search(r"#?(\d+)", parent_raw)
+          parent_number = parent_match.group(1) if parent_match else ""
+
+          skill = skill_raw
+          if skill_raw.strip().lower().startswith("other") and skill_other.strip():
+              skill = skill_other.strip()
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"parent_number={parent_number}\n")
+              f.write(f"skill={skill}\n")
+          PYEOF
+
+      # NOTE (accepted v1 gap, see docs/architecture.md §5): the parent link
+      # verified below is a plain-text reference parsed from the task issue
+      # body ("Parent intention: #<n>"), not a GitHub sub-issue relationship.
+      # Any open, intention-labeled, intention:approved intention number the
+      # task body names passes this check, whether or not that intention
+      # actually has a real sub-issue link to this task. Tightening this to
+      # true sub-issue verification is deferred, not forgotten.
+      - name: Verify parent intention is approved
+        id: verify_parent
+        if: steps.parse.outputs.parent_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PARENT: ${{ steps.parse.outputs.parent_number }}
+        run: |
+          if ! DATA=$(gh issue view "$PARENT" --json state,labels 2>/dev/null); then
+            {
+              echo "ok=false"
+              echo "reason=Parent intention #$PARENT does not exist."
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          STATE=$(echo "$DATA" | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+          LABELS_OK=$(echo "$DATA" | python3 -c '
+          import json, sys
+          d = json.load(sys.stdin)
+          names = {l["name"] for l in d["labels"]}
+          print("true" if "intention" in names and "intention:approved" in names else "false")
+          ')
+
+          if [ "$STATE" != "OPEN" ] || [ "$LABELS_OK" != "true" ]; then
+            {
+              echo "ok=false"
+              echo "reason=Parent intention #$PARENT is not open with both the intention and intention:approved labels (state=$STATE, labels_ok=$LABELS_OK)."
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check max open tasks
+        id: check_limit
+        if: steps.parse.outputs.parent_number != '' && steps.verify_parent.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MAX=$(yq '.limits.max_open_tasks' .autopilot/config.yml)
+          OPEN=$(gh issue list --label autopilot:run --state open --json number --jq 'length')
+
+          if [ "$OPEN" -gt "$MAX" ]; then
+            {
+              echo "ok=false"
+              echo "reason=Open autopilot:run tasks ($OPEN) exceed limits.max_open_tasks ($MAX)."
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide whether to proceed
+        id: decide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+          PARENT_NUMBER: ${{ steps.parse.outputs.parent_number }}
+          SKILL: ${{ steps.parse.outputs.skill }}
+          PARENT_OK: ${{ steps.verify_parent.outputs.ok }}
+          PARENT_REASON: ${{ steps.verify_parent.outputs.reason }}
+          LIMIT_OK: ${{ steps.check_limit.outputs.ok }}
+          LIMIT_REASON: ${{ steps.check_limit.outputs.reason }}
+        run: |
+          FAIL_REASON=""
+          if [ -z "$PARENT_NUMBER" ]; then
+            FAIL_REASON="Could not find a 'Parent intention: #<number>' reference in the issue body."
+          elif [ "$PARENT_OK" != "true" ]; then
+            FAIL_REASON="$PARENT_REASON"
+          elif [ "$LIMIT_OK" != "true" ]; then
+            FAIL_REASON="$LIMIT_REASON"
+          fi
+
+          if [ -n "$FAIL_REASON" ]; then
+            gh issue comment "$ISSUE" --body "Autopilot executor guard blocked this run: $FAIL_REASON"
+            gh issue edit "$ISSUE" --remove-label "autopilot:run"
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          case "$SKILL" in
+            content-ops:translate*|astro-builder:translate*) LABEL="autopilot:translate" ;;
+            content-ops:*|content-seo:*) LABEL="autopilot:content" ;;
+            astro-builder:*) LABEL="autopilot:code" ;;
+            *) LABEL="autopilot:code" ;;
+          esac
+
+          {
+            echo "proceed=true"
+            echo "parent_number=$PARENT_NUMBER"
+            echo "change_type_label=$LABEL"
+            echo "max_turns=$(yq '.limits.max_turns' .autopilot/config.yml)"
+            echo "timeout_minutes=$(yq '.limits.timeout_minutes' .autopilot/config.yml)"
+          } >> "$GITHUB_OUTPUT"
+
+  # Execute job: the only place a Claude call happens. Everything the guard
+  # job decided is handed in as plain strings — no config re-read here.
+  execute:
+    needs: guard
+    if: needs.guard.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJSON(needs.guard.outputs.timeout_minutes) }}
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      # Executor-opened PRs must trigger the gates workflow, and the default
+      # GITHUB_TOKEN never starts a workflow run from its own pushes/PRs — a
+      # fine-grained PAT is required (architecture G2: "fine-grained PAT
+      # now"). Fail fast and clearly if it's missing rather than letting the
+      # checkout below silently fall back to github.token.
+      - name: Verify AUTOPILOT_PAT is configured
+        env:
+          AUTOPILOT_PAT: ${{ secrets.AUTOPILOT_PAT }}
+        run: |
+          if [ -z "$AUTOPILOT_PAT" ]; then
+            echo "::error::secrets.AUTOPILOT_PAT is not set. The executor needs a fine-grained PAT (contents: read/write, pull requests: read/write, issues: read/write on this repo, no admin) so its branch pushes and PR creation trigger the gates workflow — the default GITHUB_TOKEN cannot do this. Add the secret, then re-run."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: "{{DEFAULT_BRANCH}}"
+          token: ${{ secrets.AUTOPILOT_PAT }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "autopilot[bot]"
+          git config user.email "autopilot[bot]@users.noreply.github.com"
+
+      - name: Run autopilot executor
+        uses: anthropics/claude-code-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTOPILOT_PAT }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns ${{ needs.guard.outputs.max_turns }}
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch"
+          prompt: |
+            You are the autopilot executor. You implement exactly one task issue
+            on this repo, open a PR for it, and stop — you never merge, and you
+            never touch the autopilot control plane.
+
+            Run non-interactively: never wait for user input; resolve open
+            choices yourself from the task brief and acceptance criteria.
+
+            ## Task brief (issue #${{ github.event.issue.number }})
+
+            ${{ github.event.issue.body }}
+
+            ## What to do
+
+            1. Read the "Skill to run" field above and invoke that plugin skill
+               (or the equivalent Task-based agent) with the "Inputs" field as
+               its brief. If a "Skill (if other)" value is present, use that
+               instead of the dropdown value.
+            2. Create and switch to a branch named exactly
+               `autopilot/task-${{ github.event.issue.number }}` before making
+               any change.
+            3. Do the work the skill produces, then commit it.
+            4. Push the branch and open a pull request against
+               `{{DEFAULT_BRANCH}}` that:
+               - has the title `autopilot: <short summary of the task>`,
+               - includes `Refs #${{ github.event.issue.number }}` in the body
+                 (do NOT use a closing keyword like "Closes" or "Fixes" — the
+                 gates workflow closes the task issue explicitly after merge),
+               - copies the "Acceptance criteria" field above verbatim as a
+                 markdown checklist in the PR description,
+               - is labeled `${{ needs.guard.outputs.change_type_label }}`
+                 (apply this label with `gh pr edit <number> --add-label`
+                 right after creating the PR).
+
+            ## Hard constraints
+
+            - Never edit, create, or delete anything under `.autopilot/`,
+              `.github/` (including workflow files and issue templates), or any
+              file that defines a gate. If the task genuinely requires such a
+              change, stop and leave a comment on the PR explaining why instead
+              of making the change — that class of change is `manual` and needs
+              a human.
+            - Never merge the PR yourself and never apply `autopilot:done`.
+            - Touch only the files the task actually requires.
+
+  # If the Claude run itself fails (crash, timeout, hit max-turns without
+  # finishing), retry once per limits.retries, then hand off to a human.
+  handle-failure:
+    needs: [guard, execute]
+    if: always() && needs.guard.outputs.proceed == 'true' && needs.execute.result == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: "{{DEFAULT_BRANCH}}"
+
+      - name: Count previous failed attempts
+        id: attempts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          MARKER="<!-- autopilot-executor-attempt-failed -->"
+          COUNT=$(gh issue view "$ISSUE" --json comments \
+            --jq "[.comments[].body | select(startswith(\"$MARKER\"))] | length")
+          MAX_RETRIES=$(yq '.limits.retries' .autopilot/config.yml)
+          {
+            echo "count=$COUNT"
+            echo "max_retries=$MAX_RETRIES"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Retry
+        if: fromJSON(steps.attempts.outputs.count) < fromJSON(steps.attempts.outputs.max_retries)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE" --body "<!-- autopilot-executor-attempt-failed -->
+          Executor run failed: $RUN_URL
+          Retrying automatically."
+          gh issue edit "$ISSUE" --remove-label "autopilot:run"
+          gh issue edit "$ISSUE" --add-label "autopilot:run"
+
+      - name: Block after exhausting retries
+        if: fromJSON(steps.attempts.outputs.count) >= fromJSON(steps.attempts.outputs.max_retries)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE" --body "<!-- autopilot-executor-attempt-failed -->
+          Executor failed again after exhausting retries: $RUN_URL
+          Needs triage — applying autopilot:blocked."
+          gh issue edit "$ISSUE" --remove-label "autopilot:run" --add-label "autopilot:blocked"

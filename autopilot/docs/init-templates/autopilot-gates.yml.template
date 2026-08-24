@@ -1,0 +1,173 @@
+name: autopilot-gates
+
+on:
+  pull_request:
+    branches: ["{{DEFAULT_BRANCH}}"]
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  # pull_request.branches (above) filters the PR's BASE branch, not its head —
+  # every job below re-checks the head branch itself so this workflow only
+  # ever gates autopilot task PRs (branches named `autopilot/task-<n>`). The
+  # `autopilot/init` scaffold PR intentionally falls outside this prefix so
+  # it never has to pass its own path-guard.
+
+  path-guard:
+    if: startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Reject changes to the autopilot control plane
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          CHANGED=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
+          PROTECTED=$(echo "$CHANGED" | grep -E '^(\.autopilot/|\.github/)' || true)
+
+          if [ -n "$PROTECTED" ]; then
+            echo "::error::This PR (from an autopilot/** branch) touches protected control-plane paths:"
+            echo "$PROTECTED"
+            exit 1
+          fi
+
+  build:
+    if: startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: "{{PACKAGE_MANAGER_INSTALL}}"
+
+      - name: Build
+        run: "{{BUILD_COMMAND}}"
+
+  audit:
+    if: startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run astro-builder audit
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 20
+            --allowedTools "Bash,Read,Grep,Glob,Task"
+          prompt: |
+            Run /astro-builder:audit against this checkout. Never auto-fix
+            anything — you are a read-only reviewer here, the repo is not
+            pushed anywhere from this job.
+
+            When the audit is done, run exactly one shell command as your
+            last action:
+
+              echo "FAIL" > /tmp/audit-result.txt   (if any P0 issue was found)
+              echo "PASS" > /tmp/audit-result.txt   (otherwise)
+
+            Then, on the line above that command in your final message, list
+            every P0 issue found (or write "none").
+
+      - name: Enforce audit result
+        run: |
+          if [ ! -f /tmp/audit-result.txt ] || ! grep -qx 'PASS' /tmp/audit-result.txt; then
+            echo "::error::astro-builder audit did not pass (or produced no result)."
+            cat /tmp/audit-result.txt 2>/dev/null || true
+            exit 1
+          fi
+
+  anti-slop:
+    if: startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run content-ops review on changed content
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 20
+            --allowedTools "Bash,Read,Grep,Glob,Task"
+          prompt: |
+            Diff this PR's head against `origin/${{ github.event.pull_request.base.ref }}`
+            to find the changed content files, then run
+            `/content-ops:review-content <path>` on each one. Never auto-fix
+            anything — you are a read-only reviewer here, the repo is not
+            pushed anywhere from this job.
+
+            When every changed content file has been reviewed, run exactly
+            one shell command as your last action:
+
+              echo "FAIL" > /tmp/anti-slop-result.txt   (if any Must Fix was found)
+              echo "PASS" > /tmp/anti-slop-result.txt   (otherwise)
+
+            Then, on the line above that command in your final message, list
+            every Must Fix found (or write "none").
+
+      - name: Enforce anti-slop result
+        run: |
+          if [ ! -f /tmp/anti-slop-result.txt ] || ! grep -qx 'PASS' /tmp/anti-slop-result.txt; then
+            echo "::error::content-ops review found unresolved Must Fix items (or produced no result)."
+            cat /tmp/anti-slop-result.txt 2>/dev/null || true
+            exit 1
+          fi
+
+  auto-merge:
+    needs: [path-guard, build, audit, anti-slop]
+    if: success() && startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Decide merge policy and act
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          CHANGE_LABEL=$(gh pr view "$PR" --json labels \
+            --jq '[.labels[].name] | map(select(test("^autopilot:(content|translate|code|strategy)$"))) | .[0] // ""')
+
+          if [ -z "$CHANGE_LABEL" ]; then
+            gh pr comment "$PR" --body "Gates are green, but this PR carries no autopilot change-type label (autopilot:content/translate/code/strategy) — treating it as manual. Awaiting human review."
+            exit 0
+          fi
+
+          CHANGE_TYPE=${CHANGE_LABEL#autopilot:}
+          POLICY=$(yq ".merge_policy.$CHANGE_TYPE" .autopilot/config.yml)
+          TASK_NUM=$(echo "$HEAD_REF" | grep -oP 'autopilot/task-\K[0-9]+' || true)
+
+          if [ "$POLICY" = "auto" ]; then
+            gh pr merge --squash --auto "$PR"
+            if [ -n "$TASK_NUM" ]; then
+              gh issue edit "$TASK_NUM" --add-label "autopilot:done"
+              gh issue close "$TASK_NUM" --reason completed
+            fi
+          else
+            gh pr comment "$PR" --body "Gates are green — merge_policy.$CHANGE_TYPE is manual, awaiting human review."
+          fi

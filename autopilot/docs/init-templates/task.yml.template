@@ -1,0 +1,67 @@
+name: Task
+description: A unit of work for the autopilot executor. Must belong to an approved intention.
+title: "[Task]: "
+labels:
+  - task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A task only runs once labeled `autopilot:run`, and only if its parent
+        intention is open and carries `intention:approved` — the executor
+        re-checks that at run time no matter who applied the label.
+  - type: input
+    id: parent_intention
+    attributes:
+      label: Parent intention
+      description: >
+        Issue number of the approved parent intention, e.g. 12 or #12.
+      placeholder: "12 or #12"
+    validations:
+      required: true
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Skill to run
+      description: Which plugin skill should the executor invoke for this task?
+      options:
+        - content-ops:write-content
+        - content-ops:review-content
+        - astro-builder:translate
+        - content-seo:seo
+        - astro-builder:new-page
+        - astro-builder:new-content-type
+        - other (specify below)
+    validations:
+      required: true
+  - type: input
+    id: skill_other
+    attributes:
+      label: Skill (if "other" above)
+      description: Only fill this in if you picked "other (specify below)" above.
+      placeholder: e.g. content-seo:opportunities
+    validations:
+      required: false
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Inputs
+      description: Structured inputs the skill needs (paths, topics, target locale, word count, etc).
+      placeholder: |
+        topic: ...
+        target_path: ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: >
+        A checklist the work must satisfy. This doubles as the PR's validation
+        checklist — write it as checkboxes.
+      placeholder: |
+        - [ ] Article is 800-1200 words
+        - [ ] Passes /astro-builder:audit with no P0s
+        - [ ] Internal links added per content-inventory
+    validations:
+      required: true
