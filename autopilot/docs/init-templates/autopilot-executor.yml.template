@@ -181,6 +181,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      id-token: write  # claude-code-action requires OIDC
     steps:
       # Executor-opened PRs must trigger the gates workflow, and the default
       # GITHUB_TOKEN never starts a workflow run from its own pushes/PRs — a
@@ -213,9 +214,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTOPILOT_PAT }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Use the PAT as the action's own token too — otherwise it mints a
+          # claude[bot] app token, the PR lands authored by a bot, and the
+          # gate actions (which block non-human actors by default) refuse to run.
+          github_token: ${{ secrets.AUTOPILOT_PAT }}
+          # The action does not read .claude/settings.json — the autopilot
+          # action library must be installed explicitly.
+          plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
+          plugins: |
+            content-ops@content-stack
+            astro-builder@content-stack
+            content-seo@content-stack
           claude_args: |
+            --model claude-sonnet-5
             --max-turns ${{ needs.guard.outputs.max_turns }}
-            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch"
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,Skill,WebSearch,WebFetch"
           prompt: |
             You are the autopilot executor. You implement exactly one task issue
             on this repo, open a PR for it, and stop — you never merge, and you
@@ -237,7 +250,11 @@ jobs:
             2. Create and switch to a branch named exactly
                `autopilot/task-${{ github.event.issue.number }}` before making
                any change.
-            3. Do the work the skill produces, then commit it.
+            3. Do the work the skill produces, then self-review before
+               committing: run /content-ops:review-content on every content
+               file you wrote and fix all Must Fix findings yourself — the
+               anti-slop gate applies the same standard and will reject the
+               PR otherwise. Then commit.
             4. Push the branch and open a pull request against
                `{{DEFAULT_BRANCH}}` that:
                - has the title `autopilot: <short summary of the task>`,
@@ -283,18 +300,26 @@ jobs:
           ISSUE: ${{ github.event.issue.number }}
         run: |
           MARKER="<!-- autopilot-executor-attempt-failed -->"
+          # Only count failures since the last time a human unblocked the
+          # task (removed autopilot:blocked) — otherwise stale markers from a
+          # long-fixed failure eat the retry budget forever.
+          LAST_UNBLOCK=$(gh api "repos/${{ github.repository }}/issues/$ISSUE/timeline" --paginate \
+            --jq '[.[] | select(.event=="unlabeled" and .label.name=="autopilot:blocked") | .created_at] | max // ""')
           COUNT=$(gh issue view "$ISSUE" --json comments \
-            --jq "[.comments[].body | select(startswith(\"$MARKER\"))] | length")
+            --jq "[.comments[] | select(.body | startswith(\"$MARKER\")) | select(.createdAt > \"$LAST_UNBLOCK\")] | length")
           MAX_RETRIES=$(yq '.limits.retries' .autopilot/config.yml)
           {
             echo "count=$COUNT"
             echo "max_retries=$MAX_RETRIES"
           } >> "$GITHUB_OUTPUT"
 
+      # The re-added label below must come from the PAT: a `labeled` event
+      # produced by the default GITHUB_TOKEN never triggers this workflow
+      # again, so a GITHUB_TOKEN retry would silently retry nothing.
       - name: Retry
         if: fromJSON(steps.attempts.outputs.count) < fromJSON(steps.attempts.outputs.max_retries)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.AUTOPILOT_PAT }}
           ISSUE: ${{ github.event.issue.number }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |

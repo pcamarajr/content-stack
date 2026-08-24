@@ -27,7 +27,9 @@ jobs:
 
       - name: Reject changes to the autopilot control plane
         run: |
-          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          # fetch-depth: 0 above already has full history for every ref; a
+          # shallow re-fetch here would clobber origin/<base> and lose the
+          # merge base once the base branch advances.
           CHANGED=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
           PROTECTED=$(echo "$CHANGED" | grep -E '^(\.autopilot/|\.github/)' || true)
 
@@ -46,6 +48,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Makes pnpm/yarn available per the repo's packageManager field; no-op for npm.
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Install dependencies
         run: "{{PACKAGE_MANAGER_INSTALL}}"
 
@@ -55,8 +66,11 @@ jobs:
   audit:
     if: startsWith(github.head_ref, 'autopilot/task-')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
+      pull-requests: write
+      id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -65,9 +79,15 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Task PRs may be authored/synchronized by a bot identity.
+          allowed_bots: "claude"
+          plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
+          plugins: |
+            astro-builder@content-stack
           claude_args: |
-            --max-turns 20
-            --allowedTools "Bash,Read,Grep,Glob,Task"
+            --model claude-sonnet-5
+            --max-turns 40
+            --allowedTools "Bash,Read,Grep,Glob,Task,Skill"
           prompt: |
             Run /astro-builder:audit against this checkout. Never auto-fix
             anything — you are a read-only reviewer here, the repo is not
@@ -79,8 +99,10 @@ jobs:
               echo "FAIL" > /tmp/audit-result.txt   (if any P0 issue was found)
               echo "PASS" > /tmp/audit-result.txt   (otherwise)
 
-            Then, on the line above that command in your final message, list
-            every P0 issue found (or write "none").
+            Before writing that file, post your findings so humans can see
+            them: run
+              gh pr comment ${{ github.event.pull_request.number }} --body "<the list of P0 issues found, or 'Audit gate: no P0 issues'>"
+            (GITHUB_TOKEN is already in your environment.)
 
       - name: Enforce audit result
         run: |
@@ -93,8 +115,11 @@ jobs:
   anti-slop:
     if: startsWith(github.head_ref, 'autopilot/task-')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
+      pull-requests: write
+      id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -105,9 +130,15 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Task PRs may be authored/synchronized by a bot identity.
+          allowed_bots: "claude"
+          plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
+          plugins: |
+            content-ops@content-stack
           claude_args: |
-            --max-turns 20
-            --allowedTools "Bash,Read,Grep,Glob,Task"
+            --model claude-sonnet-5
+            --max-turns 40
+            --allowedTools "Bash,Read,Grep,Glob,Task,Skill"
           prompt: |
             Diff this PR's head against `origin/${{ github.event.pull_request.base.ref }}`
             to find the changed content files, then run
@@ -121,8 +152,10 @@ jobs:
               echo "FAIL" > /tmp/anti-slop-result.txt   (if any Must Fix was found)
               echo "PASS" > /tmp/anti-slop-result.txt   (otherwise)
 
-            Then, on the line above that command in your final message, list
-            every Must Fix found (or write "none").
+            Before writing that file, post your findings so humans can see
+            them: run
+              gh pr comment ${{ github.event.pull_request.number }} --body "<the list of Must Fix items found, or 'Anti-slop gate: no Must Fix items'>"
+            (GITHUB_TOKEN is already in your environment.)
 
       - name: Enforce anti-slop result
         run: |
@@ -130,6 +163,30 @@ jobs:
             echo "::error::content-ops review found unresolved Must Fix items (or produced no result)."
             cat /tmp/anti-slop-result.txt 2>/dev/null || true
             exit 1
+          fi
+
+  # Red gates must not vanish into the Actions tab: tell the PR and the
+  # task issue what happened so a human (or the strategist) can triage.
+  report-failure:
+    needs: [path-guard, build, audit, anti-slop]
+    if: failure() && startsWith(github.head_ref, 'autopilot/task-')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Comment on PR and task issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh pr comment "$PR" --body "Autopilot gates failed: $RUN_URL — see the gate comments above for findings."
+          TASK_NUM=$(echo "$HEAD_REF" | grep -oP 'autopilot/task-\K[0-9]+' || true)
+          if [ -n "$TASK_NUM" ]; then
+            gh issue comment "$TASK_NUM" --body "Gates failed on PR #$PR: $RUN_URL — needs triage or a revised attempt."
           fi
 
   auto-merge:
@@ -163,7 +220,14 @@ jobs:
           TASK_NUM=$(echo "$HEAD_REF" | grep -oP 'autopilot/task-\K[0-9]+' || true)
 
           if [ "$POLICY" = "auto" ]; then
-            gh pr merge --squash --auto "$PR"
+            # --auto requires the repo's allow_auto_merge setting, which
+            # private repos on the Free plan cannot enable. Gates are already
+            # green here (this job runs behind needs: [all gates]), so a
+            # direct squash merge is an equivalent fallback.
+            if ! gh pr merge --squash --auto "$PR"; then
+              echo "auto-merge unavailable on this repo — merging directly (gates are green)."
+              gh pr merge --squash "$PR"
+            fi
             if [ -n "$TASK_NUM" ]; then
               gh issue edit "$TASK_NUM" --add-label "autopilot:done"
               gh issue close "$TASK_NUM" --reason completed

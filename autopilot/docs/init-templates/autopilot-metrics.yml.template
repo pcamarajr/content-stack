@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -60,7 +61,11 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gsc-service-account.json
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          plugin_marketplaces: "https://github.com/pcamarajr/content-stack.git"
+          plugins: |
+            content-seo@content-stack
           claude_args: |
+            --model claude-sonnet-5
             --max-turns 15
             --allowedTools "Bash,Read,Write,Task"
           prompt: |

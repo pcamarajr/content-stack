@@ -159,9 +159,12 @@ returns 200 without actually flipping the setting, so never trust the status cod
 gh api -X PATCH repos/{owner}/{repo} -f allow_auto_merge=true
 gh api repos/{owner}/{repo} --jq .allow_auto_merge
 ```
-The second command must print `true`. This requires admin on the repo. If it 403s OR
-still reads `false` after the PATCH, don't stop the run — print it as a manual
-follow-up instead (add it to the Step 5 checklist):
+The second command must print `true`. This requires admin on the repo. Note: private
+repos on the GitHub Free plan cannot enable this setting at all (the PATCH silently
+no-ops) — the gates workflow handles it by falling back to a direct squash merge once
+its own gates are green, so this is informational, not blocking. If it 403s OR still
+reads `false` after the PATCH, don't stop the run — print it as a manual follow-up
+instead (add it to the Step 5 checklist):
 ```text
 [ ] Enable "Allow auto-merge" in repo Settings → General (requires admin) — needed for
     the gates workflow's `gh pr merge --squash --auto` to succeed.
@@ -303,6 +306,9 @@ Before the loop can run:
           -F restrictions=null \
           -F allow_force_pushes=false \
           -F allow_deletions=false
+  [ ] Baseline audit: run /astro-builder:audit on the repo and clear every P0 BEFORE
+      activating the loop — the audit gate reviews the whole repo, so any pre-existing
+      P0 blocks every task PR, no matter how clean the PR itself is
   [ ] Write and pin the first intention issue (goal / metric / horizon / constraints)
   [ ] Apply intention:approved to that issue — only a maintainer applies this label
 
@@ -319,5 +325,5 @@ is the one action that turns proposals into work, and this skill never does it f
 - Never overwrite an existing file without asking first. Identical content is skipped silently; different content stops and asks (keep / overwrite / show diff).
 - Never create or approve an intention issue. This skill scaffolds infrastructure only — it does not author intentions and it never applies `intention:approved`.
 - The executor's machine identity (PAT or GitHub App) must never be granted permission to apply `intention:approved`. That label activates work and is reserved for a human maintainer — do not add it to any token's scope, workflow `permissions:` block, or automation this skill writes.
-- Gate enforcement depends on branch protection; without it (see the Step 5 checklist) the path-guard/build/audit/anti-slop boundary is advisory, not enforced — anyone with push access can bypass it.
+- Gate enforcement depends on branch protection; without it (see the Step 5 checklist) the path-guard/build/audit/anti-slop boundary is advisory, not enforced — anyone with push access can bypass it. Private repos on the GitHub Free plan cannot enable branch protection at all: acceptable for a single-maintainer private repo where the only writers are the maintainer and the executor PAT, but revisit before adding collaborators or going public.
 - Re-running this skill must be safe: always detect what already exists (Step 0) before creating anything, and always report what was skipped, not just what was created.
