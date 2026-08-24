@@ -57,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -98,6 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write  # claude-code-action requires OIDC
     steps:
       - name: Checkout
         uses: actions/checkout@v5

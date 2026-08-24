@@ -181,6 +181,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      id-token: write  # claude-code-action requires OIDC
     steps:
       # Executor-opened PRs must trigger the gates workflow, and the default
       # GITHUB_TOKEN never starts a workflow run from its own pushes/PRs — a
