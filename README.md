@@ -34,6 +34,7 @@ Then install the plugin you need:
 /plugin install content-image-gemini@content-stack
 /plugin install astro-builder@content-stack
 /plugin install astro-lsp@content-stack
+/plugin install autopilot@content-stack
 /plugin install cost-tracker@content-stack
 ```
 
@@ -130,6 +131,19 @@ Install:
 
 ```bash
 /plugin install astro-lsp@content-stack
+```
+
+### [`autopilot`](./autopilot/README.md)
+
+Autonomous operation layer for static content sites. Intentions are pinned GitHub issues you approve; a scheduled strategist files tasks, GitHub Actions executors open PRs, and green-gated content PRs merge themselves within a configurable autonomy boundary.
+
+- **Best for:** running a content site hands-off while keeping direction human
+- **Status:** design-complete, v1 in progress — see [`docs/architecture.md`](./autopilot/docs/architecture.md)
+
+Install:
+
+```bash
+/plugin install autopilot@content-stack
 ```
 
 ### [`cost-tracker`](./cost-tracker/README.md)
