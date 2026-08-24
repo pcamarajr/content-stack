@@ -65,6 +65,7 @@ jobs:
           plugins: |
             content-seo@content-stack
           claude_args: |
+            --model claude-sonnet-5
             --max-turns 15
             --allowedTools "Bash,Read,Write,Task"
           prompt: |

@@ -226,6 +226,7 @@ jobs:
             astro-builder@content-stack
             content-seo@content-stack
           claude_args: |
+            --model claude-sonnet-5
             --max-turns ${{ needs.guard.outputs.max_turns }}
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch"
           prompt: |

@@ -85,6 +85,7 @@ jobs:
           plugins: |
             astro-builder@content-stack
           claude_args: |
+            --model claude-sonnet-5
             --max-turns 40
             --allowedTools "Bash,Read,Grep,Glob,Task"
           prompt: |
@@ -135,6 +136,7 @@ jobs:
           plugins: |
             content-ops@content-stack
           claude_args: |
+            --model claude-sonnet-5
             --max-turns 40
             --allowedTools "Bash,Read,Grep,Glob,Task"
           prompt: |
