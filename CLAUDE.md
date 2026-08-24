@@ -50,10 +50,10 @@ Commit messages and PR titles/descriptions are always written in English. Conven
 1. Create the plugin directory with `README.md` and its components
 2. Add the entry to `.claude-plugin/marketplace.json` with `version: "1.0.0"` — the only time a version is written by hand
 3. Scaffold `<plugin>/.claude-plugin/plugin.json` (name, description, author, repository, license — no `version` field; version lives exclusively in `marketplace.json`)
-4. Register in `release-please-config.json` (copy an existing `packages` entry, adjusting the plugin name in the key and the jsonpath) and `.release-please-manifest.json` (`"<plugin>": "1.0.0"`)
+4. Register in `release-please-config.json` (copy an existing `packages` entry, adjusting the plugin name in the key and the jsonpath, and add `"bump-minor-pre-major": false` so the first release lands on `1.0.0`) and `.release-please-manifest.json` (`"<plugin>": "0.0.0"` — release-please computes the real first version itself; never seed the manifest with `1.0.0` by hand, or it will skip straight to `1.1.0` on the first `feat` commit)
 5. Add the plugin name to the `scopes` list in `.github/workflows/lint-pr-title.yml`
 6. Add the plugin section to the root `README.md`, in alphabetical order
-7. Title the PR `feat(<plugin>): ...` — `feat` makes release-please cut the plugin's first release, anchored at `1.0.0` by the manifest
+7. Title the PR `feat(<plugin>): ...` — `feat` makes release-please cut the plugin's first release; starting from `0.0.0` with `bump-minor-pre-major: false`, it lands on `1.0.0`
 
 ---
 

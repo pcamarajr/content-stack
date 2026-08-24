@@ -3,6 +3,8 @@
   "bootstrap-sha": "7ab6127b36ee46dd8a418615fb054762e37b796f",
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": false,
+  "include-component-in-tag": true,
+  "tag-separator": "@",
   "packages": {
     "astro-builder": {
       "release-type": "simple",
@@ -26,6 +28,7 @@
     },
     "autopilot": {
       "release-type": "simple",
+      "bump-minor-pre-major": false,
       "extra-files": [
         {
           "type": "json",
