@@ -51,11 +51,22 @@ Run these checks before touching anything. Stop and explain if any hard requirem
    ```
    Diff against the required set (see Step 2). Record which already exist.
 
-7. **Detect existing files** — for every target path in the Step 3 table, run:
+7. **Detect existing files** — file existence depends on which branch you look at: a
+   prior run may have committed everything to `autopilot/init` without the PR being
+   merged yet, so checking only the current checkout gives false "missing" reports.
+   Check the remote scaffold branch first:
    ```bash
-   test -f <path> && echo "exists" || echo "missing"
+   if git ls-remote --exit-code origin autopilot/init >/dev/null 2>&1; then
+     git fetch origin autopilot/init
+     # detect against the prior run's branch
+     git cat-file -e origin/autopilot/init:<path> 2>/dev/null && echo "exists" || echo "missing"
+   else
+     test -f <path> && echo "exists" || echo "missing"
+   fi
    ```
-   Record which already exist.
+   Run the detection for every target path in the Step 3 table and record which already
+   exist. If `origin/autopilot/init` exists, say so in the summary — Step 4 will reuse
+   that branch instead of creating a new one.
 
 8. **Report the detection summary** before moving on, e.g.:
    ```text
@@ -130,22 +141,26 @@ Create only the labels Step 0 found missing. Colors and descriptions below are f
 | `autopilot:content` | `C2E0C6` | PR change type: content — eligible for auto-merge under the default policy |
 | `autopilot:translate` | `BFD4F2` | PR change type: translation — eligible for auto-merge under the default policy |
 | `autopilot:code` | `F9D0C4` | PR change type: code — manual merge under the default policy |
-| `autopilot:strategy` | `E99695` | PR change type: strategy — touches `.autopilot/`, workflows, or gate definitions; manual merge under the default policy |
+| `autopilot:strategy` | `E99695` | PR change type: strategy — touches .autopilot/, workflows, or gates; manual merge |
 
 For each missing label:
 ```bash
 gh label create "<name>" --color "<color>" --description "<description>"
 ```
+Descriptions must stay ≤100 characters — GitHub's label API rejects longer ones with a 422.
 For each label Step 0 already found, print `skipped (already exists): <name>` instead of calling `gh label create`.
 
 ### Enable repo auto-merge
 
 The gates workflow's `gh pr merge --squash --auto` requires the repo setting
-`allow_auto_merge`. Enable it — this call is idempotent, safe to run every time:
+`allow_auto_merge`. Enable it, then verify — on some plans/repo types the PATCH
+returns 200 without actually flipping the setting, so never trust the status code alone:
 ```bash
 gh api -X PATCH repos/{owner}/{repo} -f allow_auto_merge=true
+gh api repos/{owner}/{repo} --jq .allow_auto_merge
 ```
-This requires admin on the repo. If it 403s, don't stop the run — print it as a manual
+The second command must print `true`. This requires admin on the repo. If it 403s OR
+still reads `false` after the PATCH, don't stop the run — print it as a manual
 follow-up instead (add it to the Step 5 checklist):
 ```text
 [ ] Enable "Allow auto-merge" in repo Settings → General (requires admin) — needed for
@@ -167,9 +182,9 @@ Templates live in the plugin at `${CLAUDE_PLUGIN_ROOT}/docs/init-templates/`. Fo
 | 5 | `.github/workflows/autopilot-gates.yml` | `autopilot-gates.yml.template` | `{{BUILD_COMMAND}}`, `{{PACKAGE_MANAGER_INSTALL}}`, `{{DEFAULT_BRANCH}}` |
 | 6 | `.github/workflows/autopilot-metrics.yml` | `autopilot-metrics.yml.template` | `{{GSC_PROPERTY}}`, `{{DEFAULT_BRANCH}}` |
 
-After writing (or skipping) all six, verify no placeholder survived in what you actually wrote this run:
+After writing (or skipping) all six, verify no init placeholder survived in what you actually wrote this run. Init placeholders are `{{UPPER_SNAKE}}` tokens — GitHub Actions' own `${{ ... }}` expressions legitimately contain `{{` and must NOT be flagged:
 ```bash
-grep -rn "{{" .autopilot .github/ISSUE_TEMPLATE .github/workflows 2>/dev/null
+grep -rEn '\{\{[A-Z_]+\}\}' .autopilot .github/ISSUE_TEMPLATE .github/workflows 2>/dev/null
 ```
 This must return nothing. If it finds a match, fix the offending file before continuing — do not open a PR with an unfilled template.
 
@@ -219,9 +234,10 @@ Init never pushes to the default branch. Everything lands on `autopilot/init`.
    ```bash
    gh pr list --head autopilot/init --json number --jq '.[0].number'
    ```
-   If a number comes back, the push above already updated it — report the PR URL and stop. Otherwise write the body to a file and create it:
+   If a number comes back, the push above already updated it — report the PR URL and stop. Otherwise write the body to a temp file and create it:
    ```bash
-   cat > /tmp/autopilot-init-pr-body.md <<'EOF'
+   PR_BODY=$(mktemp)
+   cat > "$PR_BODY" <<'EOF'
    ## Autopilot scaffold
 
    This PR sets up the autopilot loop on this repo:
@@ -254,7 +270,7 @@ Init never pushes to the default branch. Everything lands on `autopilot/init`.
    EOF
    gh pr create --base "$DEFAULT_BRANCH" --head autopilot/init \
      --title "chore(autopilot): scaffold autopilot loop" \
-     --body-file /tmp/autopilot-init-pr-body.md
+     --body-file "$PR_BODY"
    ```
 
 ---
