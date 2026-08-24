@@ -169,7 +169,14 @@ jobs:
           TASK_NUM=$(echo "$HEAD_REF" | grep -oP 'autopilot/task-\K[0-9]+' || true)
 
           if [ "$POLICY" = "auto" ]; then
-            gh pr merge --squash --auto "$PR"
+            # --auto requires the repo's allow_auto_merge setting, which
+            # private repos on the Free plan cannot enable. Gates are already
+            # green here (this job runs behind needs: [all gates]), so a
+            # direct squash merge is an equivalent fallback.
+            if ! gh pr merge --squash --auto "$PR"; then
+              echo "auto-merge unavailable on this repo — merging directly (gates are green)."
+              gh pr merge --squash "$PR"
+            fi
             if [ -n "$TASK_NUM" ]; then
               gh issue edit "$TASK_NUM" --add-label "autopilot:done"
               gh issue close "$TASK_NUM" --reason completed
