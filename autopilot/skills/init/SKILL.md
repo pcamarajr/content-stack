@@ -306,6 +306,9 @@ Before the loop can run:
           -F restrictions=null \
           -F allow_force_pushes=false \
           -F allow_deletions=false
+  [ ] Baseline audit: run /astro-builder:audit on the repo and clear every P0 BEFORE
+      activating the loop — the audit gate reviews the whole repo, so any pre-existing
+      P0 blocks every task PR, no matter how clean the PR itself is
   [ ] Write and pin the first intention issue (goal / metric / horizon / constraints)
   [ ] Apply intention:approved to that issue — only a maintainer applies this label
 
